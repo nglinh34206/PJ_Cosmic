@@ -1,0 +1,2781 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COSMIC: The Co-Pilot Space</title>
+    <style>
+        :root {
+            --cosmo-bg: #0B0E14;
+            --cosmo-dark: #151921;
+            --neon-teal: #00FFC2;
+            --neon-pink: #FF00FF;
+            --neon-gold: #FFD700;
+            --neon-blue: #00CCFF;
+            --neon-red: #FF4500;
+            --text-main: #E0E0E0;
+            --text-dim: #888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--cosmo-bg);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- STARFIELD BACKGROUND --- */
+        .stars, .stars2, .stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .stars {
+            background-image: 
+                radial-gradient(1px 1px at 10% 10%, white, transparent),
+                radial-gradient(1px 1px at 20% 20%, white, transparent),
+                radial-gradient(2px 2px at 30% 30%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 40% 40%, white, transparent),
+                radial-gradient(1px 1px at 50% 50%, white, transparent),
+                radial-gradient(2px 2px at 60% 60%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 70% 70%, white, transparent),
+                radial-gradient(1px 1px at 80% 80%, white, transparent),
+                radial-gradient(1px 1px at 90% 90%, white, transparent);
+            background-size: 550px 550px;
+            animation: starsMove 100s linear infinite;
+            opacity: 0.6;
+        }
+
+        .stars2 {
+            background-image: 
+                radial-gradient(1px 1px at 15% 15%, #aaa, transparent),
+                radial-gradient(1px 1px at 25% 25%, #aaa, transparent),
+                radial-gradient(2px 2px at 35% 35%, rgba(200,200,200,0.5), transparent);
+            background-size: 350px 350px;
+            animation: starsMove 150s linear infinite reverse;
+            opacity: 0.4;
+        }
+        
+        @keyframes starsMove {
+            from { background-position: 0 0; }
+            to { background-position: 1000px 1000px; }
+        }
+
+        /* --- SOLAR SYSTEM & NEBULA BACKGROUND --- */
+        .nebula {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(125deg, transparent 30%, rgba(106, 17, 203, 0.15) 45%, rgba(37, 117, 252, 0.1) 55%, transparent 70%),
+                radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.05), transparent 40%);
+            z-index: -2;
+            pointer-events: none;
+            filter: blur(20px);
+        }
+
+        .solar-system-container {
+            position: fixed;
+            top: 20%;
+            right: 15%;
+            width: 0;
+            height: 0;
+            z-index: -2;
+            pointer-events: none;
+            transform: rotate(-15deg);
+        }
+
+        .sun {
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #FFD700, #FF8C00, transparent 70%);
+            box-shadow: 
+                0 0 60px rgba(255, 140, 0, 0.6),
+                0 0 100px rgba(255, 69, 0, 0.3);
+            animation: sunPulse 8s ease-in-out infinite alternate;
+        }
+
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .orbit-1 { width: 200px; height: 200px; animation: orbitSpin 20s linear infinite; }
+        .orbit-2 { width: 350px; height: 350px; animation: orbitSpin 45s linear infinite reverse; }
+        .orbit-3 { width: 500px; height: 500px; animation: orbitSpin 80s linear infinite; }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .planet-1 { 
+            left: -4px; width: 8px; height: 8px; 
+            background: #00FFC2; 
+            box-shadow: 0 0 10px #00FFC2;
+        }
+        
+        .planet-2 { 
+            right: -6px; width: 12px; height: 12px; 
+            background: #FF00FF; 
+            box-shadow: 0 0 15px #FF00FF;
+        }
+
+        .planet-3 { 
+            left: 20%; width: 6px; height: 6px; 
+            background: #FFF; 
+            top: 85%;
+        }
+
+        @keyframes sunPulse {
+            from { transform: scale(1); opacity: 0.8; }
+            to { transform: scale(1.1); opacity: 1; }
+        }
+
+        @keyframes orbitSpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* --- LOGIN SCREEN (AIRLOCK) --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a253a 0%, #0B0E14 80%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 194, 0.2);
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: 350px;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            color: var(--neon-teal);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: var(--neon-teal);
+            box-shadow: 0 0 10px rgba(0, 255, 194, 0.2);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-teal));
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 255, 194, 0.4);
+        }
+        
+        .auth-switch {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #888;
+            cursor: pointer;
+        }
+        .auth-switch:hover { color: white; text-decoration: underline; }
+
+        /* --- APP CONTAINER (HIDDEN INITIALLY) --- */
+        #app-container {
+            display: none; /* Hiển thị sau khi login */
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 80px;
+            background: rgba(21, 25, 33, 0.8); /* Semi-transparent */
+            border-right: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            z-index: 100;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-teal));
+            border-radius: 50%;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+            font-size: 24px;
+            box-shadow: 0 0 15px var(--neon-teal);
+            cursor: pointer;
+        }
+
+        .nav-item {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-dim);
+            font-size: 20px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 255, 194, 0.1);
+            color: var(--neon-teal);
+            box-shadow: 0 0 10px rgba(0, 255, 194, 0.2);
+        }
+        
+        .logout-btn {
+            margin-top: auto;
+            margin-bottom: 20px;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: #333;
+            color: #FF4500;
+            border: 1px solid #FF4500;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .logout-btn:hover { background: #FF4500; color: white; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            background: transparent; 
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--neon-teal);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            display: inline-block;
+            border-bottom: 1px solid var(--neon-teal);
+            padding-bottom: 5px;
+        }
+
+        /* --- ENERGY CABIN STYLES --- */
+        .cabin-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        .avatar-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            padding: 5px;
+            position: relative;
+            border: 2px solid #444;
+        }
+
+        /* Supernova Effect */
+        .avatar-frame.supernova {
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box, 
+                        linear-gradient(45deg, #FF4500, #FFD700, #FF0000) border-box;
+            animation: spinBorder 4s linear infinite;
+        }
+        
+        /* New User Effect (Basic) */
+        .avatar-frame.basic {
+            border: 2px solid #888;
+            box-shadow: none;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            border-radius: 50%;
+            background-image: url('https://api.dicebear.com/7.x/bottts/svg?seed=Commander');
+            background-size: cover;
+        }
+
+        .user-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Rank Effects */
+        .rank-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+     /* --- VISUAL TIERS SYSTEM --- */
+
+/* TIER 1 (Lv 1-5): Standard Issue */
+.rank-tier-1 {
+    color: #b0b0b0; /* Xám trắng */
+    text-shadow: none;
+    font-weight: normal;
+}
+
+/* TIER 2 (Lv 6): Neon Pulse */
+.rank-tier-2 {
+    color: #00F2FF; /* Cyber Cyan */
+    text-shadow: 0 0 5px rgba(0, 242, 255, 0.8);
+    font-weight: bold;
+}
+
+/* TIER 3 (Lv 7): Nebula Flow */
+.rank-tier-3 {
+    background: linear-gradient(90deg, #8A2BE2, #0000FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    animation: nebulaWave 3s infinite ease-in-out;
+}
+@keyframes nebulaWave {
+    0% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(30deg); }
+    100% { filter: hue-rotate(0deg); }
+}
+
+/* TIER 4 (Lv 8): Horizon (Gold) */
+.rank-tier-4 {
+    background: linear-gradient(120deg, #FFD700, #FFA500, #FFD700);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    animation: goldSweep 4s linear infinite;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+@keyframes goldSweep {
+    to { background-position: 200% center; }
+}
+
+/* SPECIAL TIER: GENESIS (Crimson Velvet) */
+.rank-genesis {
+    color: #DC143C; /* Crimson */
+    text-shadow: 0 0 10px rgba(220, 20, 60, 0.8), 0 0 20px rgba(220, 20, 60, 0.4);
+    font-weight: 900;
+    letter-spacing: 2px;
+    animation: heartbeat 3s infinite ease-in-out;
+}
+@keyframes heartbeat {
+    0% { transform: scale(1); text-shadow: 0 0 10px rgba(220, 20, 60, 0.8); }
+    50% { transform: scale(1.05); text-shadow: 0 0 25px rgba(220, 20, 60, 1); }
+    100% { transform: scale(1); text-shadow: 0 0 10px rgba(220, 20, 60, 0.8); }
+}
+
+/* TIER 5: ULTIMATE (Burning Core) */
+.rank-ultimate {
+    background: linear-gradient(0deg, #FF4500, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    text-transform: uppercase;
+    animation: glitch 0.3s infinite;
+    text-shadow: 2px 2px 0px rgba(255,0,0,0.5);
+}
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid var(--neon-teal);
+        }
+
+        .stat-val { font-size: 20px; font-weight: bold; color: white; }
+        .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
+
+        .energy-bar-container {
+            background: #222;
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .energy-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-teal));
+            width: 0%;
+            box-shadow: 0 0 20px var(--neon-teal);
+            transition: width 1s ease;
+        }
+
+        /* --- ADMIN PANEL & BRIGADE ROLES --- */
+        .admin-panel {
+            margin-top: 30px;
+            background: rgba(0, 255, 194, 0.05);
+            border: 1px solid var(--neon-teal);
+            border-radius: 15px;
+            padding: 20px;
+            display: none; /* Only for admin */
+        }
+        
+        .crew-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .crew-table th, .crew-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .crew-table th { color: var(--neon-teal); }
+        .role-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-right: 5px;
+            border: 1px solid transparent;
+        }
+        .role-admin { background: rgba(255,215,0,0.2); color: #FFD700; border-color: #FFD700; }
+        .role-tester { background: rgba(0,255,194,0.2); color: #00FFC2; border-color: #00FFC2; }
+        .role-op { background: rgba(0,204,255,0.2); color: #00CCFF; border-color: #00CCFF; }
+        .role-mkt { background: rgba(255,0,255,0.2); color: #FF00FF; border-color: #FF00FF; }
+
+        .role-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 3px solid transparent;
+        }
+        .role-card.tester { border-color: var(--neon-teal); }
+        .role-card.op { border-color: var(--neon-blue); }
+        .role-card.mkt { border-color: var(--neon-pink); }
+        .role-card.admin { border-color: var(--neon-gold); }
+
+        .role-actions button {
+            margin-right: 10px;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        /* --- RESOURCE HUB & SPLIT VIEW STYLES --- */
+        .resource-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        /* Custom scrollbar */
+        .resource-list::-webkit-scrollbar { width: 5px; }
+        .resource-list::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
+
+        .resource-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+        }
+
+        .resource-item:hover {
+            border-color: var(--neon-teal);
+            background: rgba(0, 255, 194, 0.1);
+            transform: translateX(5px);
+        }
+
+        .res-icon { font-size: 24px; margin-right: 15px; }
+        .res-info h3 { font-size: 16px; margin-bottom: 5px; }
+        .res-info p { font-size: 12px; color: var(--text-dim); }
+        .res-tag {
+            background: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: var(--neon-teal);
+            margin-left: 10px;
+        }
+
+        .btn-delete-doc {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 10px;
+            display: none; /* Hidden by default */
+        }
+        .btn-delete-doc:hover { background: #e74c3c; }
+
+        /* UPLOAD MODAL & ROLE EDIT MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background: #151921; border: 1px solid var(--neon-teal);
+            padding: 30px; border-radius: 15px; width: 450px;
+            box-shadow: 0 0 30px rgba(0, 255, 194, 0.2);
+        }
+        .modal-title {
+            color: var(--neon-teal); margin-bottom: 20px; font-size: 1.5rem; text-align: center;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .modal-input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            background: rgba(0,0,0,0.3); border: 1px solid #444;
+            color: white; border-radius: 8px; outline: none;
+        }
+        .modal-input:focus { border-color: var(--neon-teal); }
+        .file-drop-area {
+            border: 2px dashed #444; padding: 30px; text-align: center;
+            margin-bottom: 20px; border-radius: 8px; cursor: pointer; color: #888;
+            transition: 0.2s;
+        }
+        .file-drop-area:hover { border-color: var(--neon-teal); color: white; background: rgba(0, 255, 194, 0.05); }
+        
+        .progress-container {
+            height: 6px; background: #333; margin-top: 15px; border-radius: 3px; overflow:hidden; display: none;
+        }
+        .progress-fill {
+            height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-teal)); transition: width 0.1s linear;
+        }
+
+        /* CHECKBOX FOR ROLES */
+        .role-option {
+            display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;
+        }
+        .role-option input { margin-right: 10px; transform: scale(1.2); }
+
+        /* Split View Container (Hidden initially) */
+        #split-view-container {
+            display: none;
+            height: calc(100vh - 100px);
+            display: flex;
+            gap: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .split-left {
+            flex: 2;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .doc-viewer-header {
+            padding: 15px;
+            background: #222;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .doc-content-placeholder {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            background: #111;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .doc-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .split-right {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: linear-gradient(90deg, #1a253a, #0B0E14);
+            border-bottom: 1px solid var(--neon-teal);
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-msg {
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .msg-system {
+            background: rgba(255, 69, 0, 0.1);
+            border: 1px solid rgba(255, 69, 0, 0.3);
+            color: #FF4500;
+            text-align: center;
+            align-self: center;
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        .msg-other {
+            background: #333;
+            color: #ddd;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        
+        .msg-me {
+            background: rgba(0, 255, 194, 0.2);
+            color: var(--neon-teal);
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            border: 1px solid rgba(0, 255, 194, 0.3);
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .btn-send {
+            background: var(--neon-teal);
+            color: black;
+            border: none;
+            padding: 0 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-sos-trigger {
+            background: transparent;
+            border: 1px solid #FF4500;
+            color: #FF4500;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulseDot 2s infinite;
+        }
+        
+        .btn-sos-trigger:hover {
+            background: #FF4500;
+            color: white;
+        }
+
+        /* Active state for SOS button */
+        .btn-sos-trigger.active {
+            background: #FF4500;
+            color: white;
+            box-shadow: 0 0 15px #FF4500;
+            animation: pulseDot 0.5s infinite;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid #666;
+            color: #ccc;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-back:hover { border-color: white; color: white; }
+
+
+        .btn-primary {
+            background: var(--neon-teal);
+            color: #000;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 15px var(--neon-teal);
+        }
+
+        /* --- BRIDGE / RADAR STYLES --- */
+        .radar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            position: relative;
+        }
+        
+        .radar-circle {
+            width: 300px;
+            height: 300px;
+            border: 2px solid rgba(0, 255, 194, 0.3);
+            border-radius: 50%;
+            position: relative;
+            background: radial-gradient(circle, transparent 20%, rgba(0, 255, 194, 0.05) 100%);
+        }
+        
+        .radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-teal));
+            transform-origin: left center;
+            animation: radarSpin 4s linear infinite;
+        }
+
+        .radar-dot {
+            width: 8px;
+            height: 8px;
+            background: #FF4500;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 10px #FF4500;
+            animation: pulseDot 1s infinite alternate;
+        }
+        
+        /* New SOS dot class for JS triggering */
+        .radar-dot-new {
+            width: 12px;
+            height: 12px;
+            background: #FF0000;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%; left: 50%; /* Center initially */
+            box-shadow: 0 0 20px #FF0000;
+            animation: expandPing 2s infinite;
+            z-index: 10;
+        }
+
+        /* --- RANK TABLE --- */
+        .rank-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .rank-table th, .rank-table td {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .rank-table th { color: var(--neon-teal); text-transform: uppercase; font-size: 12px; }
+        .tier-tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .tier-basic { background: #444; color: #ccc; }
+        .tier-elite { background: rgba(0, 255, 194, 0.2); color: var(--neon-teal); border: 1px solid var(--neon-teal); }
+        .tier-legend { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; }
+        .tier-ultimate { background: linear-gradient(90deg, #FF4500, #FFD700); color: black; }
+
+        /* --- VOID CHAT STYLES --- */
+        .void-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .void-header {
+            padding: 15px;
+            background: #0f0f0f;
+            border-bottom: 1px solid #333;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .void-status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00FF00;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: blink 2s infinite;
+        }
+
+        .void-messages-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            color: #ccc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .void-msg-row {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .void-identity {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .void-identity span {
+            color: #888;
+        }
+
+        .void-content {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 2px solid #555;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .void-msg-row.me .void-content {
+            border-left-color: var(--neon-teal);
+            background: rgba(0, 255, 194, 0.05);
+            color: var(--neon-teal);
+        }
+        
+        .void-msg-row.me .void-identity {
+            color: var(--neon-teal);
+        }
+
+        .void-input-area {
+            padding: 15px;
+            background: #0f0f0f;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+
+        .void-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        
+        .void-input:focus { outline: none; }
+
+        @keyframes blink { 50% { opacity: 0.3; } }
+        
+        /* Animations */
+        @keyframes spinBorder { 100% { transform: rotate(360deg); } }
+        @keyframes glitch { 
+            0% { transform: translate(0); } 
+            20% { transform: translate(-2px, 2px); } 
+            40% { transform: translate(-2px, -2px); } 
+            60% { transform: translate(2px, 2px); } 
+            80% { transform: translate(2px, -2px); } 
+            100% { transform: translate(0); } 
+        }
+        @keyframes radarSpin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseDot { from { opacity: 0.5; } to { opacity: 1; transform: scale(1.2); } }
+        @keyframes expandPing { 
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+/* --- SUGGESTION BOX (AUTOCOMPLETE) --- */
+.autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+#suggestion-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    z-index: 1000;
+    max-height: 200px; /* Giới hạn chiều cao hiển thị khoảng 5 dòng */
+    overflow-y: auto;  /* Cho phép cuộn nếu danh sách dài hơn 5 dòng */
+    display: none;     /* Mặc định ẩn */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp */
+#suggestion-box::-webkit-scrollbar { width: 5px; }
+#suggestion-box::-webkit-scrollbar-thumb { background: var(--neon-teal); border-radius: 5px; }
+
+.suggestion-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+    font-size: 14px;
+    color: #ccc;
+    transition: 0.2s;
+}
+
+.suggestion-item:hover {
+    background: rgba(0, 255, 194, 0.1);
+    color: var(--neon-teal);
+    padding-left: 15px;
+}
+.suggestion-item strong {
+    color: var(--neon-teal);
+}
+    </style>
+</head>
+<body>
+    
+    <!-- STARFIELD BACKGROUND -->
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    
+    <!-- NEW BACKGROUND ELEMENTS -->
+    <div class="nebula"></div>
+    <div class="solar-system-container">
+        <div class="sun"></div>
+        <div class="orbit orbit-1">
+            <div class="planet planet-1"></div>
+        </div>
+        <div class="orbit orbit-2">
+            <div class="planet planet-2"></div>
+        </div>
+        <div class="orbit orbit-3">
+            <div class="planet planet-3" style="top: 0; left: 50%; transform: translate(-50%, -50%);"></div>
+        </div>
+    </div>
+    
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="logo" style="margin: 0 auto 30px auto;">C</div>
+            <div class="login-title">THE AIRLOCK</div>
+            <p style="color: #888; margin-bottom: 30px; font-size: 0.9rem;" id="login-subtitle">Nhập MSV để truy cập Cosmic Base.</p>
+            
+            <!-- CHANGED: Single input for MSV, Password hidden/auto -->
+            <input type="text" id="auth-msv" class="login-input" placeholder="7 SỐ CUỐI MSV (VD: 4043292)" autocomplete="off" maxlength="7">
+            
+            <button class="login-btn" onclick="handleAuth()" id="btn-auth-action">LOGIN (AUTO PASS)</button>
+            <div id="login-error" style="color: #ff4500; margin-top: 15px; font-size: 0.8rem; display: none;">Lỗi xác thực.</div>
+            
+            <div class="auth-switch" onclick="toggleAuthMode()">Chưa kích hoạt MSV? <b>Đăng ký ngay</b></div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+<div id="notification-banner" style="display:none; position:fixed; top:20px; right:20px; z-index:2000; background:rgba(255,69,0,0.8); color:white; padding:15px; border-radius:10px; box-shadow:0 0 20px rgba(255,69,0,0.5); max-width:300px; font-size:14px;">
+    <div id="banner-content"></div>
+    <button onclick="document.getElementById('notification-banner').style.display='none'" style="position:absolute; top:5px; right:5px; background:none; border:none; color:white; cursor:pointer;">✕</button>
+</div>
+    <div id="app-container" style="display: flex;">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="logo" onclick="location.reload()">C</div>
+            <div class="nav-item active" onclick="switchTab('cabin', this)" title="Energy Cabin">🏠</div>
+            <div class="nav-item" onclick="switchTab('resources', this)" title="Resource Hub">📚</div>
+            <div class="nav-item" onclick="switchTab('bridge', this)" title="The Brigade" id="bridge-nav">📡</div>
+            <div class="nav-item" onclick="switchTab('void', this)" title="The Void">🌌</div>
+            <div class="nav-item" onclick="switchTab('ranks', this)" title="Rank System">🏆</div>
+            
+            <div class="logout-btn" onclick="handleLogout()" title="Logout">🚪</div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            
+            <!-- CABIN VIEW -->
+            <div id="cabin" class="view-section active">
+                <h1 id="cabin-title">Energy Cabin</h1>
+                <div class="subtitle">Welcome back, <span id="welcome-name">Commander</span>. Systems Online.</div>
+
+                <div class="cabin-grid">
+                    <!-- Profile -->
+                    <div class="profile-card">
+                        <div id="user-avatar-frame" class="avatar-container avatar-frame basic">
+                            <div class="avatar-img" id="user-avatar-img"></div>
+                        </div>
+                        <div class="user-name" id="user-display-name">Loading...</div>
+                        <div class="rank-title" id="user-rank-title">CONNECTING...</div>
+                        <div class="tier-tag" id="user-tier-tag" style="display:inline-block; margin-bottom:10px;">Checking ID</div>
+                        
+                        <div>Energy Core Status</div>
+                        <div class="energy-bar-container">
+                            <div class="energy-bar-fill" id="energy-bar"></div>
+                        </div>
+                        <div style="margin-top:5px; font-size:12px; color:var(--neon-teal);"><span id="energy-text">0</span> / MAX</div>
+                    </div>
+
+                    <!-- Stats Matrix -->
+                    <div>
+                        <h3>Matrix Stats Analysis</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-val" id="stat-focus">0h</div>
+                                <div class="stat-label">Focus Time (Navigator)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-val" id="stat-upload">0</div>
+                                <div class="stat-label">Uploads (Guardian)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-val" id="stat-interact">0</div>
+                                <div class="stat-label">Interactions (Diplomat)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-val" id="stat-online">1 Day</div>
+                                <div class="stat-label">Online (Voyager)</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;" id="quote-box">
+                            <!-- Dynamic Quote inserted by JS -->
+                        </div>
+
+                        <!-- ADMIN PANEL (Hidden for normal users) -->
+                        <div id="admin-panel" class="admin-panel">
+                            <h3 style="color:var(--neon-gold); margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
+                                🛡️ COMMAND CENTER (ADMIN)
+                            </h3>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                <span>Quản lý thành viên The Brigade</span>
+                                <input type="text" id="admin-search" placeholder="Tìm MSV..." style="background:#222; border:1px solid #444; color:white; padding:5px;">
+                            </div>
+                            <div style="max-height: 200px; overflow-y:auto;">
+                                <table class="crew-table" id="crew-list">
+                                    <!-- Populated by JS -->
+                                    <tr><td colspan="3">Loading crew data...</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESOURCE HUB VIEW -->
+            <div id="resources" class="view-section">
+                <!-- Main List View -->
+                <div id="resource-hub-main">
+                    <h1>Resource Hub</h1>
+                    <div class="subtitle">Kho tri thức tập trung. Đã đồng bộ 100%.</div>
+
+                   <div style="display:flex; gap:10px; margin-bottom:20px;">
+    
+    <div class="autocomplete-wrapper" style="flex:1;"> 
+        <input type="text" id="search-input" 
+               placeholder="Tìm kiếm tài liệu / Môn học..." 
+               style="background:rgba(0,0,0,0.3); border:1px solid #444; color:white; padding:10px; border-radius:5px; width:100%;" 
+               autocomplete="off"
+               oninput="handleSearchInput(this)"
+               onfocus="handleSearchInput(this)">
+        
+        <div id="search-suggestion-box"></div>
+    </div>
+
+    <button class="btn-primary" onclick="openUploadModal()">Upload Document</button>
+</div>
+
+<div class="resource-list" id="resource-list-container">
+    <div style="text-align:center; padding: 20px; color: #666;">
+        <i>Đang tải dữ liệu từ Cosmic Cloud...</i>
+    </div>
+</div>
+                        <!-- Items will be injected here via JS -->
+                        <div style="text-align:center; padding: 20px; color: #666;">
+                            <i>Đang tải dữ liệu từ Cosmic Cloud...</i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPLIT VIEW (Initially Hidden) -->
+                <div id="split-view-container" style="display:none;">
+                    <!-- LEFT: Doc Viewer -->
+                    <div class="split-left">
+                        <div class="doc-viewer-header">
+                            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                                <button class="btn-back" onclick="closeSplitView()">← Back</button>
+                                <span style="font-weight:bold; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;" id="doc-title">Document Title</span>
+                            </div>
+                            <div style="display:flex; align-items:center;">
+                                <button class="btn-primary" style="padding: 5px 15px; font-size:12px;">Download PDF</button>
+                                <button id="btn-delete-current-doc" class="btn-delete-doc" onclick="deleteCurrentDocument()">🗑️ Xóa</button>
+                            </div>
+                        </div>
+                        <div class="doc-content-placeholder">
+                             <iframe id="doc-iframe" class="doc-iframe" src=""></iframe>
+                             <div id="doc-placeholder-msg" style="position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; display:none;">
+                                <div style="font-size: 40px; margin-bottom: 20px;">📄</div>
+                                <p id="doc-msg-text">File này là tài liệu ngoài hệ thống.</p>
+                                <a href="#" target="_blank" id="external-link-btn" style="color:var(--neon-teal);">Mở liên kết gốc</a>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: SOS Chat -->
+                    <div class="split-right">
+                        <div class="chat-header">
+                            <span>SOS Channel</span>
+                            <button class="btn-sos-trigger" onclick="triggerSOS()">🚨 SIGNAL SOS</button>
+                        </div>
+                        <div class="chat-messages" id="chat-box">
+                            <div class="chat-msg msg-system">System: Connected to Context Chat.</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" placeholder="Type message..." id="chat-input-field">
+                            <button class="btn-send" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- UPLOAD MODAL (Hidden) -->
+            <div id="upload-modal" class="modal-overlay" style="display:none;">
+                <div class="modal-content">
+                    <h2 class="modal-title">UPLOAD TÀI LIỆU</h2>
+                    <input type="text" id="up-title" class="modal-input" placeholder="Tên tài liệu (VD: Đề cương Kinh tế)">
+<div class="autocomplete-wrapper">
+    <input type="text" id="up-category" class="modal-input" 
+           placeholder="Nhập tên môn học (VD: MKT21A...)" 
+           autocomplete="off" 
+           oninput="handleCategoryInput(this)" 
+           onfocus="handleCategoryInput(this)">
+    <div id="suggestion-box"></div>
+</div>                    
+                    <!-- NEW: INPUT URL OPTION -->
+                    <input type="text" id="up-url" class="modal-input" placeholder="Hoặc dán link Google Drive/PDF online...">
+
+                    <div class="file-drop-area" onclick="document.getElementById('up-file').click()">
+                        <div style="font-size: 30px; margin-bottom: 10px;">📂</div>
+                        <span>Kéo thả file vào đây hoặc Click để chọn</span>
+                        <input type="file" id="up-file" style="display:none" onchange="handleFileSelect(this)">
+                        <div id="file-name-display" style="margin-top:10px; color:var(--neon-teal); font-size:12px;"></div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-fill" id="up-progress"></div>
+                    </div>
+                    <div style="text-align: right; color: #888; font-size: 12px; margin-top: 5px; display:none;" id="progress-text">Uploading... 0%</div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                        <button onclick="closeUploadModal()" class="btn-back">Hủy</button>
+                        <button onclick="submitUpload()" class="btn-primary">Xác nhận Upload</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROLE EDIT MODAL (Admin Only) -->
+            <div id="role-modal" class="modal-overlay" style="display:none;">
+                <div class="modal-content" style="width:350px;">
+                    <h3 style="color:var(--neon-gold); text-align:center; margin-bottom:20px;">PHÂN QUYỀN TRUY CẬP</h3>
+                    <p id="role-target-name" style="text-align:center; color:#fff; margin-bottom:20px;">Target: ...</p>
+                    
+                    <div class="role-option">
+                        <input type="checkbox" id="role-admin"> <label for="role-admin">Admin (Toàn quyền)</label>
+                    </div>
+                    <div class="role-option">
+                        <input type="checkbox" id="role-tester"> <label for="role-tester">Tester (Gửi đề xuất)</label>
+                    </div>
+                    <div class="role-option">
+                        <input type="checkbox" id="role-op"> <label for="role-op">Operation (Duyệt tài liệu)</label>
+                    </div>
+                    <div class="role-option">
+                        <input type="checkbox" id="role-mkt"> <label for="role-mkt">Marketing (Gửi thông báo)</label>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                        <button onclick="document.getElementById('role-modal').style.display='none'" class="btn-back">Hủy</button>
+                        <button onclick="submitRoleChange()" class="btn-primary" style="background:var(--neon-gold); color:black;">Lưu Quyền</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BRIDGE VIEW (Access Restricted) -->
+            <div id="bridge" class="view-section">
+                <h1>The Brigade</h1>
+                <div class="subtitle">Trung tâm chỉ huy & Điều hành chiến dịch</div>
+
+                <div id="bridge-locked" style="text-align:center; margin-top:50px;">
+                    <h1 style="font-size:4rem;">🔒</h1>
+                    <h2 style="color:var(--neon-red);">ACCESS DENIED</h2>
+                    <p style="color:#888;">Bạn không có quyền truy cập vào khu vực này.<br>Chỉ dành cho các sĩ quan điều hành.</p>
+                </div>
+
+                <div id="bridge-content" style="display:none;">
+                    
+                    <!-- DYNAMIC ROLE VIEWS -->
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                        
+                        <!-- LEFT COLUMN: Role Actions -->
+                        <div>
+                            <!-- TESTER VIEW -->
+                            <div class="role-card tester" id="panel-tester" style="display:none;">
+                                <h3 style="color:var(--neon-teal);">🛠️ TESTER STATION</h3>
+                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Gửi đề xuất sửa đổi hệ thống.</p>
+                                <textarea id="proposal-text" style="width:100%; background:#111; color:white; border:1px solid #444; padding:10px;" placeholder="Mô tả đề xuất..."></textarea>
+                                <button onclick="sendProposal()" class="btn-primary" style="margin-top:10px;">Gửi Admin</button>
+                            </div>
+
+                            <!-- MARKETING VIEW -->
+                            <div class="role-card mkt" id="panel-mkt" style="display:none;">
+                                <h3 style="color:var(--neon-pink);">📢 BROADCAST STATION</h3>
+                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Soạn thông báo toàn cục (Cần duyệt).</p>
+                                <input id="broadcast-msg" type="text" style="width:100%; background:#111; color:white; border:1px solid #444; padding:10px;" placeholder="Nội dung thông báo...">
+                                <button onclick="requestBroadcast()" class="btn-primary" style="margin-top:10px; background:var(--neon-pink);">Gửi Duyệt</button>
+                            </div>
+
+                            <!-- OPERATION VIEW -->
+                            <div class="role-card op" id="panel-op" style="display:none;">
+                                <h3 style="color:var(--neon-blue);">📋 OPS CENTER</h3>
+                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Duyệt tài liệu & Báo cáo quy trình.</p>
+                                <div style="background:#111; padding:10px; font-size:12px;">
+                       
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: Admin & Radar -->
+                        <div>
+                            <!-- ADMIN VIEW -->
+                            <div class="role-card admin" id="panel-admin" style="display:none;">
+                                <h3 style="color:var(--neon-gold);">👑 HIGH COMMAND</h3>
+                                <div style="margin-bottom:15px;">
+                                    <h4 style="font-size:12px; color:#aaa;">INBOX (ĐỀ XUẤT & THÔNG BÁO)</h4>
+                                    <div id="admin-inbox" style="height:100px; overflow-y:auto; background:#111; padding:5px; font-size:12px;">
+                                        <!-- Items via JS -->
+                                        <div><i>Hòm thư trống...</i></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RADAR (Always visible for authorized) -->
+                            <div style="background: rgba(0,0,0,0.2); padding:20px; border-radius:20px; text-align:center; border: 1px solid rgba(0,255,194,0.1);">
+                                <h3 style="margin-bottom:20px; color:var(--neon-teal);">LIVE RADAR</h3>
+                                <div class="radar-container" style="height:250px;">
+                                    <div class="radar-circle" id="radar-screen" style="width:200px; height:200px;">
+                                        <div class="radar-sweep"></div>
+                                        <div class="radar-dot" style="top: 30%; left: 40%;" title="Active"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RANK SYSTEM VIEW (Simplified) -->
+            <div id="ranks" class="view-section">
+                <h1>Cosmic Ranks</h1>
+                <div class="subtitle">Hệ thống phân cấp tự động</div>
+                
+                <div style="margin-top: 50px; text-align: center; color: #aaa;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">🤖</div>
+                    <p style="font-size: 1.2rem; color: var(--neon-teal);">SYSTEM AUTO-PILOT ENABLED</p>
+                    <p style="margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                        Hệ thống xếp hạng hiện đang hoạt động ngầm (Implant Mode).<br>
+                        Mọi chỉ số Navigator, Guardian và Diplomat của bạn sẽ được tự động ghi nhận và chuyển hóa thành Energy Points.
+                    </p>
+                    <br>
+                    <p style="font-size: 0.9rem; color: #666;">
+                        Kiểm tra cấp độ hiện tại của bạn tại <b style="color: white; cursor: pointer;" onclick="switchTab('cabin', document.querySelector('.nav-item.active'))">Energy Cabin</b>
+                    </p>
+                </div>
+            </div>
+
+            <!-- VOID VIEW (Chat Interface) -->
+            <div id="void" class="view-section" style="height: 100%;">
+                <div class="void-container">
+                    <div class="void-header">
+                        <div><span class="void-status-dot"></span>ENCRYPTED CHANNEL: THE VOID (ONLINE)</div>
+                        <div id="void-user-identity" style="font-weight: bold; color: #888;">CONNECTING...</div>
+                    </div>
+                    
+                    <div class="void-messages-area" id="void-messages">
+                        <!-- Messages will be injected here -->
+                        <div style="text-align: center; color: #444; margin-top: 20px; font-style: italic;">
+                            -- Connecting to Cosmic Network... --
+                        </div>
+                    </div>
+
+                    <div class="void-input-area">
+                        <span style="color: var(--neon-teal); margin-right: 10px;">></span>
+                        <input type="text" class="void-input" id="void-input-field" placeholder="Nhập tín hiệu... (Enter để gửi)" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FIREBASE MODULE SCRIPT -->
+    <script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// Thêm dòng này vào cụm import:
+import { logEvent, setUserProperties } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        // Firebase Configuration (From User)
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4LY3lNNIMhsmC5fuJAG3ejABe3cWj41M",
+            authDomain: "resource-9a362.firebaseapp.com",
+            projectId: "resource-9a362",
+            storageBucket: "resource-9a362.firebasestorage.app",
+            messagingSenderId: "64359181492",
+            appId: "1:64359181492:web:10d0622bd941451b5a7be1",
+            measurementId: "G-TQ84LTSXD6"
+        };
+
+        // Initialize Firebase with try-catch
+        let app, analytics, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            analytics = getAnalytics(app);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase & Auth Initialized!");
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+            alert("Lỗi kết nối hệ thống! Vui lòng kiểm tra lại cấu hình.");
+        }
+
+
+// --- SUPABASE CONFIG ---
+const supabaseUrl = 'https://xvwxryquxiphepyqatbd.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2d3hyeXF1eGlwaGVweXFhdGJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDcwMDEsImV4cCI6MjA4MjI4MzAwMX0.H5i14vJWotgWcTos6znXFHnUQXulKjpvR4gU4979VFA';
+const supabase = createClient(supabaseUrl, supabaseKey);
+console.log("Supabase Initialized!");  // Để test console
+// --- CẤU TRÚC RANK DATA ---
+// --- CẤU TRÚC RANK DATA (FINAL NAMES) ---
+const RANK_SYSTEM = {
+    // 8 Mốc điểm tương ứng từ Lv1 -> Lv8
+    thresholds: [0, 200, 1000, 2000, 4000, 6000, 8000, 10000],
+    
+    // Bảng tên danh hiệu theo 4 trụ cột (User thường)
+    titles: {
+        // Cột 1: NAVIGATOR (Diligence - Focus)
+        navigator: ["Probe", "Rover", "Lander", "Orbiter", "Ranger", "Pioneer", "Voyager", "Horizon"],
+        
+        // Cột 2: GUARDIAN (Contribution - Upload)
+        guardian:  ["Dust", "Meteor", "Asteroid", "Moon", "Planet", "Star", "Nebula", "Galaxy"],
+        
+        // Cột 3: DIPLOMAT (Social - Chat)
+        diplomat:  ["Ping", "Echo", "Wave", "Pulse", "Beam", "Signal", "Resonance", "Spectrum"],
+        
+        // Cột 4: VOYAGER (Enthusiastic - Online)
+        voyager:   ["Second", "Minute", "Hour", "Day", "Year", "Century", "Millennium", "Eternity"]
+    },
+
+    // Danh hiệu Genesis (CHỈ DÀNH CHO STAFF)
+    genesis: {
+        op: "Sanctuary",     // Operation
+        tester: "Symphony",  // Tester
+        mkt: "Origin"        // Marketing
+    }
+};
+// --- DANH SÁCH MÔN HỌC (DATA TỪ ẢNH) ---
+const SUBJECT_LIST = [
+    "MGT01A - Quản trị học",
+    "MKT21A - Marketing",
+    "MGT12A - Hành vi tổ chức",
+    "FIN02A - Tài chính doanh nghiệp",
+    "FIN17A - Ngân hàng thương mại",
+    "MIS08A - Phân tích thiết kế hệ thống",
+    "IS60A - Quản lý dự án công nghệ thông tin",
+    "IS54A - Trí tuệ nhân tạo",
+    "GRA50A - Thực tập chuyên ngành",
+    "IS51A - Lập trình Web với Php và MySQL",
+    "IS49A - Phân tích nghiệp vụ (BA)",
+    "IS24A - Kho dữ liệu và kinh doanh thông minh",
+    "IS34A - Hệ thống hoạch định tài nguyên doanh nghiệp",
+    "IS55A - Công nghệ dịch vụ tài chính",
+    "MIS06A - Các hệ thống thông tin trong ngân hàng",
+    "IS56A - Công nghệ ngân hàng số",
+    "GRA90A - Tốt nghiệp (8 tín chỉ)",
+    "Đồ án tốt nghiệp",
+    "SPT03A - Giáo dục thể chất II (Bóng rổ)",
+    "SPT04A - Giáo dục thể chất III (Bóng chuyền)",
+    "SPT05A - Giáo dục thể chất IV (Cầu lông)",
+    "SPT06A - Giáo dục thể chất V (Khiêu vũ)",
+    "ENG04A - Tiếng Anh IV",
+    "IS20A - Nhập môn hệ thống thông tin",
+    "IS22A - Cơ sở lập trình",
+    "IS21A - Cơ sở dữ liệu",
+    "ACT01A - Nguyên lý kế toán",
+    "ECO09A - Kinh tế học",
+    "IS07A - Cấu trúc dữ liệu và giải thuật",
+    "IS53A - Thiết kế cơ sở dữ liệu",
+    "MAT05A - Toán rời rạc",
+    "MIS07A - Hệ quản trị cơ sở dữ liệu",
+    "IS35A - Thương mại điện tử",
+    "IS19A - Thiết kế Web",
+    "MIS02A - Hệ thống thông tin quản lý",
+    "IS06A - Mạng và truyền thông",
+    "IS25A - Lập trình .NET",
+    "IS23A - Khai phá và phân tích dữ liệu",
+    "PLT07A - Triết học Mác - Lênin",
+    "PLT08A - Kinh tế chính trị Mác - Lênin",
+    "PLT09A - Chủ nghĩa xã hội khoa học",
+    "PLT10A - Lịch sử Đảng Cộng sản Việt Nam",
+    "PLT06A - Tư tưởng Hồ Chí Minh",
+    "ENG01A - Tiếng Anh I",
+    "ENG02A - Tiếng Anh II",
+    "ENG03A - Tiếng Anh III",
+    "IS52A - Năng lực số ứng dụng",
+    "LAW01A - Pháp luật đại cương",
+    "MAT15A - Toán dành cho kinh tế",
+    "MAT14A - Xác suất và thống kê",
+    "BUS20A - Giao tiếp trong kinh doanh",
+    "MGT36A - Đổi mới sáng tạo và khởi nghiệp",
+    "SPT07A - Giáo dục quốc phòng và An ninh",
+    "SPT02A - Giáo dục thể chất I (Đại cương)"
+];
+
+// Hàm xử lý khi nhập liệu (Filter & Show Suggestion)
+window.handleCategoryInput = function(input) {
+    const val = input.value.toLowerCase();
+    const box = document.getElementById('suggestion-box');
+    
+    // Nếu trống thì hiển thị 5 môn đầu tiên (hoặc list trống tùy bạn)
+    // Ở đây mình để hiển thị toàn bộ list lọc được
+    const filtered = SUBJECT_LIST.filter(sub => sub.toLowerCase().includes(val));
+
+    if (filtered.length === 0) {
+        box.style.display = 'none';
+        return;
+    }
+
+    // Tạo HTML cho list
+    let html = '';
+    filtered.forEach(sub => {
+        // Highlight từ khóa tìm kiếm
+        const regex = new RegExp(`(${val})`, 'gi');
+        const highlighted = sub.replace(regex, '<strong>$1</strong>');
+        html += `<div class="suggestion-item" onclick="selectCategory('${sub}')">${highlighted}</div>`;
+    });
+
+    box.innerHTML = html;
+    box.style.display = 'block';
+};
+
+// Hàm chọn môn học từ list
+window.selectCategory = function(value) {
+    document.getElementById('up-category').value = value;
+    document.getElementById('suggestion-box').style.display = 'none';
+};
+
+// Ẩn box khi click ra ngoài
+document.addEventListener('click', function(e) {
+    const wrapper = document.querySelector('.autocomplete-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('suggestion-box').style.display = 'none';
+    }
+});   
+     // GLOBAL VARS attached to window for HTML access
+        window.currentUserRank = "UNKNOWN";
+        window.currentUserName = "Unknown Pilot";
+        window.currentUserRoles = []; // Stores roles: ['admin', 'tester', 'op', 'mkt']
+        window.currentMsv = "";
+        window.voidIdentity = "";
+        window.isSOSActive = false;
+        window.isRegisterMode = false; // Toggle login/register
+        window.targetEditUid = null; // For admin role editing
+        window.currentDocId = null; // ID of doc being viewed
+// --- MODULE TELEMETRY (TRACKING SYSTEM) ---
+window.docStartTime = 0; // Biến đếm giờ đọc
+
+// Hàm bắn event chung
+window.trackTelemetry = function(eventName, params = {}) {
+    if (!analytics) return; // Chưa init xong thì bỏ qua
+
+    const now = new Date();
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    
+    // Tự động lấy giờ & thứ để vẽ Heatmap
+    const timeContext = {
+        hour_of_day: now.getHours(),      // 0-23
+        day_of_week: days[now.getDay()],  // Thứ
+        timestamp_iso: now.toISOString()
+    };
+
+    // Gộp data và bắn lên Google
+    const finalParams = { ...timeContext, ...params };
+    
+    try {
+        logEvent(analytics, eventName, finalParams);
+        // Bật dòng dưới nếu muốn soi log để test, chạy thật thì tắt đi cho đỡ rối
+        // console.log(`📡 SENT [${eventName}]`, finalParams); 
+    } catch (e) {
+        console.warn("Telemetry Error:", e);
+    }
+};
+
+// Hàm định danh User (Gọi khi Login xong)
+window.identifyUserForTracking = function(profile) {
+    if (!analytics) return;
+    
+    // Gắn nhãn User này vĩnh viễn
+    setUserProperties(analytics, {
+        user_msv: profile.msv,
+        user_rank: profile.rank,
+        user_role: (profile.roles || []).join(','),
+        last_login_timestamp: new Date().toISOString()
+    });
+    
+    // Bắn event Login
+    window.trackTelemetry('login', { method: 'msv_auth' });
+};
+        // --- AUTH & PROFILE LOGIC ---
+
+        // Listen for Auth State Changes
+        if (auth) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    console.log("User logged in:", user.uid);
+                    await window.ensureUserProfile(user);
+                    window.enterApp();
+                } else {
+                    console.log("No user logged in");
+                    document.getElementById('login-screen').style.display = 'flex';
+                    document.getElementById('login-screen').style.opacity = '1';
+                    document.getElementById('app-container').style.display = 'none';
+                }
+            });
+        }
+
+        window.toggleAuthMode = function() {
+            window.isRegisterMode = !window.isRegisterMode;
+            const title = document.querySelector('.login-title');
+            const sub = document.getElementById('login-subtitle');
+            const btn = document.getElementById('btn-auth-action');
+            const switchText = document.querySelector('.auth-switch');
+
+            if (window.isRegisterMode) {
+                title.innerText = "KÍCH HOẠT MSV";
+                sub.innerText = "Thiết lập mật khẩu cho MSV lần đầu.";
+                btn.innerText = "REGISTER (AUTO PASS)";
+                switchText.innerHTML = "Đã có mật khẩu? <b>Đăng nhập ngay</b>";
+            } else {
+                title.innerText = "THE AIRLOCK";
+                sub.innerText = "Nhập MSV để truy cập Cosmic Base.";
+                btn.innerText = "LOGIN (AUTO PASS)";
+                switchText.innerHTML = "Chưa kích hoạt MSV? <b>Đăng ký ngay</b>";
+            }
+        };
+
+        window.handleAuth = async function() {
+            const msvInput = document.getElementById('auth-msv').value.trim();
+            const pass = msvInput; // PASSWORD IS SAME AS MSV
+            const errorMsg = document.getElementById('login-error');
+
+            if (!msvInput) { errorMsg.innerText = "Vui lòng nhập MSV."; errorMsg.style.display = 'block'; return; }
+            if (msvInput.length !== 7 || isNaN(msvInput)) { errorMsg.innerText = "MSV phải bao gồm đúng 7 chữ số."; errorMsg.style.display = 'block'; return; }
+
+            const email = msvInput + "@cosmic.local"; 
+
+            try {
+                if (window.isRegisterMode) {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                }
+            } catch (error) {
+                console.error(error);
+                let msg = "Lỗi hệ thống: " + error.message;
+                if(error.code === 'auth/email-already-in-use') msg = "MSV này đã được kích hoạt rồi.";
+                if(error.code === 'auth/wrong-password') msg = "Sai mật khẩu (Nếu chưa tạo, hãy bấm Đăng ký).";
+                if(error.code === 'auth/user-not-found') msg = "MSV chưa được kích hoạt.";
+                if(error.code === 'auth/invalid-email') msg = "Định dạng MSV không hợp lệ.";
+                errorMsg.innerText = msg;
+                errorMsg.style.display = 'block';
+                document.querySelector('.login-box').style.animation = 'shake 0.3s';
+                setTimeout(() => { document.querySelector('.login-box').style.animation = 'none'; }, 300);
+            }
+        };
+
+        window.handleLogout = async function() {
+            try {
+                await signOut(auth);
+                location.reload(); 
+            } catch (error) { console.error("Logout error", error); }
+        };
+
+        window.ensureUserProfile = async function(user) {
+            const userRef = doc(db, "users", user.uid);
+            let userSnap;
+            try { userSnap = await getDoc(userRef); } catch (e) { console.error("Error reading profile:", e); return; }
+            
+            const msv = user.email.split('@')[0];
+
+            if (userSnap.exists()) {
+                // --- PROFILE ĐÃ TỒN TẠI ---
+                let data = userSnap.data();
+
+                // [FIX QUAN TRỌNG] FORCE UPDATE CHO ADMIN
+                // Nếu là 4043292 mà chưa có quyền admin -> Cập nhật ngay lập tức
+                if (msv === '4043292') {
+                    const currentRoles = data.roles || [];
+                    // Kiểm tra xem đã full quyền chưa
+                    if (!currentRoles.includes('admin') || data.rank !== 'SUPERNOVA') {
+                        console.log("Detected Commander ID. Elevating privileges...");
+                        
+                        const adminUpdates = {
+                            rank: "SUPERNOVA",
+                            energy: 99999,
+                            displayName: "Commander Hoàn", // Cập nhật lại tên chuẩn
+                            roles: ['admin', 'tester', 'op', 'mkt'] // Full quyền
+                        };
+
+                        try {
+                            await updateDoc(userRef, adminUpdates);
+                            // Gộp data mới vào data cũ để hiển thị ngay ko cần F5
+                            data = { ...data, ...adminUpdates };
+                            alert("📡 HỆ THỐNG: Đã nhận diện Commander. Quyền Admin đã được khôi phục!");
+                        } catch(err) {
+                            console.error("Lỗi cấp quyền admin:", err);
+                        }
+                    }
+                }
+
+                window.loadUserProfile(data);
+            } else {
+                // --- PROFILE MỚI (CHƯA TỪNG ĐĂNG NHẬP) ---
+                
+                let initialRank = "Space Debris";
+                let initialEnergy = 0;
+                let initialName = "Cadet " + msv;
+                let initialRoles = ['user'];
+                
+                // Logic Admin cho người mới
+                if (msv === '4043292') {
+                    initialRank = "SUPERNOVA";
+                    initialEnergy = 99999;
+                    initialName = "Commander Hoàn"; 
+                    initialRoles = ['admin', 'tester', 'op', 'mkt'];
+                }
+
+                const defaultProfile = {
+                    msv: msv,
+                    displayName: initialName,
+                    email: user.email,
+                    rank: initialRank,
+                    energy: initialEnergy,
+                    roles: initialRoles,
+                    stats: { focus: 0, upload: 0, interact: 0, online: 1 },
+                    joinedAt: serverTimestamp()
+                };
+                await setDoc(userRef, defaultProfile);
+                window.loadUserProfile(defaultProfile);
+            }
+        };
+// --- HÀM HIGH COMMAND - ĐÃ FIX SYNTAX HOÀN TOÀN ---
+  window.setupHighCommand = function() {
+    const inbox = document.getElementById('admin-inbox');
+    if (!inbox) {
+        console.error("Không tìm thấy #admin-inbox");
+        return;
+    }
+    inbox.innerHTML = '<div style="color:#00FFC2; text-align:center; padding:20px;">Đang tải inbox...</div>';
+    console.log("High Command: Bắt đầu load...");
+    
+    // Proposals
+    const proposalsQ = query(collection(db, "proposals"), where("status", "==", "unread"), orderBy("createdAt", "desc"));
+    onSnapshot(proposalsQ, (snap) => {
+        console.log("Proposals: ", snap.size, "docs");
+        let html = '<h4 style="color:#00FFC2;">Đề xuất Tester</h4>';
+        if (snap.empty) {
+            html += '<div style="color:#888;">Không có đề xuất mới.</div>';
+        } else {
+            snap.forEach(d => {
+                const data = d.data();
+                html += `<div style="padding:10px; border-left:4px solid #00FFC2; margin-bottom:10px;">
+                    ${data.content}<br><small>${data.sender}</small>
+                    <button onclick="markAsRead('${d.id}', 'proposals')" style="background:#333; color:white; border:1px solid #555; padding:2px 5px; font-size:10px; cursor:pointer; margin-top:5px;">Mark Read</button>
+                </div>`;
+            });
+        }
+        updateInbox(html + '<hr style="border-color:#444;">');
+    });
+    
+    // Broadcasts
+    const broadcastsQ = query(collection(db, "broadcasts"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
+    onSnapshot(broadcastsQ, (snap) => {
+        console.log("Broadcasts: ", snap.size, "docs");
+        let html = '<h4 style="color:#FF00FF;">Yêu cầu Broadcast</h4>';
+        if (snap.empty) {
+            html += '<div style="color:#888;">Không có yêu cầu mới.</div>';
+        } else {
+            snap.forEach(d => {
+                const data = d.data();
+                html += `<div style="padding:10px; border-left:4px solid #FF00FF; margin-bottom:10px;">
+                    ${data.message}<br><small>${data.sender}</small>
+                    <div style="margin-top:5px;">
+                        <button onclick="approveBroadcast('${d.id}', '${data.message.replace(/'/g, "\\'")}')" style="background:var(--neon-teal); color:black; border:none; padding:2px 5px; font-size:10px; cursor:pointer;">Approve</button>
+                        <button onclick="rejectBroadcast('${d.id}')" style="background:#FF4500; color:white; border:none; padding:2px 5px; font-size:10px; cursor:pointer; margin-left:5px;">Reject</button>
+                    </div>
+                </div>`;
+            });
+        }
+        updateInbox(html);
+    });
+    
+    function updateInbox(newHtml) {
+        // Để tránh flicker, append mới hoặc replace nếu cần
+        const current = inbox.innerHTML;
+        if (current.includes('Đang tải')) {
+            inbox.innerHTML = '';
+        }
+        inbox.innerHTML += newHtml; // Hoặc logic merge tốt hơn nếu cần
+    }
+};
+      window.loadUserProfile = function(data) {
+    if (!data) data = {};
+    const displayName = data.displayName || "Unknown Pilot";
+    const rank = data.rank || "Space Debris";
+    const energy = typeof data.energy === 'number' ? data.energy : 0;
+    const roles = data.roles || ['user'];
+
+    // 1. Cập nhật biến toàn cục & UI cơ bản
+    window.currentUserName = displayName;
+    window.currentUserRank = rank.toUpperCase();
+    window.currentUserRoles = roles;
+    window.currentMsv = data.msv;
+
+    document.getElementById('user-display-name').innerText = displayName;
+    document.getElementById('welcome-name').innerText = displayName;
+
+    // --- 2. LOGIC TÍNH TOÁN RANK & TIER (MỚI) ---
+    const rankTitle = document.getElementById('user-rank-title');
+    const tierTag = document.getElementById('user-tier-tag');
+    const avatarFrame = document.getElementById('user-avatar-frame');
+    const quoteBox = document.getElementById('quote-box');
+    const energyBar = document.getElementById('energy-bar');
+
+    let displayRank = "Probe"; // Mặc định
+    let tierClass = "rank-standard";
+    let tagClass = "tag-standard";
+    let frameClass = "basic";
+    let tierName = "Tier 1"; 
+    let quoteHtml = "";
+
+    // A. ADMIN -> TIER 5: ULTIMATE (SUPERNOVA)
+    if (roles.includes('admin')) {
+        displayRank = "SUPERNOVA";   
+        tierName = "ULTIMATE"; 
+        tierClass = "rank-ultimate"; 
+        tagClass = "tag-ultimate";
+        frameClass = "supernova";    
+        quoteHtml = `<h4 style="color: #FF4500;">🔥 THE COMMANDER</h4><p>Quyền lực tối thượng.</p>`;
+    }
+    // B. STAFF -> SPECIAL: GENESIS (SANCTUARY/SYMPHONY/ORIGIN)
+    else if (roles.some(r => ['op', 'tester', 'mkt'].includes(r))) {
+        tierClass = "rank-genesis"; 
+        tagClass = "tag-genesis";
+        frameClass = "supernova";   
+        tierName = "GENESIS"; 
+
+        if (roles.includes('op')) {
+            displayRank = "SANCTUARY"; 
+            quoteHtml = `<h4 style="color: #DC143C;">🛡️ SANCTUARY</h4><p>Thánh địa vận hành.</p>`;
+        } else if (roles.includes('tester')) {
+            displayRank = "SYMPHONY"; 
+            quoteHtml = `<h4 style="color: #DC143C;">🎹 SYMPHONY</h4><p>Sự phối hợp hoàn hảo.</p>`;
+        } else if (roles.includes('mkt')) {
+            displayRank = "ORIGIN"; 
+            quoteHtml = `<h4 style="color: #DC143C;">📢 ORIGIN</h4><p>Khởi nguồn lan tỏa.</p>`;
+        } else {
+            displayRank = "GENESIS"; 
+            quoteHtml = `<h4 style="color: #DC143C;">🩸 GENESIS STAFF</h4><p>Thành viên sáng thế.</p>`;
+        }
+    } 
+    // C. USER -> TIER 1 - 4 (Theo 4 hệ: Navigator, Guardian, Diplomat, Voyager)
+    else {
+        // C.1: Tính Level hiện tại (0 -> 7 tương ứng Lv 1 -> 8)
+        let levelIndex = 0;
+        for (let i = 0; i < RANK_SYSTEM.thresholds.length; i++) {
+            if (energy >= RANK_SYSTEM.thresholds[i]) levelIndex = i;
+        }
+        const currentLevel = levelIndex + 1;
+
+        // C.2: Xác định Hệ (Archetype) dựa trên chỉ số cao nhất
+        const s = data.stats || { focus: 0, upload: 0, interact: 0, online: 0 };
+        let maxStat = 'focus';
+        let maxVal = s.focus || 0;
+        let archetypeName = "NAVIGATOR"; // Mặc định
+
+        // So sánh tìm chỉ số max
+        if ((s.upload || 0) > maxVal) { maxStat = 'upload'; maxVal = s.upload; archetypeName = "GUARDIAN"; }
+        if ((s.interact || 0) > maxVal) { maxStat = 'interact'; maxVal = s.interact; archetypeName = "DIPLOMAT"; }
+        // Online là chỉ số phụ, nếu các cái kia = 0 hoặc online cực cao thì mới tính
+        if (maxVal === 0 && (s.online || 0) > 0) { maxStat = 'online'; archetypeName = "VOYAGER"; }
+
+        // Lấy tên Rank từ bảng RANK_SYSTEM
+        if (maxStat === 'upload') displayRank = RANK_SYSTEM.titles.guardian[levelIndex];
+        else if (maxStat === 'interact') displayRank = RANK_SYSTEM.titles.diplomat[levelIndex];
+        else if (maxStat === 'online') displayRank = RANK_SYSTEM.titles.voyager[levelIndex];
+        else displayRank = RANK_SYSTEM.titles.navigator[levelIndex]; 
+
+        displayRank = displayRank.toUpperCase();
+
+        // C.3: Xác định Visual Tier (Hiệu ứng)
+        if (currentLevel <= 5) {
+            // Lv 1-5: Standard
+            tierClass = "rank-standard";
+            tagClass = "tag-standard";
+            frameClass = "basic";
+            tierName = `Tier 1 • Lv.${currentLevel}`;
+        } else if (currentLevel === 6) {
+            // Lv 6: Neon Pulse
+            tierClass = "rank-neon";
+            tagClass = "tag-neon";
+            frameClass = "basic"; 
+            tierName = "NEON PULSE (Tier 2)";
+        } else if (currentLevel === 7) {
+            // Lv 7: Nebula Flow
+            tierClass = "rank-nebula";
+            tagClass = "tag-nebula";
+            frameClass = "supernova"; // Bắt đầu dùng khung đẹp
+            tierName = "NEBULA FLOW (Tier 3)";
+        } else { 
+            // Lv 8 (Max): Horizon
+            tierClass = "rank-horizon";
+            tagClass = "tag-horizon";
+            frameClass = "supernova";
+            tierName = "HORIZON (Tier 4)";
+        }
+
+        // Thông tin XP cho level tiếp theo
+        const nextXp = RANK_SYSTEM.thresholds[levelIndex + 1];
+        const xpText = nextXp ? `Next: ${nextXp} XP` : 'MAX LEVEL';
+        
+        quoteHtml = `<h4 style="color: #aaa;">${displayRank}</h4><p style="font-size:12px; color:#666;">${archetypeName} Class • ${xpText}</p>`;
+    }
+
+    // --- 3. RENDER UI ---
+    rankTitle.className = "rank-title " + tierClass;
+    rankTitle.innerText = displayRank; 
+    
+    tierTag.className = "tier-tag " + tagClass;
+    tierTag.innerText = tierName;
+
+    avatarFrame.className = "avatar-container avatar-frame " + frameClass;
+    quoteBox.innerHTML = quoteHtml;
+    
+    document.getElementById('energy-text').innerText = energy;
+    
+    // --- 4. THANH NĂNG LƯỢNG (ENERGY BAR) ---
+    if (roles.includes('admin') || tierClass === "rank-genesis" || energy >= 10000) {
+        // Admin, Staff hoặc Max Level -> Full cây
+        energyBar.style.width = "100%";
+    } else {
+        // User đang cày -> Tính % trong cấp hiện tại
+        let currentBase = 0;
+        let nextTarget = 200;
+        
+        // Tìm mốc hiện tại
+        for (let i = 0; i < RANK_SYSTEM.thresholds.length; i++) {
+            if (energy >= RANK_SYSTEM.thresholds[i]) {
+                currentBase = RANK_SYSTEM.thresholds[i];
+                nextTarget = RANK_SYSTEM.thresholds[i+1] || 10000;
+            }
+        }
+        
+        // Tính toán
+        let range = nextTarget - currentBase;
+        let gained = energy - currentBase;
+        let pct = (range > 0) ? (gained / range) * 100 : 100;
+        energyBar.style.width = Math.max(5, pct) + "%"; // Tối thiểu 5% để nhìn thấy vạch
+    }
+
+    // --- 5. KHỞI TẠO CÁC MODULE KHÁC ---
+    
+    // Admin Panel
+    if (roles.includes('admin')) {
+        document.getElementById('admin-panel').style.display = 'block';
+        window.loadCrewList();
+    }
+
+    // Ops Center (Cho Admin & Op)
+    if (roles.includes('admin') || roles.includes('op')) {
+        const panelOp = document.getElementById('panel-op');
+        if(panelOp) panelOp.style.display = 'block'; 
+        window.setupOpsCenter(); 
+    }
+
+    // Chat & Resource Hub
+    window.initVoidChat();
+    window.initResourceHub();
+    window.setupHighCommand();
+window.identifyUserForTracking(data);
+};
+
+        window.enterApp = function() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+            }, 500);
+        };
+window.showNotificationBanner = function(msg) {
+    const banner = document.getElementById('notification-banner');
+    const content = document.getElementById('banner-content');
+    if (banner && content) {
+        content.innerHTML = msg;
+        banner.style.display = 'block';
+        // Auto hide after 10s
+        setTimeout(() => { banner.style.display = 'none'; }, 10000);
+    }
+};
+  window.approveBroadcast = async function(id, msg) {
+    if (!confirm("Approve và broadcast thông báo này?")) return;
+    try {
+        await updateDoc(doc(db, "broadcasts", id), { status: 'approved' });
+        const broadcastMsg = `THÔNG BÁO TỪ HIGH COMMAND: ${msg}`;
+        await addDoc(collection(db, "void_messages"), {
+            identity: "📢 COSMIC SIGNAL",
+            text: broadcastMsg,
+            createdAt: serverTimestamp()
+        });
+        // Show in banner immediately
+        window.showNotificationBanner(broadcastMsg);
+        alert("✅ Approved và broadcasted!");
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    }
+};
+
+// Cập nhật appendVoidMessage để check broadcast
+window.appendVoidMessage = function(identity, text, isMe) {
+    const chatBox = document.getElementById('void-messages');
+    const row = document.createElement('div');
+    row.className = `void-msg-row ${isMe ? 'me' : ''}`;
+    const idDiv = document.createElement('div'); idDiv.className = 'void-identity'; idDiv.innerText = identity;
+    const contentDiv = document.createElement('div'); contentDiv.className = 'void-content'; contentDiv.innerText = text;
+    row.appendChild(idDiv); row.appendChild(contentDiv);
+    chatBox.appendChild(row);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    
+    // If broadcast, show in banner
+    if (identity === "📢 COSMIC SIGNAL") {
+        window.showNotificationBanner(text);
+    }
+};
+
+window.rejectBroadcast = async function(id) {
+    if (!confirm("Reject yêu cầu này?")) return;
+    try {
+        await updateDoc(doc(db, "broadcasts", id), { status: 'rejected' });
+        alert("❌ Rejected!");
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    }
+};// Hàm mark proposal as read
+window.markAsRead = async function(id, collectionName) {
+    try {
+        await updateDoc(doc(db, collectionName, id), { status: 'read' });
+        alert("✅ Marked as read!");
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    }
+};
+        window.switchTab = function(tabId, element) {
+            // CHECK ACCESS FOR BRIDGE
+            if (tabId === 'bridge') {
+                const hasAccess = window.currentUserRoles.some(r => ['admin','tester','op','mkt'].includes(r));
+                document.getElementById('bridge-locked').style.display = hasAccess ? 'none' : 'block';
+                document.getElementById('bridge-content').style.display = hasAccess ? 'block' : 'none';
+                
+                if (hasAccess) {
+                    // Show panels based on role
+                    document.getElementById('panel-admin').style.display = window.currentUserRoles.includes('admin') ? 'block' : 'none';
+                    document.getElementById('panel-tester').style.display = window.currentUserRoles.includes('tester') ? 'block' : 'none';
+                    document.getElementById('panel-op').style.display = window.currentUserRoles.includes('op') ? 'block' : 'none';
+                    document.getElementById('panel-mkt').style.display = window.currentUserRoles.includes('mkt') ? 'block' : 'none';
+                }
+            }
+
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        };
+
+        // --- ADMIN: CREW MANAGEMENT LOGIC ---
+        window.loadCrewList = function() {
+            // CHANGED: Increased limit to 100 and ordered by MSV
+            const q = query(collection(db, "users"), orderBy("msv", "asc"), limit(100)); 
+            onSnapshot(q, (snapshot) => {
+                const table = document.getElementById('crew-list');
+                let html = `<tr><th>MSV</th><th>Tên</th><th>Vai trò</th><th>Action</th></tr>`;
+                
+                // Add counter
+                const total = snapshot.size;
+                document.querySelector('#admin-panel h3').innerHTML = `🛡️ COMMAND CENTER (ADMIN) - <span style="font-size:12px; color:#888;">Total: ${total} members</span>`;
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const roles = d.roles || ['user'];
+                    let roleBadges = '';
+                    if(roles.includes('admin')) roleBadges += `<span class="role-badge role-admin">ADMIN</span>`;
+                    if(roles.includes('tester')) roleBadges += `<span class="role-badge role-tester">TESTER</span>`;
+                    if(roles.includes('op')) roleBadges += `<span class="role-badge role-op">OP</span>`;
+                    if(roles.includes('mkt')) roleBadges += `<span class="role-badge role-mkt">MKT</span>`;
+                    
+                    // Highlight Admin Row
+                    const rowStyle = d.msv === '4043292' ? 'background:rgba(255,215,0,0.1);' : '';
+
+                    html += `
+                        <tr style="${rowStyle}">
+                            <td>${d.msv}</td>
+                            <td>${d.displayName}</td>
+                            <td>${roleBadges}</td>
+                            <td><button onclick="openRoleModal('${doc.id}', '${d.displayName}', '${roles.join(',')}')" style="background:#333; color:white; border:1px solid #555; cursor:pointer;">Edit</button></td>
+                        </tr>
+                    `;
+                });
+                table.innerHTML = html;
+            });
+        };
+
+        window.openRoleModal = function(uid, name, rolesStr) {
+            window.targetEditUid = uid;
+            document.getElementById('role-target-name').innerText = "Target: " + name;
+            
+            const roles = rolesStr.split(',');
+            document.getElementById('role-admin').checked = roles.includes('admin');
+            document.getElementById('role-tester').checked = roles.includes('tester');
+            document.getElementById('role-op').checked = roles.includes('op');
+            document.getElementById('role-mkt').checked = roles.includes('mkt');
+            
+            document.getElementById('role-modal').style.display = 'flex';
+        };
+
+        window.submitRoleChange = async function() {
+            if (!window.targetEditUid) return;
+            
+            const newRoles = ['user']; // Always base user
+            if(document.getElementById('role-admin').checked) newRoles.push('admin');
+            if(document.getElementById('role-tester').checked) newRoles.push('tester');
+            if(document.getElementById('role-op').checked) newRoles.push('op');
+            if(document.getElementById('role-mkt').checked) newRoles.push('mkt');
+
+            try {
+                await updateDoc(doc(db, "users", window.targetEditUid), {
+                    roles: newRoles
+                });
+                document.getElementById('role-modal').style.display = 'none';
+                alert("Đã cập nhật quyền thành công!");
+            } catch(e) {
+                console.error(e);
+                alert("Lỗi khi cập nhật quyền: " + e.message);
+            }
+        };
+
+        // --- ROLE ACTIONS (Mockup Logic for Demo) ---
+      window.sendProposal = async function() {
+    const txt = document.getElementById('proposal-text').value.trim();
+    if (!txt) return alert("Vui lòng nhập nội dung đề xuất!");
+    
+    try {
+        await addDoc(collection(db, "proposals"), {
+            content: txt,
+            sender: window.currentUserName,
+            senderUid: auth.currentUser.uid,
+            status: 'unread',
+            createdAt: serverTimestamp()
+        });
+        document.getElementById('proposal-text').value = '';
+        alert("🛠️ Đề xuất đã được gửi tới High Command!");
+    } catch (e) {
+        console.error("Lỗi gửi proposal:", e);
+        alert("Lỗi kết nối: " + e.message);
+    }
+};
+
+      window.requestBroadcast = async function() {
+    const txt = document.getElementById('broadcast-msg').value.trim();
+    if (!txt) return alert("Vui lòng nhập nội dung thông báo!");
+    
+    try {
+        await addDoc(collection(db, "broadcasts"), {
+            message: txt,
+            sender: window.currentUserName,
+            senderUid: auth.currentUser.uid,
+            status: 'pending',
+            createdAt: serverTimestamp()
+        });
+        document.getElementById('broadcast-msg').value = '';
+        alert("📢 Yêu cầu phát sóng đã được gửi duyệt!");
+    } catch (e) {
+        console.error("Lỗi gửi broadcast:", e);
+        alert("Lỗi kết nối: " + e.message);
+    }
+};
+
+        // ... [Giữ nguyên các hàm openSplitView, closeSplitView, initVoidChat, etc.] ...
+        window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
+// Thêm vào đầu hàm:
+window.docStartTime = Date.now(); // Bắt đầu bấm giờ
+window.trackTelemetry('view_document', { 
+    doc_title: docName, 
+    doc_id: docId,
+    uploader_name: uploaderName
+});
+            document.getElementById('resource-hub-main').style.display = 'none';
+            document.getElementById('split-view-container').style.display = 'flex';
+            document.getElementById('doc-title').innerText = docName;
+            window.currentDocId = docId;
+            
+            // --- DELETE BUTTON LOGIC ---
+            const btnDelete = document.getElementById('btn-delete-current-doc');
+            // Show if Admin OR if current user is the uploader
+            if (window.currentUserRoles.includes('admin') || window.currentUserName === uploaderName) {
+                btnDelete.style.display = 'block';
+            } else {
+                btnDelete.style.display = 'none';
+            }
+
+           const iframe = document.getElementById('doc-iframe');
+    const placeholderMsg = document.getElementById('doc-placeholder-msg');
+    const msgText = document.getElementById('doc-msg-text');
+    const extLinkBtn = document.getElementById('external-link-btn');
+    
+    if (fileUrl && (fileUrl.includes('supabase.co') || fileUrl.toLowerCase().endsWith('.pdf'))) {
+        // Supabase or PDF: Use Google Viewer for reliable preview
+        iframe.style.display = 'block';
+        placeholderMsg.style.display = 'none';
+        const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
+        iframe.src = googleViewerUrl;
+    } else if (fileUrl && fileUrl.startsWith('http')) {
+        // External link (e.g., Google Drive)
+        iframe.style.display = 'none';
+        placeholderMsg.style.display = 'block';
+        msgText.innerText = "Tài liệu này là liên kết ngoài (Google Drive/Web).";
+        extLinkBtn.href = fileUrl;
+        extLinkBtn.innerText = "Mở tài liệu tại tab mới ↗";
+        extLinkBtn.style.display = 'inline-block';
+    } else {
+        // No valid URL or deprecated blob
+        iframe.style.display = 'none';
+        placeholderMsg.style.display = 'block';
+        msgText.innerText = "Không tìm thấy tài liệu hoặc preview không hỗ trợ.";
+        extLinkBtn.style.display = 'none';
+    }
+};
+
+        window.closeSplitView = function() {
+// Thêm vào đầu hàm:
+if (window.docStartTime > 0) {
+    const duration = (Date.now() - window.docStartTime) / 1000;
+    if (duration > 5) { // Đọc trên 5s mới tính
+        window.trackTelemetry('read_completed', { 
+            duration_seconds: Math.round(duration) 
+        });
+    }
+    window.docStartTime = 0;
+}
+            document.getElementById('split-view-container').style.display = 'none';
+            document.getElementById('resource-hub-main').style.display = 'block';
+            document.getElementById('doc-iframe').src = "";
+            window.currentDocId = null;
+        };
+        
+        window.deleteCurrentDocument = async function() {
+            if(!window.currentDocId) return;
+            if(!confirm("Bạn có chắc chắn muốn xóa tài liệu này không? Hành động này không thể hoàn tác.")) return;
+            
+            try {
+                await deleteDoc(doc(db, "resources", window.currentDocId));
+                alert("Đã xóa tài liệu.");
+                window.closeSplitView();
+            } catch(e) {
+                console.error(e);
+                alert("Lỗi khi xóa: " + e.message);
+            }
+        };
+
+        window.initVoidChat = function() {
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            window.voidIdentity = `${window.currentUserRank}#${randomNum}`;
+            document.getElementById('void-user-identity').innerText = "ID: " + window.voidIdentity;
+
+            const q = query(collection(db, "void_messages"), orderBy("createdAt", "asc"), limit(50));
+            onSnapshot(q, (snapshot) => {
+                const chatBox = document.getElementById('void-messages');
+                chatBox.innerHTML = '<div style="text-align: center; color: #444; margin-top: 20px; font-style: italic;">-- Dữ liệu được đồng bộ từ Cosmic Cloud --</div>';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.identity === window.voidIdentity;
+                    window.appendVoidMessage(data.identity, data.text, isMe);
+                });
+            });
+        };
+
+        window.appendVoidMessage = function(identity, text, isMe) {
+            const chatBox = document.getElementById('void-messages');
+            const row = document.createElement('div');
+            row.className = `void-msg-row ${isMe ? 'me' : ''}`;
+            const idDiv = document.createElement('div'); idDiv.className = 'void-identity'; idDiv.innerText = identity;
+            const contentDiv = document.createElement('div'); contentDiv.className = 'void-content'; contentDiv.innerText = text;
+            row.appendChild(idDiv); row.appendChild(contentDiv);
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+window.sendVoidMessage = async function() {
+    const input = document.getElementById('void-input-field');
+    const text = input.value.trim();
+    
+    // Chỉ xử lý khi có nội dung (tránh spam tin rỗng)
+    if (text) {
+        try {
+            // 1. Gửi tin nhắn lên Firestore
+            await addDoc(collection(db, "void_messages"), { 
+                identity: window.voidIdentity, 
+                text: text, 
+                createdAt: serverTimestamp() 
+            });
+            
+            // 2. Dọn dẹp ô input
+            input.value = '';
+
+            // 3. [TRACKING] Bắn tín hiệu lên GA4
+            // Logic: Gửi thành công vào Database -> Mới bắn Tracking
+            window.trackTelemetry('send_message', { channel: 'void_main' });
+            
+        } catch (e) { 
+            console.error(e); 
+            alert("Lỗi kết nối!"); 
+        }
+    }
+};
+
+
+
+        window.openUploadModal = function() {
+
+            document.getElementById('upload-modal').style.display = 'flex';
+
+        };
+
+
+
+        window.closeUploadModal = function() {
+
+            document.getElementById('upload-modal').style.display = 'none';
+
+            document.getElementById('up-title').value = '';
+
+            document.getElementById('up-category').value = '';
+
+            document.getElementById('up-file').value = '';
+
+            document.getElementById('up-url').value = '';
+
+            document.getElementById('file-name-display').innerText = '';
+
+            document.querySelector('.progress-container').style.display = 'none';
+
+            document.getElementById('progress-text').style.display = 'none';
+
+            document.getElementById('up-progress').style.width = '0%';
+
+        };
+
+        window.handleFileSelect = function(input) {
+            if(input.files && input.files[0]) {
+                document.getElementById('file-name-display').innerText = "Selected: " + input.files[0].name;
+            }
+        };
+
+window.submitUpload = async function() {
+    const title = document.getElementById('up-title').value.trim();
+    const category = document.getElementById('up-category').value.trim();
+    const fileInput = document.getElementById('up-file');
+    const urlInput = document.getElementById('up-url').value.trim();
+
+    if (!title || !category || (!fileInput.files.length && !urlInput)) {
+        alert("Vui lòng điền đầy đủ thông tin và chọn File hoặc nhập Link!");
+        return;
+    }
+
+    const progressContainer = document.querySelector('.progress-container');
+    const progressFill = document.getElementById('up-progress');
+    const progressText = document.getElementById('progress-text');
+    progressContainer.style.display = 'block';
+    progressText.style.display = 'block';
+    progressText.innerText = "Preparing...";
+
+    try {
+        let fileUrl = "";
+        let fileName = "";
+
+        if (urlInput) {
+            // Use external URL directly (no upload)
+            fileUrl = urlInput;
+            fileName = "External Link";
+            progressFill.style.width = '100%';
+            progressText.innerText = "Processing external link... 100%";
+        } else if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (file.size > 50 * 1024 * 1024) {  // Limit 50MB
+                throw new Error("File quá lớn (>50MB). Vui lòng dùng Link Drive.");
+            }
+
+            // Clean filename
+            const cleanName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.-]/g, '_');
+            const path = `${Date.now()}_${cleanName}`;  // Unique path
+
+            progressText.innerText = "Uploading to Supabase...";
+            progressFill.style.width = '20%';  // Simulate start
+
+            // Upload to Supabase
+            const { data, error } = await supabase.storage.from('COSMIC file').upload(path, file);
+            if (error) throw error;
+
+            // Get public URL
+            const { data: publicData } = supabase.storage.from('COSMIC file').getPublicUrl(path);
+            fileUrl = publicData.publicUrl;
+            fileName = file.name;
+
+            progressFill.style.width = '100%';
+            progressText.innerText = "Upload complete! 100%";
+        }
+
+        // Save to Firestore
+        await addDoc(collection(db, "resources"), {
+            title,
+            category,
+            fileName,
+            fileUrl,
+            uploader: window.currentUserName,
+            uploaderUid: auth.currentUser.uid,
+            status: 'pending', 
+            createdAt: serverTimestamp()
+        });
+
+        // --- [NEW] TRACKING & XP SECTION (Nằm trong TRY) ---
+        
+        // 1. Bắn Tracking (Guardian Activity)
+        window.trackTelemetry('upload_document', { 
+            doc_title: title, 
+            doc_category: category,
+            status: 'pending' 
+        });
+
+        // 2. Cộng điểm GUARDIAN (+10 Energy)
+        window.addEnergy(10, 'guardian');
+
+        // 3. Thông báo & Đóng Modal
+        alert("Upload thành công! Tài liệu đang chờ duyệt.");
+        window.closeUploadModal();
+
+    } catch (e) {
+        console.error("Upload error:", e);
+        alert("Lỗi: " + e.message);
+        progressContainer.style.display = 'none';
+        progressText.style.display = 'none';
+    }
+};
+    // --- BƯỚC 1: SỬA LOGIC HIỂN THỊ TẠI RESOURCE HUB ---
+window.initResourceHub = function() {
+    // Vẫn lấy các tài liệu mới nhất
+    const q = query(collection(db, "resources"), orderBy("createdAt", "desc"), limit(50));
+    
+    onSnapshot(q, (snapshot) => {
+        const listContainer = document.getElementById('resource-list-container');
+        if (snapshot.empty) { 
+            listContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: #666;">Chưa có tài liệu nào.</div>'; 
+            return; 
+        }
+
+        let dynamicItemsHTML = "";
+        
+        // Lấy thông tin người dùng hiện tại
+        const currentUid = auth.currentUser ? auth.currentUser.uid : "";
+        const userRoles = window.currentUserRoles || [];
+        // Kiểm tra xem user có quyền quản lý không (Admin hoặc Op)
+        const isStaff = userRoles.includes('admin') || userRoles.includes('op');
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const status = data.status || 'pending'; // Mặc định là pending
+            
+            // LOGIC QUYẾT ĐỊNH HIỂN THỊ:
+            let isVisible = false;
+            let statusBadge = "";
+
+            if (status === 'approved') {
+                // 1. Nếu đã duyệt -> Ai cũng thấy
+                isVisible = true;
+            } else if (status === 'pending') {
+                // 2. Nếu đang chờ -> Chỉ Admin, Ops hoặc Chính chủ mới thấy
+                if (isStaff || data.uploaderUid === currentUid) {
+                    isVisible = true;
+                    statusBadge = `<span class="res-tag" style="background:#FF8C00; color:#000;">⏳ PENDING</span>`;
+                }
+            }
+
+            if (isVisible) {
+                const safeTitle = data.title.replace(/'/g, "\\'");
+                const safeUrl = (data.fileUrl || "").replace(/'/g, "\\'");
+                const uploader = data.uploader || "Unknown";
+                
+                dynamicItemsHTML += `
+                    <div class="resource-item" onclick="openSplitView('${safeTitle}', '${safeUrl}', '${doc.id}', '${uploader}')">
+                        <div style="display:flex; align-items:center;">
+                            <div class="res-icon">📄</div>
+                            <div class="res-info">
+                                <h3>${data.title} ${statusBadge}</h3>
+                                <p>${data.category} • Upload bởi: <b>${uploader}</b></p>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #888;">Click to view</div>
+                    </div>
+                `;
+            }
+        });
+        
+        if (dynamicItemsHTML === "") {
+             listContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: #666;">Không có tài liệu khả dụng cho bạn.</div>';
+        } else {
+            listContainer.innerHTML = dynamicItemsHTML;
+        }
+    });
+};
+        window.triggerSOS = async function() {
+            const radar = document.getElementById('radar-screen');
+            const sosCount = document.getElementById('sos-count');
+            const radarStatus = document.getElementById('radar-status');
+            const btn = document.querySelector('.btn-sos-trigger');
+            const chatBox = document.getElementById('chat-box');
+            
+            if (!window.isSOSActive) {
+                window.isSOSActive = true;
+                if(btn) { btn.innerHTML = "🚫 CANCEL SOS"; btn.classList.add('active'); }
+                if(chatBox) { chatBox.innerHTML += `<div class="chat-msg msg-system" style="border-color: #FF4500; color:#FF4500;">🚨 BROADCASTING SOS SIGNAL...</div>`; }
+                if(radar) {
+                    const top = Math.floor(Math.random() * 60) + 20 + '%'; const left = Math.floor(Math.random() * 60) + 20 + '%';
+                    radar.innerHTML += `<div class="radar-dot-new" id="active-sos-dot" style="top:${top}; left:${left};"></div>`;
+                    radarStatus.innerText = "WARNING: DISTRESS SIGNAL ACTIVE!"; radarStatus.style.color = "#FF4500";
+                    // let currentCases = parseInt(sosCount.innerText); sosCount.innerText = (currentCases + 1) + " Cases";
+                }
+                try { await addDoc(collection(db, "sos_signals"), { user: window.voidIdentity, status: "ACTIVE", timestamp: serverTimestamp() }); } catch(e) {}
+            } else {
+                window.isSOSActive = false;
+                if(btn) { btn.innerHTML = "🚨 SIGNAL SOS"; btn.classList.remove('active'); }
+                if(chatBox) { chatBox.innerHTML += `<div class="chat-msg msg-system" style="border-color: #00FFC2; color:#00FFC2;">✅ SOS SIGNAL CANCELLED.</div>`; }
+                if(radar) {
+                    const dot = document.getElementById('active-sos-dot'); if(dot) dot.remove();
+                    radarStatus.innerText = "Scanning Sector 7..."; radarStatus.style.color = "#888";
+                    // let currentCases = parseInt(sosCount.innerText); sosCount.innerText = Math.max(0, currentCases - 1) + " Cases";
+                }
+            }
+        };
+
+   window.sendMessage = function() {
+    const input = document.getElementById('chat-input-field');
+    const chatBox = document.getElementById('chat-box');
+    const text = input.value.trim();
+
+    // Chỉ chạy khi có nội dung tin nhắn thực sự
+    if(text) {
+        // 1. Xử lý UI
+        chatBox.innerHTML += `<div class="chat-msg msg-me">${text}</div>`;
+        input.value = ''; 
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // 2. Xử lý logic SOS
+        if(text.toLowerCase().includes('sos')) { 
+            setTimeout(() => { 
+                if (!window.isSOSActive) { 
+                    window.triggerSOS(); 
+                } else { 
+                    chatBox.innerHTML += `<div class="chat-msg msg-system">SOS signal is already active! Rescue team alerted.</div>`; 
+                } 
+            }, 500); 
+        }
+
+        // --- [NEW] TRACKING & XP SECTION (Đặt trong IF mới đúng) ---
+        
+        // 3. Bắn Tracking
+        window.trackTelemetry('send_message', { channel: 'sos_chat' });
+
+        // 4. Cộng điểm DIPLOMAT
+        // Chat kênh SOS được
+}
+};
+// --- BƯỚC 2: LOGIC OPS CENTER (DUYỆT BÀI & THÔNG BÁO) ---
+
+// Hàm khởi chạy Ops Center (Chỉ gọi khi user là Admin/Op)
+window.setupOpsCenter = function() {
+    const opsPanel = document.getElementById('panel-op');
+    if (!opsPanel) return;
+
+    // 1. Vẽ lại giao diện Ops Panel để chứa danh sách chờ
+    opsPanel.innerHTML = `
+        <h3 style="color:var(--neon-blue);">📋 OPS CENTER</h3>
+        <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Trung tâm kiểm soát tài liệu.</p>
+        
+        <div style="border-top: 1px solid #333; padding-top:10px;">
+            <h4 style="color:#FF8C00; font-size:12px; margin-bottom:10px;">HÀNG CHỜ DUYỆT (PENDING QUEUE)</h4>
+            <div id="ops-pending-list" style="background:#000; padding:10px; height:180px; overflow-y:auto; border:1px solid #333; border-radius:5px;">
+                <div style="text-align:center; color:#666; font-style:italic; padding-top:20px;">Đang tải dữ liệu...</div>
+            </div>
+        </div>
+    `;
+
+    // 2. Lắng nghe realtime các file có status = 'pending'
+    const q = query(collection(db, "resources"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('ops-pending-list');
+        const bridgeNav = document.getElementById('bridge-nav'); // Icon Radar ở Sidebar
+        
+        if (snapshot.empty) {
+            container.innerHTML = '<div style="text-align:center; color:#666; font-size:12px; padding-top:20px;">Không có tài liệu chờ duyệt.</div>';
+            // Tắt đèn báo hiệu
+            if(bridgeNav) {
+                bridgeNav.style.border = "none";
+                bridgeNav.style.boxShadow = "none";
+            }
+        } else {
+            // CÓ FILE MỚI: 
+            // a. Bật đèn báo hiệu (viền đỏ) ở Sidebar
+            if(bridgeNav) {
+                bridgeNav.style.border = "1px solid #FF4500";
+                bridgeNav.style.boxShadow = "0 0 10px #FF4500";
+            }
+            // b. Hiện Banner thông báo
+            window.showNotificationBanner(`⚠️ OPS ALERT: Có ${snapshot.size} tài liệu cần duyệt!`);
+
+            // c. Render danh sách
+            let html = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const safeTitle = data.title.replace(/'/g, "\\'");
+                const safeUrl = (data.fileUrl || "").replace(/'/g, "\\'");
+                
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #333;">
+                        <div style="width: 55%;">
+                            <div style="color:white; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.title}</div>
+                            <div style="font-size:10px; color:#888;">Up bởi: ${data.uploader}</div>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="openSplitView('${safeTitle}', '${safeUrl}', '${doc.id}', '${data.uploader}')" style="font-size:10px; padding:4px 8px; cursor:pointer; border:1px solid #444; background:transparent; color:#ccc;">Xem</button>
+                            <button onclick="approveDocument('${doc.id}')" style="font-size:10px; padding:4px 8px; cursor:pointer; background:var(--neon-blue); color:black; font-weight:bold; border:none;">✔ Duyệt</button>
+                            <button onclick="rejectDocument('${doc.id}')" style="font-size:10px; padding:4px 8px; cursor:pointer; background:#FF4500; color:white; border:none;">✘ Xóa</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    });
+};
+
+// Hàm Duyệt (Chuyển status -> approved)
+window.approveDocument = async function(docId) {
+    if (!confirm("Xác nhận DUYỆT tài liệu này? Nó sẽ được hiển thị cho toàn bộ Brigade.")) return;
+    try {
+        await updateDoc(doc(db, "resources", docId), {
+            status: 'approved',
+            approvedBy: window.currentUserName,
+            approvedAt: serverTimestamp()
+        });
+        window.showNotificationBanner("✅ Đã duyệt tài liệu thành công!");
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    }
+};
+
+// Hàm Từ chối (Xóa tài liệu)
+window.rejectDocument = async function(docId) {
+    if (!confirm("Từ chối và XÓA VĨNH VIỄN tài liệu này?")) return;
+    try {
+        await deleteDoc(doc(db, "resources", docId));
+        window.showNotificationBanner("🗑️ Đã từ chối và xóa tài liệu.");
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    }
+};
+        document.getElementById('auth-msv').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
+        document.getElementById('chat-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
+        document.getElementById('void-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); }) 
+   </script>
+</body>
+</html>
