@@ -4,18 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COSMIC: The Co-Pilot Space</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* CSS của bạn ở đây */
+    </style>
+</head>
+
     <style>
         :root {
-            --cosmo-bg: #0B0E14;
-            --cosmo-dark: #151921;
-            --neon-teal: #00FFC2;
-            --neon-pink: #FF00FF;
-            --neon-gold: #FFD700;
-            --neon-blue: #00CCFF;
-            --neon-red: #FF4500;
-            --text-main: #E0E0E0;
-            --text-dim: #888;
-        }
+    /* =======================
+       CORE COSMIC THEME (LOGO)
+       ======================= */
+        --cosmo-bg: #0A0E17;
+        --cosmo-dark: #1C2438;
+
+        --neon-cyan: #00DDEB; 
+        --neon-purple: #8F5AFF;  
+        --text-main: #E0FFFF;
+        --text-dim: rgba(224,255,255,0.6);
+
+    /* =======================
+       FUNCTIONAL / UI STATES
+       ======================= */
+        --neon-teal: #00FFC2;    
+        --neon-blue: #00CCFF;    
+        --neon-gold: #FFD700;    
+        --neon-pink: #FF00FF;   
+        --neon-red: #FF4500;    
+}
+
 
         * {
             box-sizing: border-box;
@@ -25,7 +46,19 @@
         }
 
         body {
-            background-color: var(--cosmo-bg);
+            background:
+                radial-gradient(
+                    circle at 20% 20%,
+                    rgba(143,90,255,0.15),
+                    transparent 40%
+                ),
+                radial-gradient(
+                    circle at 80% 60%,
+                    rgba(0,221,235,0.12),
+                    transparent 45%
+                ),
+                var(--cosmo-bg);
+
             color: var(--text-main);
             height: 100vh;
             display: flex;
@@ -253,15 +286,69 @@
         /* --- SIDEBAR --- */
         .sidebar {
             width: 80px;
-            background: rgba(21, 25, 33, 0.8); /* Semi-transparent */
-            border-right: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+
+            background: rgba(21, 25, 33, 0.85);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-top: 20px;
-            z-index: 100;
+            z-index: 1000;
         }
+        .sidebar i {
+            color: var(--text-dim);
+            font-size: 22px;
+            transition: 0.25s ease;
+        }
+        .sidebar .nav-item:hover i {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 6px var(--neon-cyan);
+        }
+        .sidebar .nav-item.active i {
+            color: var(--neon-purple);
+            text-shadow:
+                0 0 8px var(--neon-purple),
+                0 0 16px rgba(143,90,255,0.6);
+        }
+        .nav-item {
+            position: relative;
+            width: 100%;
+            height: 60px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Neon line */
+        .nav-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) scaleY(0);
+
+            width: 3px;
+            height: 60%;
+            background: var(--neon-cyan);
+            border-radius: 0 4px 4px 0;
+
+            box-shadow: 0 0 10px var(--neon-cyan);
+            transition: 0.3s ease;
+        }
+
+        /* Active = bật neon line */
+        .nav-item.active::before {
+            transform: translateY(-50%) scaleY(1);
+        }
+
 
         .logo {
             width: 50px;
@@ -302,20 +389,30 @@
         .logout-btn {
             margin-top: auto;
             margin-bottom: 20px;
-            width: 50px; height: 50px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background: #333;
-            color: #FF4500;
-            border: 1px solid #FF4500;
-            display: flex; align-items: center; justify-content: center;
+            background: #111;
+            color: #ff3b3b;
+            border: 1px solid rgba(255, 59, 59, 0.6);
+            box-shadow: 0 0 8px rgba(255, 59, 59, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: 0.3s;
         }
-        .logout-btn:hover { background: #FF4500; color: white; }
-
+        .logout-btn:hover {
+            background: #ff3b3b;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 59, 59, 1);
+        }
+        
         /* --- MAIN CONTENT --- */
         .main-content {
             flex: 1;
             padding: 30px;
+            margin-left: 80px;
             overflow-y: auto;
             position: relative;
             background: transparent; 
@@ -1144,14 +1241,31 @@
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="logo" onclick="location.reload()">C</div>
-            <div class="nav-item active" onclick="switchTab('cabin', this)" title="Energy Cabin">🏠</div>
-            <div class="nav-item" onclick="switchTab('resources', this)" title="Resource Hub">📚</div>
-            <div class="nav-item" onclick="switchTab('bridge', this)" title="The Brigade" id="bridge-nav">📡</div>
-            <div class="nav-item" onclick="switchTab('void', this)" title="The Void">🌌</div>
-            <div class="nav-item" onclick="switchTab('ranks', this)" title="Rank System">🏆</div>
-            
-            <div class="logout-btn" onclick="handleLogout()" title="Logout">🚪</div>
+
+        <div class="nav-item active" onclick="switchTab('cabin', this)" title="Energy Cabin">
+            <i class="fa-solid fa-circle-user"></i>
         </div>
+
+        <div class="nav-item" onclick="switchTab('resources', this)" title="Resource Hub">
+            <i class="fa-solid fa-folder-open"></i>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('bridge', this)" title="The Brigade" id="bridge-nav">
+            <i class="fa-solid fa-address-book"></i>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('void', this)" title="The Void">
+            <i class="fa-solid fa-comments"></i>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('ranks', this)" title="Rank System">
+            <i class="fa-solid fa-trophy"></i>
+        </div>
+
+        <div class="logout-btn" onclick="handleLogout()" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </div>
+</div>
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
