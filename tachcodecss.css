@@ -1,4 +1,5 @@
- :root {
+
+    :root {
     /* =======================
        CORE COSMIC THEME (LOGO)
        ======================= */
@@ -27,7 +28,6 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
 
         body {
             background:
@@ -1176,3 +1176,4 @@
 .suggestion-item strong {
     color: var(--neon-teal);
 }
+   
