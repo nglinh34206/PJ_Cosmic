@@ -4,24 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COSMIC: The Co-Pilot Space</title>
-    <!--link csss-->
+
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" 
           href="tachcodecss.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!--link font chữ-->
+    <style>
+        /* CSS của bạn ở đây */
+    </style>
+
+    <!--link fonts-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-</head> 
-<body>  
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+</head>    
     <!-- STARFIELD BACKGROUND -->
     <div class="stars"></div>
     <div class="stars2"></div>
     
     <!-- NEW BACKGROUND ELEMENTS -->
+     <!-- Đây là phần tạo background động (nền vũ trụ) cho website, không phải nội dung chính.-->
     <div class="nebula"></div>
     <div class="solar-system-container">
         <div class="sun"></div>
@@ -37,6 +42,7 @@
     </div>
     
     <!-- LOGIN SCREEN -->
+     <!--Đây là màn hình đăng nhập (LOGIN SCREEN) của website-->
     <div id="login-screen">
         <div class="login-box">
             <img src="logo.png" class="logo">
@@ -55,12 +61,15 @@
     </div>
 
     <!-- MAIN APP CONTAINER -->
-<div id="notification-banner">
+<div id="notification-banner" style="display:none; position:fixed; top:20px; right:20px; z-index:2000; background:rgba(255,69,0,0.8); color:white; padding:15px; border-radius:10px; box-shadow:0 0 20px rgba(255,69,0,0.5); max-width:300px; font-size:14px;">
     <div id="banner-content"></div>
     <button onclick="document.getElementById('notification-banner').style.display='none'" style="position:absolute; top:5px; right:5px; background:none; border:none; color:white; cursor:pointer;">✕</button>
 </div>
+
+
+    <!--Khung ứng dụng chính-->
     <div id="app-container" style="display: flex;">
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR --> <!-- Các tab, chức năng có trong web ( ví dụ: home, document, ....)-->
         <div class="sidebar">
             <div class="logo" onclick="location.reload()">C</div>
 
@@ -90,6 +99,7 @@
 </div>
 
         <!-- MAIN CONTENT -->
+         <!--👉 Vùng nội dung trung tâm của ứng dụng Toàn bộ các “màn hình” (view) như Cabin, Resource Hub… đều nằm trong đây.-->
         <div class="main-content">
             
             <!-- CABIN VIEW -->
@@ -244,14 +254,14 @@
                 <div class="modal-content">
                     <h2 class="modal-title">UPLOAD TÀI LIỆU</h2>
                     <input type="text" id="up-title" class="modal-input" placeholder="Tên tài liệu (VD: Đề cương Kinh tế)">
-            <div class="autocomplete-wrapper">
-                <input type="text" id="up-category" class="modal-input" 
-                    placeholder="Nhập tên môn học (VD: MKT21A...)" 
-                    autocomplete="off" 
-                    oninput="handleCategoryInput(this)" 
-                    onfocus="handleCategoryInput(this)">
-                <div id="suggestion-box"></div>
-            </div>                    
+<div class="autocomplete-wrapper">
+    <input type="text" id="up-category" class="modal-input" 
+           placeholder="Nhập tên môn học (VD: MKT21A...)" 
+           autocomplete="off" 
+           oninput="handleCategoryInput(this)" 
+           onfocus="handleCategoryInput(this)">
+    <div id="suggestion-box"></div>
+</div>                    
                     <!-- NEW: INPUT URL OPTION -->
                     <input type="text" id="up-url" class="modal-input" placeholder="Hoặc dán link Google Drive/PDF online...">
 
