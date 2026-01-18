@@ -1,3 +1,18 @@
+h1,h2,h3,h4 {
+    font-family: "Outfit", sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #E0FFFF;
+}
+p {
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.7;
+    color: #E0FFFF;
+}
+
  :root {
     /* =======================
        CORE COSMIC THEME (LOGO)
@@ -42,13 +57,14 @@
                     transparent 45%
                 ),
                 var(--cosmo-bg);
-
+            background-color: #0A0E17;
             color: var(--text-main);
             height: 100vh;
             display: flex;
             overflow: hidden;
             position: relative;
         }
+
 
         /* --- STARFIELD BACKGROUND --- */
         .stars, .stars2, .stars3 {
@@ -108,6 +124,7 @@
         }
 
         .solar-system-container {
+            background-color: #1C2438;
             position: fixed;
             top: 20%;
             right: 15%;
@@ -195,6 +212,35 @@
             z-index: 1000;
             transition: opacity 0.5s ease;
         }
+        .logo {
+            width: 220px;
+            height: auto;
+            display: block;
+            margin: 0 auto 25px;
+            object-fit: contain;
+            filter: none !important;
+        }
+
+        .sidebar-logo {
+    width: 48px;
+    height: 48px;
+    margin: 20px auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+.sidebar-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+
+    /* glow rất nhẹ cho sidebar */
+    filter: drop-shadow(0 0 6px rgba(0, 221, 235, 0.5));
+}
 
         .login-box {
             background: rgba(255, 255, 255, 0.05);
@@ -208,8 +254,10 @@
         }
 
         .login-title {
+            font: "outfit", sans-serif;
             font-size: 2rem;
-            color: var(--neon-teal);
+            font-weight: bold;
+            color: #E0FFFF;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -222,6 +270,7 @@
             border: 1px solid #444;
             border-radius: 8px;
             color: white;
+            font: "inter", sans-serif;
             margin-bottom: 20px;
             font-size: 16px;
             text-align: center;
@@ -237,10 +286,15 @@
         .login-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-teal));
+            background: linear-gradient(
+                        135deg,
+                        #8F5AFF,
+                        var(--neon-teal)
+                    );
             border: none;
-            border-radius: 8px;
-            color: #000;
+            border-radius: 10px;
+            color: #E0FFFF;
+            font: "inter", sans-serif;
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
@@ -248,12 +302,28 @@
         }
 
         .login-btn:hover {
+            background: linear-gradient(
+                135deg,
+                #9d6bff,
+                #00ffee
+            );
+            box-shadow:
+                0 0 18px rgba(143, 90, 255, 0.8),
+                0 0 36px rgba(0, 221, 235, 0.6);
             transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(0, 255, 194, 0.4);
         }
-        
+
+        #login-error {
+            color: #ff4500; 
+            margin-top: 15px; 
+            font: "inter", sans-serif;
+            font-size: 0.8rem; 
+            display: none
+        }
+
         .auth-switch {
             margin-top: 15px;
+            font: "inter", sans-serif;
             font-size: 12px;
             color: #888;
             cursor: pointer;
@@ -266,7 +336,19 @@
             width: 100%;
             height: 100%;
         }
-
+        #notification-banner {
+            display:none; 
+            position:fixed; 
+            top:20px; 
+            right:20px; 
+            z-index:2000; 
+            background:rgba(255,69,0,0.8); 
+            color:white; 
+            padding:15px; 
+            border-radius:10px; 
+            box-shadow:0 0 20px rgba(255,69,0,0.5); 
+            max-width:300px; font-size:14px;
+        } 
         /* --- SIDEBAR --- */
         .sidebar {
             width: 80px;
@@ -425,6 +507,7 @@
 
         .subtitle {
             color: var(--neon-teal);
+            font: "Inter", sans-serif;
             font-size: 1.1rem;
             margin-bottom: 30px;
             display: inline-block;
@@ -477,7 +560,7 @@
         .avatar-img {
             width: 100%;
             height: 100%;
-            background-color: #333;
+            background-color: #1C2438;
             border-radius: 50%;
             background-image: url('https://api.dicebear.com/7.x/bottts/svg?seed=Commander');
             background-size: cover;
@@ -585,7 +668,7 @@
         .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
 
         .energy-bar-container {
-            background: #222;
+            background: #1C2438;
             height: 20px;
             border-radius: 10px;
             margin-top: 20px;
@@ -602,6 +685,18 @@
         }
 
         /* --- ADMIN PANEL & BRIGADE ROLES --- */
+        #admin-inbox {
+            height:100px; 
+            overflow-y:auto; 
+            background:#111; 
+            padding:5px; font-size:12px;
+        }
+        #admin-search {
+            background:#222; 
+            border:1px solid #444; 
+            color:white; 
+            padding:5px;
+        }
         .admin-panel {
             margin-top: 30px;
             background: rgba(0, 255, 194, 0.05);
@@ -611,6 +706,10 @@
             display: none; /* Only for admin */
         }
         
+        .class {
+            max-height: 200px; 
+            overflow-y:auto;
+        }
         .crew-table {
             width: 100%;
             border-collapse: collapse;
@@ -662,7 +761,30 @@
             overflow-y: auto;
             padding-right: 5px;
         }
-        
+
+        /*search bar*/
+        .autocomplete-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: "Inter", sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+        /* Focus + neon nhẹ */
+        .search-input:focus {
+            border-color: #00DDEB;
+            box-shadow: 0 0 8px rgba(0, 221, 235, 0.4);
+        }
+
         /* Custom scrollbar */
         .resource-list::-webkit-scrollbar { width: 5px; }
         .resource-list::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
@@ -698,18 +820,47 @@
             margin-left: 10px;
         }
 
+        /*Tiêu đề tài liệu*/
+        #doc-title {
+            font-weight: bold;
+            color: #E0FFFF;
+            font-family: "Inter", sans-serif;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+
         .btn-delete-doc {
-            background: #c0392b;
-            color: white;
+            background: linear-gradient( 135deg,#8F5AFF,var(--neon-teal));
+            color: #E0FFFF;
             border: none;
             padding: 5px 10px;
+            width: auto;
             border-radius: 5px;
-            font-size: 11px;
+            font: "Inter", sans-serif;
+            font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
             margin-left: 10px;
-            display: none; /* Hidden by default */
+            display: inline-flex; /* Hidden by default */
         }
-        .btn-delete-doc:hover { background: #e74c3c; }
+       .btn-back:hover {
+            border-color: #8F5AFF;
+            color: #8F5AFF;
+            box-shadow:
+                0 0 8px rgba(0, 221, 235, 0.5),
+                0 0 16px rgba(0, 221, 235, 0.3);
+        }
+
+        #doc-placeholder-msg {
+            position: absolute; 
+            top:50%; 
+            left:50%; 
+            transform:translate(-50%, -50%); 
+            text-align:center; 
+            display:none;
+        }
 
         /* UPLOAD MODAL & ROLE EDIT MODAL */
         .modal-overlay {
@@ -729,9 +880,14 @@
             text-transform: uppercase; letter-spacing: 1px;
         }
         .modal-input {
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            background: rgba(0,0,0,0.3); border: 1px solid #444;
-            color: white; border-radius: 8px; outline: none;
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.3); 
+            border: 1px solid #444;
+            color: white;
+            font: "Inter", sans-serif; 
+            border-radius: 8px; outline: none;
         }
         .modal-input:focus { border-color: var(--neon-teal); }
         .file-drop-area {
@@ -742,12 +898,24 @@
         .file-drop-area:hover { border-color: var(--neon-teal); color: white; background: rgba(0, 255, 194, 0.05); }
         
         .progress-container {
-            height: 6px; background: #333; margin-top: 15px; border-radius: 3px; overflow:hidden; display: none;
+            height: 6px; background: #1C2438; margin-top: 15px; border-radius: 3px; overflow:hidden; display: none;
         }
         .progress-fill {
             height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-teal)); transition: width 0.1s linear;
         }
 
+        #📂 {
+            font-size: 30px; 
+            margin-bottom: 10px;
+        }
+        #progress-text {
+            text-align: right;
+            color: #888;
+            font: "Inter", sans-serif; 
+            font-size: 12px; 
+            margin-top: 5px; 
+            display:none;
+        }
         /* CHECKBOX FOR ROLES */
         .role-option {
             display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;
@@ -781,7 +949,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .doc-content-placeholder {
             flex: 1;
             display: flex;
@@ -816,6 +984,8 @@
             background: linear-gradient(90deg, #1a253a, #0B0E14);
             border-bottom: 1px solid var(--neon-teal);
             font-weight: bold;
+            font: "outfit", sans-serif;
+            color: #E0FFFF;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -828,6 +998,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            font: "Inter", sans-serif"
         }
 
         .chat-msg {
@@ -875,25 +1046,36 @@
             flex: 1;
             background: #000;
             border: 1px solid #444;
-            color: white;
+            font: "Inter", sans-serif;
+            color: #E0FFFF;
             padding: 8px;
             border-radius: 5px;
         }
 
         .btn-send {
-            background: var(--neon-teal);
-            color: black;
+            background:linear-gradient( 135deg,#8F5AFF,var(--neon-teal));
+            color: #E0FFFF;
+            font: "Inter", sans-serif;
+            font-weight: bold;
+            font-size: 12px;
             border: none;
             padding: 0 15px;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
+        }
+        .btn-send:hover {
+            border-color: #8F5AFF;
+            color: #8F5AFF;
+            box-shadow:
+                0 0 8px rgba(0, 221, 235, 0.5),
+                0 0 16px rgba(0, 221, 235, 0.3);
         }
 
         .btn-sos-trigger {
             background: transparent;
             border: 1px solid #FF4500;
             color: #FF4500;
+            font: "inter", sans-serif;
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
@@ -917,30 +1099,78 @@
 
         .btn-back {
             background: transparent;
-            border: 1px solid #666;
-            color: #ccc;
-            padding: 5px 10px;
-            border-radius: 5px;
+            border: 1px solid rgba(0, 221, 235, 0.6);
+            color: #00DDEB;
+            padding: 6px 14px;
+            border-radius: 10px;
             cursor: pointer;
+            font: "Inter", sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.25s ease;
         }
-        .btn-back:hover { border-color: white; color: white; }
+
+        .btn-back:hover {
+            border-color: #00DDEB;
+            color: #00DDEB;
+            box-shadow:
+                0 0 8px rgba(0, 221, 235, 0.5),
+                0 0 16px rgba(0, 221, 235, 0.3);
+        }
 
 
         .btn-primary {
-            background: var(--neon-teal);
-            color: #000;
+            background-color: #00DDEB;
+            color: #E0FFFF;
             border: none;
-            cursor: pointer;
-            padding: 10px 20px;
-            border-radius: 5px;
+            width: auto;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font: "Inter", sans-serif;
+            font-size: 12px;
             font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
         }
         .btn-primary:hover {
-            box-shadow: 0 0 15px var(--neon-teal);
+            background-color: #00ffee;
+            box-shadow:
+                0 0 12px rgba(0, 221, 238, 0.6),
+                0 0 24px rgba(0, 221, 238, 0.4);
         }
 
         /* --- BRIDGE / RADAR STYLES --- */
+        #bridge-locked {
+            text-align:center;
+            margin-top:50px;
+        }
+
+        #proposal-text {
+            width:100%; 
+            background:#111; 
+            color:white; 
+            border:1px solid #444; 
+            padding:10px;
+        }
+
+        #broadcast-msg {
+            width:100%; 
+            background:#111; 
+            color:white; 
+            border:1px solid #444; 
+            padding:10px;
+        }
+
+        /*RADAR*/
+        .radar {
+            background: rgba(0,0,0,0.2); 
+            padding:20px; 
+            border-radius:20px; 
+            text-align:center; 
+            border: 1px solid rgba(0,255,194,0.1);
+        }
         .radar-container {
+            background-color: #1C2438;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -977,7 +1207,16 @@
             box-shadow: 0 0 10px #FF4500;
             animation: pulseDot 1s infinite alternate;
         }
-        
+
+        b {
+           color: white;
+           cursor: pointer; 
+        }
+        #againclick {
+            font-size: 0.9rem; 
+            color: #666;
+        } 
+
         /* New SOS dot class for JS triggering */
         .radar-dot-new {
             width: 12px;
@@ -1029,7 +1268,9 @@
             padding: 15px;
             background: #0f0f0f;
             border-bottom: 1px solid #333;
-            color: #666;
+            font: "outfit", sans-serif;
+            font-weight: bold;
+            color: #E0FFFF;
             font-size: 14px;
             display: flex;
             justify-content: space-between;
@@ -1046,11 +1287,18 @@
             animation: blink 2s infinite;
         }
 
+        .void-user-identity {
+            font: "Inter", sans-serif;
+            font-weight: bold; 
+            color: #E0FFFF;
+        }
+
         .void-messages-area {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-            color: #ccc;
+            color: #E0FFFF;
+            font: "inter", sans-serif;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -1063,8 +1311,10 @@
         }
 
         .void-identity {
+            font: "inter", sans-serif;
+            font-weight: bold;
             font-size: 11px;
-            color: #555;
+            color: #888;
             margin-bottom: 2px;
             text-transform: uppercase;
         }
@@ -1106,8 +1356,8 @@
             flex: 1;
             background: transparent;
             border: none;
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
+            color: #E0FFFF;
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
         }
         

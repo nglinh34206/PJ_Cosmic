@@ -11,10 +11,12 @@
     <link rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <style>
-        /* CSS của bạn ở đây */
-    </style>
-</head>    
+    <!--link font chữ-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+</head> 
+<body>  
     <!-- STARFIELD BACKGROUND -->
     <div class="stars"></div>
     <div class="stars2"></div>
@@ -37,22 +39,23 @@
     <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-box">
-            <div class="logo" style="margin: 0 auto 30px auto;">C</div>
+            <img src="logo.png" class="logo">
+
             <div class="login-title">THE AIRLOCK</div>
-            <p style="color: #888; margin-bottom: 30px; font-size: 0.9rem;" id="login-subtitle">Nhập MSV để truy cập Cosmic Base.</p>
+            <p id="login-subtitle">Nhập MSV để truy cập Cosmic Base.</p>
             
             <!-- CHANGED: Single input for MSV, Password hidden/auto -->
             <input type="text" id="auth-msv" class="login-input" placeholder="7 SỐ CUỐI MSV (VD: 4043292)" autocomplete="off" maxlength="7">
             
             <button class="login-btn" onclick="handleAuth()" id="btn-auth-action">LOGIN (AUTO PASS)</button>
-            <div id="login-error" style="color: #ff4500; margin-top: 15px; font-size: 0.8rem; display: none;">Lỗi xác thực.</div>
+            <div id="login-error">Lỗi xác thực.</div>
             
             <div class="auth-switch" onclick="toggleAuthMode()">Chưa kích hoạt MSV? <b>Đăng ký ngay</b></div>
         </div>
     </div>
 
     <!-- MAIN APP CONTAINER -->
-<div id="notification-banner" style="display:none; position:fixed; top:20px; right:20px; z-index:2000; background:rgba(255,69,0,0.8); color:white; padding:15px; border-radius:10px; box-shadow:0 0 20px rgba(255,69,0,0.5); max-width:300px; font-size:14px;">
+<div id="notification-banner">
     <div id="banner-content"></div>
     <button onclick="document.getElementById('notification-banner').style.display='none'" style="position:absolute; top:5px; right:5px; background:none; border:none; color:white; cursor:pointer;">✕</button>
 </div>
@@ -139,14 +142,14 @@
 
                         <!-- ADMIN PANEL (Hidden for normal users) -->
                         <div id="admin-panel" class="admin-panel">
-                            <h3 style="color:var(--neon-gold); margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
+                            <h3>
                                 🛡️ COMMAND CENTER (ADMIN)
                             </h3>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                                 <span>Quản lý thành viên The Brigade</span>
-                                <input type="text" id="admin-search" placeholder="Tìm MSV..." style="background:#222; border:1px solid #444; color:white; padding:5px;">
+                                <input type="text" id="admin-search" placeholder="Tìm MSV...">
                             </div>
-                            <div style="max-height: 200px; overflow-y:auto;">
+                            <div class = "table">
                                 <table class="crew-table" id="crew-list">
                                     <!-- Populated by JS -->
                                     <tr><td colspan="3">Loading crew data...</td></tr>
@@ -166,14 +169,17 @@
 
                    <div style="display:flex; gap:10px; margin-bottom:20px;">
     
-    <div class="autocomplete-wrapper" style="flex:1;"> 
-        <input type="text" id="search-input" 
-               placeholder="Tìm kiếm tài liệu / Môn học..." 
-               style="background:rgba(0,0,0,0.3); border:1px solid #444; color:white; padding:10px; border-radius:5px; width:100%;" 
-               autocomplete="off"
-               oninput="handleSearchInput(this)"
-               onfocus="handleSearchInput(this)">
-        
+    <div class="autocomplete-wrapper">
+        <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="Tìm kiếm tài liệu / Môn học..."
+            autocomplete="off"
+            oninput="handleSearchInput(this)"
+            onfocus="handleSearchInput(this)"
+        >
+
         <div id="search-suggestion-box"></div>
     </div>
 
@@ -199,16 +205,16 @@
                         <div class="doc-viewer-header">
                             <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
                                 <button class="btn-back" onclick="closeSplitView()">← Back</button>
-                                <span style="font-weight:bold; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;" id="doc-title">Document Title</span>
+                                <span id="doc-title">Document Title</span>
                             </div>
                             <div style="display:flex; align-items:center;">
-                                <button class="btn-primary" style="padding: 5px 15px; font-size:12px;">Download PDF</button>
+                                <button class="btn-primary">Download PDF</button>
                                 <button id="btn-delete-current-doc" class="btn-delete-doc" onclick="deleteCurrentDocument()">🗑️ Xóa</button>
                             </div>
                         </div>
                         <div class="doc-content-placeholder">
                              <iframe id="doc-iframe" class="doc-iframe" src=""></iframe>
-                             <div id="doc-placeholder-msg" style="position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; display:none;">
+                             <div id="doc-placeholder-msg">
                                 <div style="font-size: 40px; margin-bottom: 20px;">📄</div>
                                 <p id="doc-msg-text">File này là tài liệu ngoài hệ thống.</p>
                                 <a href="#" target="_blank" id="external-link-btn" style="color:var(--neon-teal);">Mở liên kết gốc</a>
@@ -238,19 +244,19 @@
                 <div class="modal-content">
                     <h2 class="modal-title">UPLOAD TÀI LIỆU</h2>
                     <input type="text" id="up-title" class="modal-input" placeholder="Tên tài liệu (VD: Đề cương Kinh tế)">
-<div class="autocomplete-wrapper">
-    <input type="text" id="up-category" class="modal-input" 
-           placeholder="Nhập tên môn học (VD: MKT21A...)" 
-           autocomplete="off" 
-           oninput="handleCategoryInput(this)" 
-           onfocus="handleCategoryInput(this)">
-    <div id="suggestion-box"></div>
-</div>                    
+            <div class="autocomplete-wrapper">
+                <input type="text" id="up-category" class="modal-input" 
+                    placeholder="Nhập tên môn học (VD: MKT21A...)" 
+                    autocomplete="off" 
+                    oninput="handleCategoryInput(this)" 
+                    onfocus="handleCategoryInput(this)">
+                <div id="suggestion-box"></div>
+            </div>                    
                     <!-- NEW: INPUT URL OPTION -->
                     <input type="text" id="up-url" class="modal-input" placeholder="Hoặc dán link Google Drive/PDF online...">
 
                     <div class="file-drop-area" onclick="document.getElementById('up-file').click()">
-                        <div style="font-size: 30px; margin-bottom: 10px;">📂</div>
+                        <div id = "📂">📂</div>
                         <span>Kéo thả file vào đây hoặc Click để chọn</span>
                         <input type="file" id="up-file" style="display:none" onchange="handleFileSelect(this)">
                         <div id="file-name-display" style="margin-top:10px; color:var(--neon-teal); font-size:12px;"></div>
@@ -259,7 +265,7 @@
                     <div class="progress-container">
                         <div class="progress-fill" id="up-progress"></div>
                     </div>
-                    <div style="text-align: right; color: #888; font-size: 12px; margin-top: 5px; display:none;" id="progress-text">Uploading... 0%</div>
+                    <div id="progress-text">Uploading... 0%</div>
 
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                         <button onclick="closeUploadModal()" class="btn-back">Hủy</button>
@@ -271,8 +277,8 @@
             <!-- ROLE EDIT MODAL (Admin Only) -->
             <div id="role-modal" class="modal-overlay" style="display:none;">
                 <div class="modal-content" style="width:350px;">
-                    <h3 style="color:var(--neon-gold); text-align:center; margin-bottom:20px;">PHÂN QUYỀN TRUY CẬP</h3>
-                    <p id="role-target-name" style="text-align:center; color:#fff; margin-bottom:20px;">Target: ...</p>
+                    <h3>PHÂN QUYỀN TRUY CẬP</h3>
+                    <p id="role-target-name">Target: ...</p>
                     
                     <div class="role-option">
                         <input type="checkbox" id="role-admin"> <label for="role-admin">Admin (Toàn quyền)</label>
@@ -299,10 +305,10 @@
                 <h1>The Brigade</h1>
                 <div class="subtitle">Trung tâm chỉ huy & Điều hành chiến dịch</div>
 
-                <div id="bridge-locked" style="text-align:center; margin-top:50px;">
-                    <h1 style="font-size:4rem;">🔒</h1>
-                    <h2 style="color:var(--neon-red);">ACCESS DENIED</h2>
-                    <p style="color:#888;">Bạn không có quyền truy cập vào khu vực này.<br>Chỉ dành cho các sĩ quan điều hành.</p>
+                <div id="bridge-locked">
+                    <h1>🔒</h1>
+                    <h2>ACCESS DENIED</h2>
+                    <p>Bạn không có quyền truy cập vào khu vực này.<br>Chỉ dành cho các sĩ quan điều hành.</p>
                 </div>
 
                 <div id="bridge-content" style="display:none;">
@@ -314,24 +320,24 @@
                         <div>
                             <!-- TESTER VIEW -->
                             <div class="role-card tester" id="panel-tester" style="display:none;">
-                                <h3 style="color:var(--neon-teal);">🛠️ TESTER STATION</h3>
-                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Gửi đề xuất sửa đổi hệ thống.</p>
-                                <textarea id="proposal-text" style="width:100%; background:#111; color:white; border:1px solid #444; padding:10px;" placeholder="Mô tả đề xuất..."></textarea>
+                                <h3>🛠️ TESTER STATION</h3>
+                                <p>Gửi đề xuất sửa đổi hệ thống.</p>
+                                <textarea id="proposal-text" placeholder="Mô tả đề xuất..."></textarea>
                                 <button onclick="sendProposal()" class="btn-primary" style="margin-top:10px;">Gửi Admin</button>
                             </div>
 
                             <!-- MARKETING VIEW -->
                             <div class="role-card mkt" id="panel-mkt" style="display:none;">
-                                <h3 style="color:var(--neon-pink);">📢 BROADCAST STATION</h3>
-                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Soạn thông báo toàn cục (Cần duyệt).</p>
-                                <input id="broadcast-msg" type="text" style="width:100%; background:#111; color:white; border:1px solid #444; padding:10px;" placeholder="Nội dung thông báo...">
-                                <button onclick="requestBroadcast()" class="btn-primary" style="margin-top:10px; background:var(--neon-pink);">Gửi Duyệt</button>
+                                <h3>📢 BROADCAST STATION</h3>
+                                <p>Soạn thông báo toàn cục (Cần duyệt).</p>
+                                <input id="broadcast-msg" type="text" placeholder="Nội dung thông báo...">
+                                <button onclick="requestBroadcast()" class="btn-primary">Gửi Duyệt</button>
                             </div>
 
                             <!-- OPERATION VIEW -->
                             <div class="role-card op" id="panel-op" style="display:none;">
-                                <h3 style="color:var(--neon-blue);">📋 OPS CENTER</h3>
-                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Duyệt tài liệu & Báo cáo quy trình.</p>
+                                <h3>📋 OPS CENTER</h3>
+                                <p>Duyệt tài liệu & Báo cáo quy trình.</p>
                                 <div style="background:#111; padding:10px; font-size:12px;">
                        
                                 </div>
@@ -342,10 +348,10 @@
                         <div>
                             <!-- ADMIN VIEW -->
                             <div class="role-card admin" id="panel-admin" style="display:none;">
-                                <h3 style="color:var(--neon-gold);">👑 HIGH COMMAND</h3>
+                                <h3>👑 HIGH COMMAND</h3>
                                 <div style="margin-bottom:15px;">
-                                    <h4 style="font-size:12px; color:#aaa;">INBOX (ĐỀ XUẤT & THÔNG BÁO)</h4>
-                                    <div id="admin-inbox" style="height:100px; overflow-y:auto; background:#111; padding:5px; font-size:12px;">
+                                    <h4>INBOX (ĐỀ XUẤT & THÔNG BÁO)</h4>
+                                    <div id="admin-inbox">
                                         <!-- Items via JS -->
                                         <div><i>Hòm thư trống...</i></div>
                                     </div>
@@ -353,8 +359,8 @@
                             </div>
 
                             <!-- RADAR (Always visible for authorized) -->
-                            <div style="background: rgba(0,0,0,0.2); padding:20px; border-radius:20px; text-align:center; border: 1px solid rgba(0,255,194,0.1);">
-                                <h3 style="margin-bottom:20px; color:var(--neon-teal);">LIVE RADAR</h3>
+                            <div class = "radar">
+                                <h3>LIVE RADAR</h3>
                                 <div class="radar-container" style="height:250px;">
                                     <div class="radar-circle" id="radar-screen" style="width:200px; height:200px;">
                                         <div class="radar-sweep"></div>
@@ -374,14 +380,14 @@
                 
                 <div style="margin-top: 50px; text-align: center; color: #aaa;">
                     <div style="font-size: 3rem; margin-bottom: 20px;">🤖</div>
-                    <p style="font-size: 1.2rem; color: var(--neon-teal);">SYSTEM AUTO-PILOT ENABLED</p>
-                    <p style="margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                    <p style="font-weight: bold;">SYSTEM AUTO-PILOT ENABLED</p>
+                    <p>
                         Hệ thống xếp hạng hiện đang hoạt động ngầm (Implant Mode).<br>
                         Mọi chỉ số Navigator, Guardian và Diplomat của bạn sẽ được tự động ghi nhận và chuyển hóa thành Energy Points.
                     </p>
                     <br>
-                    <p style="font-size: 0.9rem; color: #666;">
-                        Kiểm tra cấp độ hiện tại của bạn tại <b style="color: white; cursor: pointer;" onclick="switchTab('cabin', document.querySelector('.nav-item.active'))">Energy Cabin</b>
+                    <p id = "againclick">
+                        Kiểm tra cấp độ hiện tại của bạn tại <b onclick="switchTab('cabin', document.querySelector('.nav-item.active'))">Energy Cabin</b>
                     </p>
                 </div>
             </div>
@@ -391,7 +397,7 @@
                 <div class="void-container">
                     <div class="void-header">
                         <div><span class="void-status-dot"></span>ENCRYPTED CHANNEL: THE VOID (ONLINE)</div>
-                        <div id="void-user-identity" style="font-weight: bold; color: #888;">CONNECTING...</div>
+                        <div id="void-user-identity">CONNECTING...</div>
                     </div>
                     
                     <div class="void-messages-area" id="void-messages">
@@ -1484,7 +1490,7 @@ window.submitUpload = async function() {
     }
 };
     // --- BƯỚC 1: SỬA LOGIC HIỂN THỊ TẠI RESOURCE HUB ---
-window.initResourceHub = function() {
+    window.initResourceHub = function() {
     // Vẫn lấy các tài liệu mới nhất
     const q = query(collection(db, "resources"), orderBy("createdAt", "desc"), limit(50));
     
