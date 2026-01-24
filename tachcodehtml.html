@@ -117,7 +117,7 @@
                         <div class="rank-title" id="user-rank-title">CONNECTING...</div>
                         <div class="tier-tag" id="user-tier-tag" style="display:inline-block; margin-bottom:10px;">Checking ID</div>
                         
-                        <div>Energy Core Status</div>
+                        <div><p>Energy Core Status</p></div>
                         <div class="energy-bar-container">
                             <div class="energy-bar-fill" id="energy-bar"></div>
                         </div>
@@ -146,7 +146,7 @@
                             </div>
                         </div>
                         
-                        <div style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;" id="quote-box">
+                        <div id="quote-box">
                             <!-- Dynamic Quote inserted by JS -->
                         </div>
 
@@ -179,21 +179,21 @@
 
                    <div style="display:flex; gap:10px; margin-bottom:20px;">
     
-    <div class="autocomplete-wrapper">
-        <input
-            type="text"
-            id="search-input"
-            class="search-input"
-            placeholder="Tìm kiếm tài liệu / Môn học..."
-            autocomplete="off"
-            oninput="handleSearchInput(this)"
-            onfocus="handleSearchInput(this)"
-        >
+            <div class="autocomplete-wrapper">
+                <input
+                    type="text"
+                    id="search-input"
+                    class="search-input"
+                    placeholder="Tìm kiếm tài liệu / Môn học..."
+                    autocomplete="off"
+                    oninput="handleSearchInput(this)"
+                    onfocus="handleSearchInput(this)"
+                >
 
-        <div id="search-suggestion-box"></div>
-    </div>
+                <div id="search-suggestion-box"></div>
+            </div>
 
-    <button class="btn-primary" onclick="openUploadModal()">Upload Document</button>
+             <button class="btn-primary" onclick="openUploadModal()">Upload Document</button>
 </div>
 
 <div class="resource-list" id="resource-list-container">
@@ -247,21 +247,20 @@
                         </div>
                     </div>
                 </div>
-            </div>
             
             <!-- UPLOAD MODAL (Hidden) -->
             <div id="upload-modal" class="modal-overlay" style="display:none;">
                 <div class="modal-content">
                     <h2 class="modal-title">UPLOAD TÀI LIỆU</h2>
                     <input type="text" id="up-title" class="modal-input" placeholder="Tên tài liệu (VD: Đề cương Kinh tế)">
-<div class="autocomplete-wrapper">
-    <input type="text" id="up-category" class="modal-input" 
-           placeholder="Nhập tên môn học (VD: MKT21A...)" 
-           autocomplete="off" 
-           oninput="handleCategoryInput(this)" 
-           onfocus="handleCategoryInput(this)">
-    <div id="suggestion-box"></div>
-</div>                    
+            <div class="autocomplete-wrapper">
+                <input type="text" id="up-category" class="modal-input" 
+                    placeholder="Nhập tên môn học (VD: MKT21A...)" 
+                    autocomplete="off" 
+                    oninput="handleCategoryInput(this)" 
+                    onfocus="handleCategoryInput(this)">
+                <div id="suggestion-box"></div>
+                 </div>                    
                     <!-- NEW: INPUT URL OPTION -->
                     <input type="text" id="up-url" class="modal-input" placeholder="Hoặc dán link Google Drive/PDF online...">
 
@@ -280,9 +279,9 @@
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                         <button onclick="closeUploadModal()" class="btn-back">Hủy</button>
                         <button onclick="submitUpload()" class="btn-primary">Xác nhận Upload</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <!-- ROLE EDIT MODAL (Admin Only) -->
             <div id="role-modal" class="modal-overlay" style="display:none;">
@@ -311,7 +310,7 @@
             </div>
 
             <!-- BRIDGE VIEW (Access Restricted) -->
-            <div id="bridge" class="view-section">
+            <div id="bridge" class = "view-section">
                 <h1>The Brigade</h1>
                 <div class="subtitle">Trung tâm chỉ huy & Điều hành chiến dịch</div>
 
@@ -321,13 +320,13 @@
                     <p>Bạn không có quyền truy cập vào khu vực này.<br>Chỉ dành cho các sĩ quan điều hành.</p>
                 </div>
 
-                <div id="bridge-content" style="display:none;">
+                <div id="bridge-content">
                     
                     <!-- DYNAMIC ROLE VIEWS -->
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                    <div class = "role-views">
                         
                         <!-- LEFT COLUMN: Role Actions -->
-                        <div>
+                        <div class = "role-card">
                             <!-- TESTER VIEW -->
                             <div class="role-card tester" id="panel-tester" style="display:none;">
                                 <h3>🛠️ TESTER STATION</h3>
@@ -355,11 +354,11 @@
                         </div>
 
                         <!-- RIGHT COLUMN: Admin & Radar -->
-                        <div>
+                        <div class = "role-card">
                             <!-- ADMIN VIEW -->
                             <div class="role-card admin" id="panel-admin" style="display:none;">
                                 <h3>👑 HIGH COMMAND</h3>
-                                <div style="margin-bottom:15px;">
+                                <div style="margin-bottom:0px;">
                                     <h4>INBOX (ĐỀ XUẤT & THÔNG BÁO)</h4>
                                     <div id="admin-inbox">
                                         <!-- Items via JS -->
@@ -418,12 +417,12 @@
                     </div>
 
                     <div class="void-input-area">
-                        <span style="color: var(--neon-teal); margin-right: 10px;">></span>
+                        <span> 🤓 </span>
                         <input type="text" class="void-input" id="void-input-field" placeholder="Nhập tín hiệu... (Enter để gửi)" autocomplete="off">
                     </div>
                 </div>
             </div>
-
+        </div>
         </div>
     </div>
 
@@ -803,21 +802,34 @@ window.identifyUserForTracking = function(profile) {
     // Proposals
     const proposalsQ = query(collection(db, "proposals"), where("status", "==", "unread"), orderBy("createdAt", "desc"));
     onSnapshot(proposalsQ, (snap) => {
-        console.log("Proposals: ", snap.size, "docs");
-        let html = '<h4 style="color:#00FFC2;">Đề xuất Tester</h4>';
-        if (snap.empty) {
-            html += '<div style="color:#888;">Không có đề xuất mới.</div>';
-        } else {
-            snap.forEach(d => {
-                const data = d.data();
-                html += `<div style="padding:10px; border-left:4px solid #00FFC2; margin-bottom:10px;">
-                    ${data.content}<br><small>${data.sender}</small>
-                    <button onclick="markAsRead('${d.id}', 'proposals')" style="background:#333; color:white; border:1px solid #555; padding:2px 5px; font-size:10px; cursor:pointer; margin-top:5px;">Mark Read</button>
-                </div>`;
-            });
-        }
-        updateInbox(html + '<hr style="border-color:#444;">');
-    });
+    console.log("Proposals: ", snap.size, "docs");
+
+    let html = '<h4 style="color:#00FFC2;">Đề xuất Tester</h4>';
+
+    if (snap.empty) {
+        html += '<div style="color:#888;">Không có đề xuất mới.</div>';
+    } else {
+        snap.forEach(d => {
+            const data = d.data();
+            const createdAt = data.createdAt?.toDate?.();
+            const timeString = createdAt ? createdAt.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+
+            html += `
+                <div class="proposal-box">
+                    ${data.content}<br>
+                    <small>${data.sender} – ${timeString}</small><br>
+                    <button onclick="markAsRead('${d.id}', 'proposals')"
+                        style="background:#333; color:white; border:1px solid #555; padding:2px 5px; font-size:10px; cursor:pointer; margin-top:5px;">
+                        Mark Read
+                    </button>
+                </div>
+            `;
+        });
+    }
+    // Gắn lại nội dung mới, không bị lặp
+    document.getElementById('admin-inbox').innerHTML = html + '<hr style="border-color:#444;">';
+});
+
     
     // Broadcasts
     const broadcastsQ = query(collection(db, "broadcasts"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
@@ -1333,20 +1345,38 @@ if (window.docStartTime > 0) {
             });
         };
 
+        // Hàm thêm tin nhắn vào chat, kèm ngày giờ
         window.appendVoidMessage = function(identity, text, isMe) {
             const chatBox = document.getElementById('void-messages');
             const row = document.createElement('div');
             row.className = `void-msg-row ${isMe ? 'me' : ''}`;
-            const idDiv = document.createElement('div'); idDiv.className = 'void-identity'; idDiv.innerText = identity;
-            const contentDiv = document.createElement('div'); contentDiv.className = 'void-content'; contentDiv.innerText = text;
-            row.appendChild(idDiv); row.appendChild(contentDiv);
+
+            const idDiv = document.createElement('div');
+            idDiv.className = 'void-identity';
+            idDiv.innerText = identity;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'void-content';
+
+            const now = new Date();
+            const dateString = now.toLocaleDateString('vi-VN');
+            const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const timestamp = `${dateString} ${timeString}`;
+
+            contentDiv.innerHTML = `
+                <p>${text}</p>
+                <span class="timestamp">${timestamp}</span>
+            `;
+
+            row.appendChild(idDiv);
+            row.appendChild(contentDiv);
             chatBox.appendChild(row);
             chatBox.scrollTop = chatBox.scrollHeight;
         };
 
-window.sendVoidMessage = async function() {
-    const input = document.getElementById('void-input-field');
-    const text = input.value.trim();
+        window.sendVoidMessage = async function() {
+            const input = document.getElementById('void-input-field');
+            const text = input.value.trim();
     
     // Chỉ xử lý khi có nội dung (tránh spam tin rỗng)
     if (text) {
@@ -1636,7 +1666,7 @@ window.setupOpsCenter = function() {
 
     // 1. Vẽ lại giao diện Ops Panel để chứa danh sách chờ
     opsPanel.innerHTML = `
-        <h3 style="color:var(--neon-blue);">📋 OPS CENTER</h3>
+        <h3>📋 OPS CENTER</h3>
         <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Trung tâm kiểm soát tài liệu.</p>
         
         <div style="border-top: 1px solid #333; padding-top:10px;">

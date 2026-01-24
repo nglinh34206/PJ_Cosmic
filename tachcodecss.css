@@ -1,13 +1,36 @@
-h1,h2,h3,h4 {
+h1 {
     font-family: "Outfit", sans-serif;
-    font-size: 40px;
+    font-size: 35px;
     font-weight: 700;
     letter-spacing: -0.5px;
     color: #E0FFFF;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+h2,h3 {
+    font-family: "Outfit", sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #E0FFFF;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+h4 {
+    font-family: "Outfit", sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #E0FFFF;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 p {
     font-family: "Inter", sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 400;
     line-height: 1.7;
     color: #E0FFFF;
@@ -251,7 +274,7 @@ p {
             color: white;
             font: "inter", sans-serif;
             margin-bottom: 20px;
-            font-size: 16px;
+            font-size: 14px;
             text-align: center;
             letter-spacing: 1px;
         }
@@ -276,7 +299,7 @@ p {
             font: "inter", sans-serif;
             font-weight: bold;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             transition: 0.3s;
         }
 
@@ -303,7 +326,7 @@ p {
         .auth-switch {
             margin-top: 15px;
             font: "inter", sans-serif;
-            font-size: 12px;
+            font-size: 14px;
             color: #888;
             cursor: pointer;
         }
@@ -311,6 +334,7 @@ p {
 
         /* --- APP CONTAINER (HIDDEN INITIALLY) --- */
         #app-container {
+            position : fixed;
             display: none; /* Hiển thị sau khi login */
             width: 100%;
             height: 100%;
@@ -457,19 +481,26 @@ p {
         .main-content {
             flex: 1;
             padding: 30px;
-            margin-left: 80px;
             overflow-y: auto;
             position: relative;
-            background: transparent; 
+            background: transparent;
+            margin-left: 40px; /* Căn lề trái cố định */
+            margin-right: 20px; /* Nếu cần cân đối hai bên */ 
+            padding: 16px; /* Khoảng cách bên trong module */ 
+            box-sizing: border-box; 
         }
 
         .view-section {
             display: none;
             animation: fadeIn 0.5s ease;
+            margin-left: 40px; /* Căn lề trái cố định */
+            margin-right: 20px;
         }
 
         .view-section.active {
             display: block;
+            margin-left: 40px; /* Căn lề trái cố định */
+            margin-right: 20px;
         }
 
         @keyframes fadeIn {
@@ -477,17 +508,11 @@ p {
             to { opacity: 1; transform: translateY(0); }
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
         .subtitle {
             color: var(--neon-teal);
             font: "Inter", sans-serif;
-            font-size: 1.1rem;
+            font-size: 18px;
+            font: "Inter", sans-serif;
             margin-bottom: 30px;
             display: inline-block;
             border-bottom: 1px solid var(--neon-teal);
@@ -634,6 +659,7 @@ p {
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-top: 30px;
+            font: "Inter", sans-serif;
         }
 
         .stat-item {
@@ -643,8 +669,21 @@ p {
             border-left: 3px solid var(--neon-teal);
         }
 
-        .stat-val { font-size: 20px; font-weight: bold; color: white; }
-        .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
+        .stat-val { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #E0FFFF; }
+        .stat-label { 
+            font-size: 12px; 
+            color: var(--text-dim); 
+            text-transform: uppercase; }
+        
+        #quote-box {
+            margin-top: 20px; 
+            background: rgba(255,255,255,0.05); 
+            padding: 20px; 
+            border-radius: 10px; 
+        }
 
         .energy-bar-container {
             background: #1C2438;
@@ -664,18 +703,6 @@ p {
         }
 
         /* --- ADMIN PANEL & BRIGADE ROLES --- */
-        #admin-inbox {
-            height:100px; 
-            overflow-y:auto; 
-            background:#111; 
-            padding:5px; font-size:12px;
-        }
-        #admin-search {
-            background:#222; 
-            border:1px solid #444; 
-            color:white; 
-            padding:5px;
-        }
         .admin-panel {
             margin-top: 30px;
             background: rgba(0, 255, 194, 0.05);
@@ -683,6 +710,19 @@ p {
             border-radius: 15px;
             padding: 20px;
             display: none; /* Only for admin */
+        }
+        #admin-inbox {
+            height:150px; 
+            overflow-y:auto; 
+            background:#111; 
+            padding:5px; 
+            font-size:12px;
+        }
+        #admin-search {
+            background:#222; 
+            border:1px solid #444; 
+            color:white; 
+            padding:5px;
         }
         
         .class {
@@ -693,6 +733,7 @@ p {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+            font: "Inter", sans-serif
         }
         .crew-table th, .crew-table td {
             padding: 10px;
@@ -818,11 +859,15 @@ p {
             width: auto;
             border-radius: 5px;
             font: "Inter", sans-serif;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             margin-left: 10px;
-            display: inline-flex; /* Hidden by default */
+            padding: 10px 10px;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: center; 
+            vertical-align: middle; 
         }
        .btn-back:hover {
             border-color: #8F5AFF;
@@ -908,6 +953,9 @@ p {
             display: flex;
             gap: 20px;
             animation: fadeIn 0.3s ease;
+            margin-left: 40px;
+            height: 100%;
+            width: 100%;
         }
         
         .split-left {
@@ -917,7 +965,6 @@ p {
             border-radius: 10px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
         
         .doc-viewer-header {
@@ -1036,11 +1083,15 @@ p {
             color: #E0FFFF;
             font: "Inter", sans-serif;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 14px;
             border: none;
-            padding: 0 15px;
             border-radius: 5px;
             cursor: pointer;
+            padding: 10px 10px;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: center; 
+            vertical-align: middle; 
         }
         .btn-send:hover {
             border-color: #8F5AFF;
@@ -1055,12 +1106,16 @@ p {
             border: 1px solid #FF4500;
             color: #FF4500;
             font: "inter", sans-serif;
-            padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             animation: pulseDot 2s infinite;
+            padding: 10px 10px;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: center; 
+            vertical-align: middle; 
         }
         
         .btn-sos-trigger:hover {
@@ -1080,13 +1135,17 @@ p {
             background: transparent;
             border: 1px solid rgba(0, 221, 235, 0.6);
             color: #00DDEB;
-            padding: 6px 14px;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
             font: "Inter", sans-serif;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             transition: all 0.25s ease;
+            padding: 10px 10px;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: center; 
+            vertical-align: middle; 
         }
 
         .btn-back:hover {
@@ -1103,13 +1162,18 @@ p {
             color: #E0FFFF;
             border: none;
             width: auto;
-            padding: 12px 20px;
-            border-radius: 10px;
+            border-radius: 5px;
             font: "Inter", sans-serif;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.25s ease;
+            margin-top: 12px;
+            padding: 10px 10px;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: center; 
+            vertical-align: middle; 
         }
         .btn-primary:hover {
             background-color: #00ffee;
@@ -1122,6 +1186,38 @@ p {
         #bridge-locked {
             text-align:center;
             margin-top:50px;
+        }
+        #bridge-content {
+            display:none;
+        }
+        /*định dạng cho các ngăn nhỏ ở BRIDGE*/
+        .role-views { 
+            grid-template-columns: 1fr 1fr; 
+            display: flex;
+            gap: 24px; /* khoảng cách giữa hai cột */
+            padding: 10px;
+            box-sizing: border-box;
+            margin-left: -10px; /* nếu sidebar cố định bên trái */
+        }
+        .role-views > div {
+            flex: 1;
+            min-width: 0; /* tránh tràn nội dung */
+            }
+        
+        .role-card {
+            background: rgba(0,0,0,0.3); 
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            width: 100%;
+            }
+        @media (max-width: 768px) {
+            .role-views {
+                flex-direction: column;
+                margin-left: 0;
+                padding: 16px;
+            }
         }
 
         #proposal-text {
@@ -1140,6 +1236,7 @@ p {
             padding:10px;
         }
 
+        .role-card.admin { height: 40%; overflow-y: auto; }
         /*RADAR*/
         .radar {
             background: rgba(0,0,0,0.2); 
@@ -1147,6 +1244,7 @@ p {
             border-radius:20px; 
             text-align:center; 
             border: 1px solid rgba(0,255,194,0.1);
+            height: 60%
         }
         .radar-container {
             background-color: #1C2438;
@@ -1340,6 +1438,15 @@ p {
             font-size: 14px;
         }
         
+        /*định dạng cho ngày giờ trong tin nhắn thoại ở VOID*/
+        .timestamp {
+            display: block;
+            font-size: 11px;      
+            color: #888;         
+            margin-top: 4px;
+            text-align: right;
+            }
+
         .void-input:focus { outline: none; }
 
         @keyframes blink { 50% { opacity: 0.3; } }
@@ -1405,3 +1512,5 @@ p {
 .suggestion-item strong {
     color: var(--neon-teal);
 }
+
+
