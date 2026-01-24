@@ -712,6 +712,7 @@ p {
             display: none; /* Only for admin */
         }
         #admin-inbox {
+            
             height:150px; 
             overflow-y:auto; 
             background:#111; 
