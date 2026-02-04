@@ -1,9 +1,6 @@
 # PJ_Cosmic
 # 🌌 THE COSMIC PROJECT  
 **No One Fly Alone – NO F.A**
-
-🔗 **Live Demo:** https://cosmic-star.netlify.app/
-
 ## 📌 Giới thiệu
 **Cosmic** là một hệ thống học tập & kết nối nội bộ dành cho tập thể lớp (~60 sinh viên), được xây dựng với mục tiêu:
 
