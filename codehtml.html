@@ -1705,6 +1705,22 @@ window.rejectDocument = async function(docId) {
         document.getElementById('auth-msv').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
         document.getElementById('chat-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
         document.getElementById('void-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); }) 
+        fetch("http://localhost:3000/api/login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    username: "demoUser"
+  })
+})
+.then(res => res.json())
+.then(data => {
+  document.getElementById("stat-online").innerText =
+    data.onlineDays + " Day";
+})
+.catch(err => console.error("API error:", err));
+
    </script>
 </body>
 </html>
