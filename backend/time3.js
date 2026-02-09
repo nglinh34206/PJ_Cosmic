@@ -1,10 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const dayjs = require("dayjs");
+const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+const PORT = 3000;
 
 let users = {}; // fake database
 
@@ -29,6 +31,16 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Backend running at http://localhost:3000");
+// download tài liệu
+app.get("/download/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "files", req.params.filename);
+
+  res.download(filePath, (err) => {
+    if (err) {
+      res.status(404).send("File không tồn tại");
+    }
+  });
+});
+app.listen(PORT, () => {
+  console.log(`Backend running at http://localhost:${PORT}`);
 });

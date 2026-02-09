@@ -198,9 +198,22 @@
                                 <span style="font-weight:bold; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;" id="doc-title">Document Title</span>
                             </div>
                             <div style="display:flex; align-items:center;">
-                                <button class="btn-primary" style="padding: 5px 15px; font-size:12px;">Download PDF</button>
-                                <button id="btn-delete-current-doc" class="btn-delete-doc" onclick="deleteCurrentDocument()">🗑️ Xóa</button>
-                            </div>
+                                <a
+                                   id="btn-download"
+                                    href="http://localhost:3000/download/sample.pdf"
+                                    class="btn-primary"
+                                    style="padding: 5px 15px; font-size:12px; text-decoration:none; display:inline-block;"
+                                >
+                                    Download PDF
+                                  </a>
+                                <button
+                                 id="btn-delete-current-doc"
+                                 class="btn-delete-doc"
+                                 onclick="deleteCurrentDocument()"
+                                >
+                                🗑️ Xóa
+                                 </button>
+                                </div>
                         </div>
                         <div class="doc-content-placeholder">
                              <iframe id="doc-iframe" class="doc-iframe" src=""></iframe>
@@ -1720,6 +1733,9 @@ window.rejectDocument = async function(docId) {
     data.onlineDays + " Day";
 })
 .catch(err => console.error("API error:", err));
+document.getElementById("btn-download").addEventListener("click", () => {
+  alert("File PDF đang được tải xuống...");
+});
 
    </script>
 </body>
