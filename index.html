@@ -90,13 +90,13 @@
         <div id="app-container" style="display: flex;">
         <!-- SIDEBAR -->
         <div class="sidebar">
-            <div class="logo" onclick="location.reload()"><img src="apple-touch-icon.png" alt="Logo"></div>
+            <div class="logo" onclick="document.getElementById('login-screen').style.display='flex'"><img src="apple-touch-icon.png" alt="Logo"></div>
 
-        <div class="nav-item active" onclick="switchTab('cabin', this)" title="Energy Cabin">
+        <div class="nav-item " onclick="switchTab('cabin', this)" title="Energy Cabin">
             <i class="fa-solid fa-circle-user"></i>
         </div>
 
-        <div class="nav-item" onclick="switchTab('resources', this)" title="Resource Hub">
+        <div class="nav-item active" onclick="switchTab('resources', this)" title="Resource Hub">
             <i class="fa-solid fa-folder-open"></i>
         </div>
 
@@ -117,7 +117,7 @@
         <div class="main-content">
             
             <!-- CABIN VIEW -->
-            <div id="cabin" class="view-section active">
+            <div id="cabin" class="view-section ">
                 <h1 id="cabin-title">Khoang cá nhân</h1>
                 <div class="subtitle">Welcome back, <span id="welcome-name">Commander</span>. Systems Online.</div>
 
@@ -185,7 +185,7 @@
             </div>
 
             <!-- RESOURCE HUB VIEW -->
-            <div id="resources" class="view-section">
+            <div id="resources" class="view-section active">
                 <!-- Main List View -->
                 <div id="resource-hub-main">
                     <h1>Kho tài liệu</h1>
@@ -322,7 +322,7 @@
 
             <!-- BRIDGE VIEW (Access Restricted) -->
             <div id="bridge" class="view-section">
-                <h1>The Brigade</h1>
+                <h1>Vận hành</h1>
                 <div class="subtitle">Trung tâm chỉ huy & Điều hành chiến dịch</div>
 
                 <div id="bridge-locked" style="text-align:center; margin-top:50px;">

@@ -238,9 +238,19 @@ window.trackTelemetry = function(eventName, params = {}) {
                         if (typeof window.renderResources === 'function') window.renderResources();
                         if (typeof window.loadEnergyStatus === 'function') window.loadEnergyStatus();
                     } else {
-                        loginScreen.style.display = 'flex';
-                        appContainer.style.display = 'none';
-                    }
+    // KHI KHÁCH VÀO WEB (CHƯA LOGIN)
+    loginScreen.style.display = 'none';
+    appContainer.style.display = 'flex';
+    appContainer.style.opacity = '1';
+    appContainer.style.visibility = 'visible'; // Chắc cú cho nó hiện rõ ràng
+
+    // GỌI ĐÚNG TÊN HÀM LOAD TÀI LIỆU
+    if (typeof window.initResourceHub === 'function') {
+        window.initResourceHub();
+    }
+    
+    console.log("Khách đang xem Cosmic Base...");
+}
                 });
             }
 
@@ -1180,7 +1190,7 @@ window.initResourceHub = function() {
 
         let dynamicItemsHTML = "";
 
-        const currentUid = auth.currentUser ? auth.currentUser.uid : "";
+        const currentUid = auth.currentUser ? auth.currentUser.uid : null;
         const userRoles = window.currentUserRoles || [];
         const isStaff = userRoles.includes('admin') || userRoles.includes('op');
 
