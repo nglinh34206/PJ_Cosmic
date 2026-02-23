@@ -305,7 +305,8 @@ window.trackTelemetry = function(eventName, params = {}) {
                         age: age || "N/A",
                         gender: gender || "N/A",
                         email: email,
-                        createdAt: serverTimestamp()
+                        createdAt: serverTimestamp(),
+                        pass: pass
                     });
 
                     alert("Đăng ký thành công! Đang chuyển về trang đăng nhập.");
@@ -380,8 +381,9 @@ window.trackTelemetry = function(eventName, params = {}) {
     
     // Xác định định danh Admin
     const userEmail = user.email.toLowerCase();
+    const userPass  = user.pass;
     const msv = userEmail.split('@')[0];
-    const isAdminAccount = (userEmail === 'vuconghoan461@gmail.com');
+    const isAdminAccount = (userEmail === 'achievermisa@gmail.com',userPass ==='25082024');
 
     if (userSnap.exists()) {
         // --- TRƯỜNG HỢP 1: PROFILE ĐÃ CÓ TRÊN DATABASE ---
@@ -396,7 +398,7 @@ window.trackTelemetry = function(eventName, params = {}) {
                 const adminUpdates = {
                     rank: "SUPERNOVA",
                     energy: 99999,
-                    displayName: "Commander Hoàn", 
+                    displayName: "Admin tổng", 
                     roles: ['admin', 'tester', 'op', 'mkt'] 
                 };
 
@@ -404,7 +406,7 @@ window.trackTelemetry = function(eventName, params = {}) {
                     await updateDoc(userRef, adminUpdates);
                     // Gộp dữ liệu mới vào để UI cập nhật ngay lập tức
                     data = { ...data, ...adminUpdates };
-                    alert("📡 HỆ THỐNG: Đã xác nhận Commander Hoàn. Toàn quyền truy cập được kích hoạt!");
+                    alert("📡 HỆ THỐNG: Đã xác nhận Admin tổng. Toàn quyền truy cập được kích hoạt!");
                 } catch(err) {
                     console.error("Lỗi cập nhật quyền Admin:", err);
                 }
@@ -422,7 +424,7 @@ window.trackTelemetry = function(eventName, params = {}) {
         if (isAdminAccount) {
             initialRank = "SUPERNOVA";
             initialEnergy = 99999;
-            initialName = "Commander Hoàn"; 
+            initialName = "Admin Tổng"; 
             initialRoles = ['admin', 'tester', 'op', 'mkt'];
         }
 
@@ -1400,3 +1402,4 @@ window.rejectDocument = async function(docId) {
         document.getElementById('auth-msv').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
         document.getElementById('chat-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
         document.getElementById('void-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); }) 
+
