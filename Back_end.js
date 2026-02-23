@@ -1175,7 +1175,7 @@ window.submitUpload = async function() {
 };
     // --- BƯỚC 1: SỬA LOGIC HIỂN THỊ TẠI RESOURCE HUB ---
 window.initResourceHub = function() {
-    const q = query(collection(db, "resources"), orderBy("createdAt", "desc"), limit(50));
+    const q = query(collection(db, "resources"),orderBy("priority", "desc"), orderBy("createdAt", "desc"), limit(50));
     
     onSnapshot(q, (snapshot) => {
         const listContainer = document.getElementById('resource-list-container');
@@ -1385,15 +1385,28 @@ window.setupOpsCenter = function() {
 };
 
 // Hàm Duyệt (Chuyển status -> approved)
+// Hàm Duyệt có thêm Priority
 window.approveDocument = async function(docId) {
-    if (!confirm("Xác nhận DUYỆT tài liệu này? Nó sẽ được hiển thị cho toàn bộ Brigade.")) return;
+    // 1. Dùng prompt để lấy chỉ số từ Operator
+    let priorityInput = prompt("Nhập độ ưu tiên (Số càng lớn tài liệu xếp càng cao, mặc định là 0):", "0");
+    
+    // NẾU BẤM CANCEL THÌ HỦY DUYỆT
+    if (priorityInput === null) return; 
+    
+    // 2. Ép kiểu về số, nếu nhập bậy bạ (chữ cái) thì tự động cho về 0
+    let priorityScore = parseInt(priorityInput, 10);
+    if (isNaN(priorityScore)) priorityScore = 0;
+
+    if (!confirm(`Xác nhận DUYỆT tài liệu này với độ ưu tiên: ${priorityScore}?`)) return;
+    
     try {
         await updateDoc(doc(db, "resources", docId), {
             status: 'approved',
             approvedBy: window.currentUserName,
-            approvedAt: serverTimestamp()
+            approvedAt: serverTimestamp(),
+            priority: priorityScore // LƯU VÀO DATABASE
         });
-        window.showNotificationBanner("✅ Đã duyệt tài liệu thành công!");
+        window.showNotificationBanner(`✅ Đã duyệt và gắn mức ưu tiên: ${priorityScore}`);
     } catch (e) {
         alert("Lỗi: " + e.message);
     }
