@@ -1,0 +1,316 @@
+/* =========================================
+   1. CORE VARIABLES (BIẾN MÀU SẮC)
+   ========================================= */
+:root {
+    --cosmo-bg: #0A0E17;
+    --cosmo-dark: #1C2438;
+    --neon-cyan: #00DDEB;
+    --neon-purple: #8F5AFF;
+    --text-main: #E0FFFF;
+    --text-dim: rgba(224,255,255,0.6);
+    --neon-red: #FF4500;
+}
+
+/* =========================================
+   2. RESET & CƠ BẢN
+   ========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+/* Dùng Outfit cho tất cả các tiêu đề và khối Teasing */
+h1, h2, h3, h4, .title, #cosmic-promo-banner b, #cosmic-promo-banner h3 {
+    font-family: 'Outfit', sans-serif;
+}
+body {
+    background:
+        radial-gradient(circle at 20% 20%, rgba(143,90,255,0.15), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(0,221,235,0.12), transparent 45%),
+        var(--cosmo-bg);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+/* =========================================
+   3. HIỆU ỨNG NỀN VŨ TRỤ
+   ========================================= */
+.stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: -1;
+    background-image: 
+        radial-gradient(1px 1px at 10% 10%, white, transparent),
+        radial-gradient(2px 2px at 30% 30%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(2px 2px at 60% 60%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 90% 90%, white, transparent);
+    background-size: 550px 550px;
+    animation: starsMove 100s linear infinite;
+    opacity: 0.6;
+}
+
+.nebula {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: 
+        linear-gradient(125deg, transparent 30%, rgba(106, 17, 203, 0.15) 45%, rgba(37, 117, 252, 0.1) 55%, transparent 70%),
+        radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.05), transparent 40%);
+    z-index: -2;
+    pointer-events: none;
+    filter: blur(20px);
+}
+
+@keyframes starsMove {
+    from { background-position: 0 0; }
+    to { background-position: 1000px 1000px; }
+}
+
+/* =========================================
+   4. LAYOUT CHÍNH & TIÊU ĐỀ
+   ========================================= */
+.main-content {
+    flex: 1; padding: 30px; overflow-y: auto; position: relative;
+    background: transparent; box-sizing: border-box; 
+}
+
+.view-section { display: none; animation: fadeIn 0.5s ease; }
+.view-section.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1 { font-size: 2.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+
+.subtitle {
+    color: var(--neon-purple); font-size: 1.1rem; margin-bottom: 30px;
+    display: inline-block; border-bottom: 1px solid var(--neon-purple); padding-bottom: 5px;
+}
+
+/* =========================================
+   5. NHẬN DIỆN THƯƠNG HIỆU (BRAND HEADER)
+   ========================================= */
+.brand-header {
+    display: flex; align-items: center; gap: 15px;
+    margin-bottom: 30px; padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 221, 235, 0.2);
+}
+
+.brand-logo-wrapper {
+    width: 60px; height: 60px;
+    border-radius: 14px; /* Bo góc chuẩn App Icon */
+    background: #0A0E17;
+    display: flex; justify-content: center; align-items: center;
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 221, 235, 0.4);
+    overflow: hidden; flex-shrink: 0;
+}
+
+.brand-logo {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+
+.brand-typography { display: flex; flex-direction: column; }
+
+.brand-name {
+    color: var(--text-main); font-size: 1.8rem; font-weight: 900;
+    letter-spacing: 3px; margin: 0; text-shadow: 0 0 10px rgba(224, 255, 255, 0.4);
+}
+
+.brand-slogan {
+    color: var(--neon-purple); font-size: 0.9rem;
+    letter-spacing: 1px; text-transform: uppercase; font-weight: bold;
+}
+
+/* =========================================
+   6. DANH SÁCH TÀI LIỆU
+   ========================================= */
+.resource-list {
+    display: flex; flex-direction: column; gap: 15px;
+    height: calc(100vh - 250px); overflow-y: auto; padding-right: 5px;
+}
+
+.resource-list::-webkit-scrollbar { width: 5px; }
+.resource-list::-webkit-scrollbar-thumb { background: rgba(0, 221, 235, 0.4); border-radius: 5px; }
+
+.resource-item {
+    background: var(--cosmo-dark); padding: 20px; border-radius: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid transparent; transition: all 0.2s;
+    backdrop-filter: blur(5px); cursor: pointer;
+}
+
+.resource-item:hover {
+    border-color: var(--neon-cyan); background: rgba(0, 221, 235, 0.08);
+    transform: translateX(5px);
+}
+
+.res-icon { font-size: 24px; margin-right: 15px; }
+.res-info h3 { font-size: 16px; margin-bottom: 5px; color: var(--text-main); }
+.res-info p { font-size: 12px; color: var(--text-dim); margin: 0; }
+
+/* =========================================
+   7. TRÌNH ĐỌC TÀI LIỆU (SPLIT VIEW)
+   ========================================= */
+.doc-viewer-header {
+    padding: 15px; background: rgba(28, 36, 56, 0.9);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.doc-content-placeholder {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: rgba(10,14,23,0.9); overflow: hidden; position: relative;
+    border-radius: 0 0 10px 10px;
+}
+
+.doc-iframe { width: 100%; height: 100%; border: none; background: var(--cosmo-bg); }
+
+/* =========================================
+   8. RESPONSIVE (MOBILE)
+   ========================================= */
+@media (max-width: 768px) {
+    .main-content { padding: 15px; }
+    h1 { font-size: 2rem; }
+    .brand-header { margin-bottom: 20px; padding-bottom: 15px; }
+    .brand-logo-wrapper { width: 50px; height: 50px; }
+    .brand-name { font-size: 1.4rem; }
+    .brand-slogan { font-size: 0.8rem; }
+    .resource-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .resource-item > div:last-child { align-self: flex-end; }
+    #split-view-container { height: calc(100vh - 40px); }
+}
+/* =========================================
+   /* =========================================
+   10. KHỐI NỀN ĐẶC MÀU 0A0E17 (SOLID BLOB)
+   ========================================= */
+.blob-solid {
+    display: inline-block;
+    background-color: #0A0E17; /* Đúng màu cậu yêu cầu luôn nhé */
+    padding: 15px 50px;
+    border-radius: 100px;
+    border: none; /* Gỡ bỏ viền sáng */
+    /* Đổ bóng đen mờ để khối nổi lên, tách biệt khỏi các mảng sáng của nền web */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); 
+    margin-bottom: 30px;
+}
+
+/* Đồng bộ luôn cho Trạm phản hồi */
+.blob-solid.blob-purple {
+    border: none;
+    background-color: #0A0E17;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================
+   ĐẶC TRỊ CHO MOBILE (Màn hình nhỏ hơn 768px)
+   ========================================= */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Ép chiều cao Hộp kính đọc tài liệu (Không bị dài ngoẵng trên Android) */
+   #inline-viewer-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important; /* Dùng dvh để không bị thanh điều hướng của Safari/Chrome che mất */
+        margin: 0 !important;
+        border-radius: 0 !important; /* Bỏ bo góc cho tràn viền */
+        z-index: 99999 !important; /* Nổi lên trên cùng, đè hết mọi thứ */
+        border: none !important;
+    }
+
+    /* 2. Ép cái bảng thông báo quà tặng gọn lại */
+    #cosmic-promo-banner {
+        width: 95% !important;
+        padding: 15px !important;
+        top: auto !important; /* Gỡ mỏ neo ở trên đỉnh */
+        bottom: 20px !important; /* Trả nó về đáy màn hình để không che mất tài liệu đầu tiên */
+    }
+
+    /* 3. Chỉnh lại chữ cho List tài liệu đỡ bị chật */
+    .res-info h3 {
+        font-size: 1rem !important; /* Chữ nhỏ lại một tẹo */
+    }
+}
+   
+/* Thư mục Mẹ */
+.cosmic-folder {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(0, 221, 235, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.cosmic-folder summary::-webkit-details-marker { display: none; } /* Ẩn mũi tên mặc định */
+
+.folder-header {
+    padding: 15px 20px;
+    color: var(--neon-cyan);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    background: rgba(0, 0, 0, 0.2);
+    transition: background 0.3s;
+}
+
+.folder-header:hover { background: rgba(0, 221, 235, 0.1); }
+
+.folder-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px dashed rgba(0, 221, 235, 0.2);
+}
+
+/* Thư mục Con */
+.cosmic-sub-folder {
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid rgba(143, 90, 255, 0.5); /* Thụt lề bằng vạch tím */
+    margin-left: 10px; 
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.cosmic-sub-folder summary::-webkit-details-marker { display: none; }
+
+.sub-folder-header {
+    padding: 12px 15px;
+    color: #E0FFFF;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    transition: background 0.3s;
+}
+
+.sub-folder-header:hover { background: rgba(143, 90, 255, 0.1); }
+
+.sub-folder-content {
+    padding: 10px 10px 10px 20px; /* Thụt đầu dòng bài viết */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Hiệu ứng xoay mũi tên */
+.cosmic-folder[open] > .folder-header .folder-icon,
+.cosmic-sub-folder[open] > .sub-folder-header .folder-icon {
+    transform: rotate(180deg);
+}
+
+.folder-icon {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
