@@ -10,7 +10,21 @@ const _supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
 });
 
 const BUCKET_NAME = 'MVP bucket';
+// THÊM MỚI HOÀN TOÀN — dán vào sau dòng const BUCKET_NAME
+function isMobileDevice() {
+    return /iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+}
 
+function setIframeSrc(iframe, fileUrl) {
+    if (isMobileDevice()) {
+        iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
+    } else {
+        iframe.src = fileUrl;
+    }
+    iframe.onerror = function () {
+        window.open(fileUrl, '_blank');
+    };
+}
 
 // ==========================================
 // 2. TẢI VÀ RENDER DANH SÁCH TÀI LIỆU
@@ -85,8 +99,12 @@ function openDocument(fileName, fileUrl, docTitle) {
 
     // Gán tên và link
     document.getElementById('inline-doc-title').innerText = docTitle;
-    document.getElementById('inline-doc-iframe').src = fileUrl;
-
+    // MỚI — reset trước, gán sau để tránh cache iOS/Android
+    const iframe = document.getElementById('inline-doc-iframe');
+    iframe.src = 'about:blank';
+    setTimeout(() => {
+        setIframeSrc(iframe, fileUrl);
+    }, 50);
     // Phục hồi nút vote
     const voteContainer = document.getElementById('vote-buttons');
     if (voteContainer) {
@@ -166,7 +184,11 @@ function closeDocument() {
     document.getElementById('inline-viewer-container').style.display = 'none';
     document.getElementById('doc-feedback-panel').style.display = 'none';
     document.getElementById('list-view-wrapper').style.display = 'block';
-    document.getElementById('inline-doc-iframe').src = '';
+    // MỚI — reset 2 bước + scroll về đầu
+    const iframe = document.getElementById('inline-doc-iframe');
+    iframe.src = 'about:blank';
+    setTimeout(() => { iframe.src = ''; }, 100);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     document.body.style.overflow = 'auto';
 }
 
