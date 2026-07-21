@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosmic — Trang cá nhân người dùng</title>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --surface:#F7F8FA;
+    --card-bg:#FFFFFF;
+    --border:#E7EAF0;
+    --ink:#0A0E17;
+    --sub-ink:#5B6472;
+    --cyan:#00C9DA;
+    --cyan-light:#E8FBFC;
+    --violet:#7C4DFF;
+    --violet-light:#F1EBFF;
+    --yellow:#F5C451;
+    --yellow-light:#FFF6DA;
+    --yellow-text:#8A6A00;
+    --red:#F5556C;
+    --overlay:rgba(10,14,23,0.45);
+    --shadow:0 1px 3px rgba(10,14,23,0.06);
+    --shadow-md:0 12px 32px rgba(10,14,23,0.14);
+  }
+  body.dark{
+    --bg:#0A0E17;
+    --surface:#131826;
+    --card-bg:#10141F;
+    --border:#232838;
+    --ink:#F5F7FA;
+    --sub-ink:#9AA3B2;
+    --cyan-light:rgba(0,201,218,0.14);
+    --violet-light:rgba(124,77,255,0.16);
+    --yellow-light:rgba(245,196,81,0.14);
+    --yellow-text:#F5C451;
+    --overlay:rgba(0,0,0,0.6);
+    --shadow:0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md:0 20px 44px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    transition:background .25s ease,color .25s ease;
+  }
+  .container{max-width:1200px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- NAV ---------- */
+  nav.topnav{
+    max-width:1200px;margin:20px auto 0;
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    border-radius:16px;
+    padding:14px 26px;
+    display:flex;align-items:center;gap:24px;
+    box-shadow:var(--shadow);
+  }
+  .logo{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .logo-icon{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--cyan);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .logo-icon svg{width:18px;height:18px;stroke:#fff;}
+  .logo-text{font-weight:700;font-size:19px;color:var(--ink);}
+  .menu{display:flex;align-items:center;gap:22px;flex-shrink:0;}
+  .menu a{
+    text-decoration:none;font-size:14px;color:var(--sub-ink);
+    white-space:nowrap;
+  }
+  .menu a.active{color:var(--ink);font-weight:700;}
+  .search-wrap{flex:1;display:flex;justify-content:center;}
+  .search-box{
+    width:100%;max-width:360px;
+    background:var(--surface);
+    border-radius:999px;
+    padding:9px 16px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .search-box svg{width:16px;height:16px;stroke:var(--sub-ink);flex-shrink:0;}
+  .search-box input{
+    border:none;background:transparent;outline:none;
+    font-size:13.5px;color:var(--sub-ink);width:100%;
+  }
+  .nav-right{display:flex;align-items:center;gap:16px;flex-shrink:0;}
+  .icon-btn{
+    position:relative;width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--surface);border:none;cursor:pointer;
+  }
+  .icon-btn svg{width:18px;height:18px;stroke:var(--sub-ink);}
+  .dot{
+    position:absolute;top:7px;right:8px;width:7px;height:7px;
+    border-radius:50%;background:var(--red);
+    box-shadow:0 0 0 2px var(--card-bg);
+  }
+  .theme-toggle{
+    width:44px;height:24px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--border);
+    position:relative;cursor:pointer;flex-shrink:0;
+  }
+  .theme-toggle .knob{
+    position:absolute;top:2px;left:2px;width:18px;height:18px;
+    border-radius:50%;background:var(--cyan);
+    display:flex;align-items:center;justify-content:center;
+    transition:left .2s ease;
+  }
+  .theme-toggle.on .knob{left:23px;}
+  .theme-toggle .knob svg{width:11px;height:11px;stroke:#fff;}
+  .btn-join{
+    background:var(--violet);color:#fff;border:none;
+    padding:10px 20px;border-radius:999px;font-size:14px;font-weight:600;
+    cursor:pointer;white-space:nowrap;
+  }
+
+  /* ---------- MAIN GRID ---------- */
+  main.container{
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;
+    margin-top:24px;padding-bottom:60px;align-items:stretch;
+  }
+  .col{display:flex;flex-direction:column;gap:20px;}
+
+  .card{
+    background:var(--card-bg);border:1px solid var(--border);
+    border-radius:18px;box-shadow:var(--shadow);
+  }
+
+  /* ---- Profile card ---- */
+  .profile-card{padding:26px 28px;display:flex;gap:20px;}
+  .avatar{
+    width:88px;height:88px;border-radius:50%;flex-shrink:0;
+    border:2px solid var(--violet);padding:2px;
+  }
+  .avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+  .profile-info{flex:1;min-width:0;}
+  .profile-name{font-size:21px;font-weight:700;color:var(--ink);margin:0 0 4px;}
+  .profile-sub{font-size:13px;color:var(--sub-ink);margin:0 0 14px;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px;}
+  .meta-chip{
+    display:flex;align-items:center;gap:6px;
+    background:var(--surface);border-radius:999px;
+    padding:6px 12px;font-size:13.5px;color:var(--ink);
+  }
+  .meta-chip svg{width:14px;height:14px;stroke:var(--sub-ink);}
+  .meta-chip.coin{background:var(--yellow-light);color:var(--yellow-text);}
+  .meta-chip.coin svg{stroke:var(--yellow-text);}
+  .btn-outline-violet{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--violet);color:var(--violet);background:transparent;
+    padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:background .15s,color .15s;
+  }
+  .btn-outline-violet svg{width:14px;height:14px;stroke:var(--violet);transition:stroke .15s;}
+  .btn-outline-violet:hover{background:var(--violet);color:#fff;}
+  .btn-outline-violet:hover svg{stroke:#fff;}
+
+  /* ---- Secondary left blocks ---- */
+  .block{padding:20px 24px;}
+  .block-title{font-size:15px;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .block-title svg{width:16px;height:16px;stroke:var(--violet);}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{
+    background:var(--cyan-light);color:var(--ink);
+    padding:7px 14px;border-radius:999px;font-size:13px;font-weight:500;
+  }
+  .badges{display:flex;flex-wrap:wrap;gap:14px;}
+  .badge{display:flex;flex-direction:column;align-items:center;gap:6px;width:74px;text-align:center;}
+  .badge-icon{
+    width:52px;height:52px;border-radius:14px;background:var(--yellow-light);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .badge-icon svg{width:24px;height:24px;stroke:var(--yellow-text);}
+  .badge span{font-size:11.5px;color:var(--sub-ink);}
+  .rank-list{display:flex;flex-direction:column;gap:10px;}
+  .rank-item{display:flex;align-items:center;gap:12px;font-size:13.5px;}
+  .rank-num{
+    width:22px;height:22px;border-radius:50%;background:var(--surface);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11.5px;font-weight:700;color:var(--sub-ink);flex-shrink:0;
+  }
+  .rank-item.me .rank-num{background:var(--violet);color:#fff;}
+  .rank-name{flex:1;color:var(--ink);}
+  .rank-item.me .rank-name{font-weight:700;}
+  .rank-pts{color:var(--sub-ink);font-size:12.5px;}
+
+  /* ---- Activity card ---- */
+  .activity-card{padding:26px 28px;display:flex;flex-direction:column;}
+  .activity-title{font-size:16px;font-weight:700;margin:0 0 18px;}
+  .sub-header{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub-ink);font-weight:600;margin-bottom:12px;}
+  .sub-header svg{width:15px;height:15px;stroke:var(--sub-ink);}
+  .history-list{display:flex;flex-direction:column;gap:12px;}
+  .history-item{
+    border:1px solid var(--border);border-radius:12px;padding:13px 14px;
+    display:flex;gap:12px;cursor:pointer;transition:background .15s;
+  }
+  .history-item:hover{background:var(--surface);}
+  .history-icon{
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .history-icon.video{background:var(--cyan-light);}
+  .history-icon.video svg{stroke:var(--cyan);}
+  .history-icon.doc{background:var(--violet-light);}
+  .history-icon.doc svg{stroke:var(--violet);}
+  .history-icon svg{width:18px;height:18px;}
+  .history-body{flex:1;min-width:0;}
+  .history-title{
+    font-weight:700;font-size:13.5px;color:var(--ink);margin:0 0 8px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .progress-track{height:5px;border-radius:999px;background:var(--surface);overflow:hidden;margin-bottom:8px;}
+  .progress-fill{height:100%;background:var(--cyan);border-radius:999px;}
+  .history-foot{display:flex;align-items:center;justify-content:space-between;}
+  .percent{font-size:12px;color:var(--sub-ink);}
+  .btn-continue{
+    background:var(--cyan);color:#fff;border:none;
+    padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .toggle-all{
+    margin-top:16px;width:100%;
+    border:1px solid var(--border);background:transparent;color:var(--sub-ink);
+    padding:11px;border-radius:999px;font-size:13px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;
+  }
+  .toggle-all svg{width:14px;height:14px;stroke:var(--sub-ink);transition:transform .2s;}
+  .toggle-all.expanded svg{transform:rotate(180deg);}
+  .history-extra{display:none;flex-direction:column;gap:12px;margin-top:12px;}
+  .history-extra.show{display:flex;}
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:var(--overlay);
+    display:none;align-items:center;justify-content:center;z-index:50;
+    padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    width:460px;max-width:100%;max-height:88vh;overflow-y:auto;
+    background:var(--card-bg);border:1px solid var(--border);
+    border-radius:20px;padding:26px 28px;box-shadow:var(--shadow-md);
+  }
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .modal-header h2{font-size:19px;font-weight:700;margin:0;}
+  .modal-close{
+    width:32px;height:32px;border-radius:50%;border:none;background:var(--surface);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .modal-close svg{width:15px;height:15px;stroke:var(--sub-ink);}
+  .avatar-row{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+  .avatar-edit{position:relative;width:76px;height:76px;flex-shrink:0;}
+  .avatar-edit .circle{
+    width:100%;height:100%;border-radius:50%;background:var(--violet);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .avatar-edit .circle span{color:#fff;font-size:26px;font-weight:700;}
+  .cam-badge{
+    position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;border-radius:50%;
+    background:var(--card-bg);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cam-badge svg{width:13px;height:13px;stroke:var(--ink);}
+  .btn-outline-navy{
+    border:1px solid var(--border);color:var(--ink);background:transparent;
+    padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--sub-ink);margin-bottom:6px;}
+  .field input,.field textarea{
+    width:100%;background:var(--card-bg);border:1px solid var(--border);
+    border-radius:9px;padding:10px 12px;font-size:14px;color:var(--ink);
+    outline:none;font-family:inherit;
+  }
+  .field input:focus,.field textarea:focus{border-color:var(--cyan);}
+  .field.disabled input{background:var(--surface);color:var(--sub-ink);cursor:not-allowed;}
+  .field-locked-label{display:flex;align-items:center;gap:5px;}
+  .field-locked-label svg{width:11px;height:11px;stroke:var(--sub-ink);}
+  .field-hint{font-size:10.5px;color:var(--sub-ink);margin-top:5px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .coin-display{
+    display:flex;align-items:center;gap:8px;background:var(--surface);
+    border-radius:9px;padding:11px 13px;font-size:14px;font-weight:600;color:var(--yellow-text);
+    margin-bottom:16px;
+  }
+  .coin-display svg{width:16px;height:16px;stroke:var(--yellow-text);}
+  .section-label{font-size:13px;font-weight:700;margin:20px 0 12px;}
+  .pref-row{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface);border-radius:9px;padding:12px 14px;margin-bottom:22px;
+  }
+  .pref-row .left{display:flex;align-items:center;gap:8px;font-size:13.5px;}
+  .pref-row .left svg{width:16px;height:16px;stroke:var(--sub-ink);}
+  .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .btn-save{
+    background:var(--violet);color:#fff;border:none;border-radius:11px;
+    padding:12px;font-size:14px;font-weight:700;cursor:pointer;
+  }
+  .btn-cancel{
+    background:var(--card-bg);color:var(--ink);border:1px solid var(--border);
+    border-radius:11px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:900px){
+    nav.topnav{flex-wrap:wrap;}
+    .menu{order:3;width:100%;overflow-x:auto;}
+    main.container{grid-template-columns:1fr;}
+  }
+  @media (max-width:560px){
+    .search-wrap{display:none;}
+    .profile-card{flex-direction:column;align-items:flex-start;}
+    .field-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><ellipse cx="12" cy="12" rx="10" ry="4"></ellipse></svg>
+    </div>
+    <span class="logo-text">Cosmic</span>
+  </div>
+  <div class="menu">
+    <a href="#" class="active">Trang chủ</a>
+    <a href="#">Khoá học</a>
+    <a href="#">Cộng đồng</a>
+    <a href="#">Về Cosmic</a>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" placeholder="Tìm kiếm...">
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn" aria-label="Thông báo">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      <span class="dot"></span>
+    </button>
+    <button class="theme-toggle" id="navToggle" aria-label="Chuyển giao diện sáng/tối">
+      <span class="knob">
+        <svg id="navKnobIcon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"></line><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"></line><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"></line></svg>
+      </span>
+    </button>
+    <button class="btn-join">Tham gia ngay</button>
+  </div>
+</nav>
+
+<main class="container">
+  <!-- CỘT TRÁI -->
+  <div class="col">
+    <div class="card profile-card">
+      <div class="avatar">
+        <img src="https://i.pravatar.cc/160?img=47" alt="Ảnh đại diện Nguyễn Thu Hà">
+      </div>
+      <div class="profile-info">
+        <p class="profile-name">Nguyễn Thu Hà</p>
+        <p class="profile-sub">Nguyễn Thu Hà | Chuyên ngành: Công nghệ thông tin</p>
+        <div class="meta-row">
+          <div class="meta-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg>
+            <span>Năm học: 2021</span>
+          </div>
+          <div class="meta-chip coin">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 15.5c.5.9 1.4 1.5 2.5 1.5 1.7 0 3-1.1 3-2.5S13.7 12 12 12s-3-1.1-3-2.5S10.3 8 12 8c1.1 0 2 .6 2.5 1.5"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+            <span>Số xu: 1250 Xu</span>
+          </div>
+        </div>
+        <button class="btn-outline-violet" id="openModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.4 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+          Edit Profile
+        </button>
+      </div>
+    </div>
+
+    <div class="card block">
+      <p class="block-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
+        Môn học quan tâm
+      </p>
+      <div class="chips">
+        <span class="chip">Lập trình Web</span>
+        <span class="chip">Cấu trúc dữ liệu</span>
+        <span class="chip">UI/UX Design</span>
+        <span class="chip">Cơ sở dữ liệu</span>
+        <span class="chip">Trí tuệ nhân tạo</span>
+      </div>
+    </div>
+
+    <div class="card block">
+      <p class="block-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"></path></svg>
+        Thành tựu
+      </p>
+      <div class="badges">
+        <div class="badge">
+          <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 15 8l6.5 1-4.7 4.6 1.1 6.4L12 17l-5.9 3 1.1-6.4L2.5 9l6.5-1Z"></path></svg></div>
+          <span>Học 30 ngày liên tiếp</span>
+        </div>
+        <div class="badge">
+          <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg></div>
+          <span>Hoàn thành 10 khoá</span>
+        </div>
+        <div class="badge">
+          <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+          <span>Đóng góp cộng đồng</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card block">
+      <p class="block-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+        Xếp hạng tuần này
+      </p>
+      <div class="rank-list">
+        <div class="rank-item"><span class="rank-num">1</span><span class="rank-name">Trần Minh Khôi</span><span class="rank-pts">2,340 đ</span></div>
+        <div class="rank-item"><span class="rank-num">2</span><span class="rank-name">Lê Vân Anh</span><span class="rank-pts">2,110 đ</span></div>
+        <div class="rank-item me"><span class="rank-num">3</span><span class="rank-name">Nguyễn Thu Hà (Bạn)</span><span class="rank-pts">1,250 đ</span></div>
+        <div class="rank-item"><span class="rank-num">4</span><span class="rank-name">Phạm Đức Long</span><span class="rank-pts">1,080 đ</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CỘT PHẢI -->
+  <div class="col">
+    <div class="card activity-card" style="flex:1;">
+      <p class="activity-title">Hoạt động gần đây</p>
+      <p class="sub-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+        Lịch sử xem
+      </p>
+      <div class="history-list" id="historyList">
+        <div class="history-item">
+          <div class="history-icon video">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+          <div class="history-body">
+            <p class="history-title">Nhập môn Lập trình Web với HTML &amp; CSS</p>
+            <div class="progress-track"><div class="progress-fill" style="width:72%"></div></div>
+            <div class="history-foot">
+              <span class="percent">72% hoàn thành</span>
+              <button class="btn-continue">Xem tiếp</button>
+            </div>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-icon doc">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg>
+          </div>
+          <div class="history-body">
+            <p class="history-title">Tài liệu: Cấu trúc dữ liệu và giải thuật cơ bản</p>
+            <div class="progress-track"><div class="progress-fill" style="width:45%"></div></div>
+            <div class="history-foot">
+              <span class="percent">45% hoàn thành</span>
+              <button class="btn-continue">Xem tiếp</button>
+            </div>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-icon video">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+          <div class="history-body">
+            <p class="history-title">Thiết kế giao diện người dùng (UI/UX) căn bản</p>
+            <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+            <div class="history-foot">
+              <span class="percent">100% hoàn thành</span>
+              <button class="btn-continue">Xem lại</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="history-extra" id="historyExtra">
+        <div class="history-item">
+          <div class="history-icon doc">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="history-body">
+            <p class="history-title">Thảo luận cộng đồng: Lộ trình học Backend cho người mới</p>
+            <div class="progress-track"><div class="progress-fill" style="width:30%"></div></div>
+            <div class="history-foot">
+              <span class="percent">30% hoàn thành</span>
+              <button class="btn-continue">Xem tiếp</button>
+            </div>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-icon video">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+          <div class="history-body">
+            <p class="history-title">Cơ sở dữ liệu quan hệ: Thiết kế bảng và truy vấn SQL</p>
+            <div class="progress-track"><div class="progress-fill" style="width:58%"></div></div>
+            <div class="history-foot">
+              <span class="percent">58% hoàn thành</span>
+              <button class="btn-continue">Xem tiếp</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="toggle-all" id="toggleAllBtn">
+        <span id="toggleAllLabel">Xem tất cả lịch sử</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL: CHỈNH SỬA HỒ SƠ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Chỉnh sửa Hồ sơ</h2>
+      <button class="modal-close" id="closeModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="avatar-row">
+      <div class="avatar-edit">
+        <div class="circle"><span>H</span></div>
+        <div class="cam-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        </div>
+      </div>
+      <button class="btn-outline-navy">Thay đổi ảnh</button>
+    </div>
+
+    <div class="field">
+      <label>Họ và tên</label>
+      <input type="text" value="Nguyễn Thu Hà">
+    </div>
+
+    <div class="field-row">
+      <div class="field disabled">
+        <label class="field-locked-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Năm học
+        </label>
+        <input type="text" value="2021" disabled>
+        <p class="field-hint">Cần xác nhận từ nhà trường để chỉnh sửa</p>
+      </div>
+      <div class="field disabled">
+        <label class="field-locked-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Chuyên ngành
+        </label>
+        <input type="text" value="Công nghệ thông tin" disabled>
+        <p class="field-hint">Cần xác nhận từ nhà trường để chỉnh sửa</p>
+      </div>
+    </div>
+
+    <div class="coin-display">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 15.5c.5.9 1.4 1.5 2.5 1.5 1.7 0 3-1.1 3-2.5S13.7 12 12 12s-3-1.1-3-2.5S10.3 8 12 8c1.1 0 2 .6 2.5 1.5"></path></svg>
+      1250 Xu
+    </div>
+
+    <p class="section-label">Thông tin liên hệ</p>
+    <div class="field-row">
+      <div class="field">
+        <label>Số điện thoại</label>
+        <input type="tel" placeholder="Nhập số điện thoại">
+      </div>
+      <div class="field disabled">
+        <label class="field-locked-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Email
+        </label>
+        <input type="email" value="thuha.nguyen@cosmic.edu.vn" disabled>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Giới thiệu bản thân</label>
+      <textarea rows="3" placeholder="Viết vài dòng giới thiệu về bạn..."></textarea>
+    </div>
+
+    <p class="section-label">Preferences</p>
+    <div class="pref-row">
+      <div class="left">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path></svg>
+        Chế độ giao diện (Dark/Light)
+      </div>
+      <button class="theme-toggle" id="modalToggle">
+        <span class="knob">
+          <svg id="modalKnobIcon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle></svg>
+        </span>
+      </button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelBtn">Hủy bỏ</button>
+      <button class="btn-save">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- Theme toggle (synced state, nav + modal) ----
+  const navToggle = document.getElementById('navToggle');
+  const modalToggle = document.getElementById('modalToggle');
+
+  function setTheme(isDark){
+    document.body.classList.toggle('dark', isDark);
+    navToggle.classList.toggle('on', isDark);
+    modalToggle.classList.toggle('on', isDark);
+  }
+  navToggle.addEventListener('click', () => setTheme(!document.body.classList.contains('dark')));
+  modalToggle.addEventListener('click', () => setTheme(!document.body.classList.contains('dark')));
+
+  // ---- Modal open/close ----
+  const overlay = document.getElementById('modalOverlay');
+  document.getElementById('openModal').addEventListener('click', () => overlay.classList.add('open'));
+  document.getElementById('closeModal').addEventListener('click', () => overlay.classList.remove('open'));
+  document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+  // ---- Expand / collapse history ----
+  const toggleAllBtn = document.getElementById('toggleAllBtn');
+  const historyExtra = document.getElementById('historyExtra');
+  const toggleAllLabel = document.getElementById('toggleAllLabel');
+  toggleAllBtn.addEventListener('click', () => {
+    const expanded = historyExtra.classList.toggle('show');
+    toggleAllBtn.classList.toggle('expanded', expanded);
+    toggleAllLabel.textContent = expanded ? 'Thu gọn' : 'Xem tất cả lịch sử';
+  });
+</script>
+
+</body>
+</html>
