@@ -1883,7 +1883,8 @@ window.enterAsGuest = function() {
         const energyText = document.getElementById('energy-text');
         if (energyText) energyText.innerText = "0";
         
-        // Gọi loadUserProfile an toàn (dùng try-catch riêng)
+      
+        // Gọi loadUserProfile an toàn (dùng try-catch riêng black)
         try {
             window.loadUserProfile({
                 displayName: "Galactic Explorer",
