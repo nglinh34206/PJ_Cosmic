@@ -1,9 +1,8 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
         // Import Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
      //   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // Thêm dòng này vào cụm import: import { logEvent, setUserProperties } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
         // Firebase Configuration (From User)
@@ -98,6 +97,7 @@ const SUBJECT_LIST = [
     "IS53A - Thiết kế cơ sở dữ liệu",
     "MAT05A - Toán rời rạc",
     "MIS07A - Hệ quản trị cơ sở dữ liệu",
+    "IS35A - Thương mại điện tử",
     "IS35A - Thương mại điện tử",
     "IS19A - Thiết kế Web",
     "MIS02A - Hệ thống thông tin quản lý",
@@ -399,6 +399,38 @@ window.trackTelemetry = function(eventName, params = {}) {
         // --- TRƯỜNG HỢP 1: PROFILE ĐÃ CÓ TRÊN DATABASE ---
         let data = userSnap.data();
 
+        // ĐẢM BẢO CÁC FIELD QUAN TRỌNG LUÔN CÓ (kể cả khi đăng ký cũ chưa có)
+        let needsUpdate = false;
+        const defaults = {
+            coins: { received: 0, used: 0 },
+            stats: { focus: 0, upload: 0, interact: 0, online: 1 },
+            roles: data.roles || ['user'],
+            rank: data.rank || "Space Debris",
+            energy: typeof data.energy === 'number' ? data.energy : 0,
+            msv: data.msv || msv,
+            displayName: data.displayName || data.fullName || initialName
+        };
+
+        // Chỉ update nếu thiếu field
+        const updatesToApply = {};
+        if (!data.coins) { updatesToApply.coins = defaults.coins; needsUpdate = true; }
+        if (!data.stats) { updatesToApply.stats = defaults.stats; needsUpdate = true; }
+        if (!data.rank) { updatesToApply.rank = defaults.rank; needsUpdate = true; }
+        if (typeof data.energy !== 'number') { updatesToApply.energy = defaults.energy; needsUpdate = true; }
+        if (!data.msv) { updatesToApply.msv = defaults.msv; needsUpdate = true; }
+        if (!data.roles) { updatesToApply.roles = defaults.roles; needsUpdate = true; }
+        if (!data.displayName) { updatesToApply.displayName = defaults.displayName; needsUpdate = true; }
+
+        if (needsUpdate) {
+            try {
+                await updateDoc(userRef, updatesToApply);
+                data = { ...data, ...updatesToApply };
+                console.log("🔄 Đã cập nhật thiếu field cho user:", user.email);
+            } catch(err) {
+                console.error("Lỗi cập nhật field mặc định:", err);
+            }
+        }
+
         // Kiểm tra nếu là email của bạn nhưng chưa có quyền Admin trong DB thì ép cập nhật
         if (isAdminAccount) {
             const currentRoles = data.roles || [];
@@ -446,6 +478,7 @@ window.trackTelemetry = function(eventName, params = {}) {
             energy: initialEnergy,
             roles: initialRoles,
             stats: { focus: 0, upload: 0, interact: 0, online: 1 },
+            coins: { received: 0, used: 0 },
             joinedAt: serverTimestamp()
         };
 
@@ -1052,6 +1085,30 @@ if (window.docStartTime > 0) {
                 window.sendVoidMessage();
             }
         });
+// --- HÀM CỘNG NĂNG LƯỢNG (ENERGY) VÀ CHỈ SỐ (STAT) ---
+window.addEnergy = async function(amount, statType) {
+    if (!auth.currentUser) return;
+    try {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        // Map statType tên friendly sang tên field trong Firestore
+        const statMap = {
+            'focus': 'stats.focus',
+            'guardian': 'stats.upload',
+            'diplomat': 'stats.interact',
+            'voyager': 'stats.online'
+        };
+        const statField = statMap[statType] || 'stats.focus';
+        
+        await updateDoc(userRef, {
+            energy: increment(amount),
+            [statField]: increment(amount)
+        });
+        console.log(`⚡ +${amount} Energy (${statType})`);
+    } catch (e) {
+        console.error("Lỗi cộng năng lượng:", e);
+    }
+};
+
                 window.openUploadModal = function() {
                     document.getElementById('upload-modal').style.display = 'flex';
                 };
@@ -1162,7 +1219,10 @@ window.submitUpload = async function() {
         // 2. Cộng điểm GUARDIAN (+10 Energy)
         window.addEnergy(10, 'guardian');
 
-        // 3. Thông báo & Đóng Modal
+        // 3. Cộng xu UPLOAD_DOCUMENT (+2 xu)
+        window.rewardCoins('UPLOAD_DOCUMENT');
+
+        // 4. Thông báo & Đóng Modal
         alert("Upload thành công! Tài liệu đang chờ duyệt.");
         window.closeUploadModal();
 
@@ -1534,6 +1594,32 @@ window.approveDocument = async function(docId) {
             priority: priorityScore // LƯU VÀO DATABASE
         });
         window.showNotificationBanner(`✅ Đã duyệt và gắn mức ưu tiên: ${priorityScore}`);
+
+        // Cộng xu DOCUMENT_APPROVED (+8 xu) cho người upload
+        const docSnap = await getDoc(doc(db, "resources", docId));
+        if (docSnap.exists()) {
+            const docData = docSnap.data();
+            if (docData.uploaderUid) {
+                // Tạm thời gọi rewardCoins với uid của người upload
+                // Vì rewardCoins dùng auth.currentUser, nên cần xử lý riêng
+                try {
+                    // Lưu uid vào biến tạm
+                    const targetUid = docData.uploaderUid;
+                    const targetUserRef = doc(db, "users", targetUid);
+                    const targetUserSnap = await getDoc(targetUserRef);
+                    if (targetUserSnap.exists()) {
+                        const targetData = targetUserSnap.data();
+                        const targetCoins = targetData.coins || { received: 0, used: 0 };
+                        await updateDoc(targetUserRef, {
+                            'coins.received': increment(8)
+                        });
+                        console.log(`🪙 +8 xu (DOCUMENT_APPROVED) cho user ${targetUid}`);
+                    }
+                } catch (err) {
+                    console.error("Lỗi cộng xu cho người upload:", err);
+                }
+            }
+        }
     } catch (e) {
         alert("Lỗi: " + e.message);
     }
@@ -1552,4 +1638,157 @@ window.rejectDocument = async function(docId) {
         document.getElementById('auth-msv').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
         document.getElementById('chat-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
         document.getElementById('void-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); }) 
+
+
+// --- HỆ THỐNG XU (COIN) FIRESTORE-BACKED ---
+
+// CHÍNH SÁCH XU
+window.COIN_POLICY = Object.freeze({
+    REGISTER_ACCOUNT: {
+        code: "REGISTER_ACCOUNT",
+        label: "Đăng ký tài khoản",
+        condition: "Hoàn tất đăng ký tài khoản",
+        amount: 100,
+        once: true,
+        note: "Chỉ một lần",
+    },
+    UPLOAD_DOCUMENT: {
+        code: "UPLOAD_DOCUMENT",
+        label: "Upload tài liệu",
+        condition: "Gửi tài liệu thành công",
+        amount: 2,
+        once: false,
+        note: "Khuyến khích đóng góp",
+    },
+    DOCUMENT_APPROVED: {
+        code: "DOCUMENT_APPROVED",
+        label: "Tài liệu được duyệt",
+        condition: "Admin phê duyệt",
+        amount: 8,
+        once: false,
+        note: "Chỉ áp dụng với tài liệu hợp lệ",
+    },
+    UNLOCK_PREMIUM_DOC: {
+        code: "UNLOCK_PREMIUM_DOC",
+        label: "Mở khóa tài liệu chất lượng cao",
+        condition: "Mở khóa tài liệu chất lượng cao",
+        amount: -50,
+        oncePerTarget: true,
+        note: "Chỉ trừ ở lần mở khóa đầu tiên",
+    },
+});
+
+/** Định dạng số xu: 1250 -> "1.250" */
+window.formatCoin = function(value) {
+    const n = Math.max(0, Math.round(Number(value) || 0));
+    return n.toLocaleString("vi-VN");
+};
+
+/** Hiệu ứng cộng/trừ xu nổi giữa màn hình */
+window.showCoinEffect = function(amount) {
+    const effect = document.createElement("div");
+    effect.className = "coin-effect";
+    const sign = amount > 0 ? "+" : "";
+    effect.innerHTML = `
+        <span style="font-size:50px;">🪙</span>
+        <span>${sign}${amount}</span>
+    `;
+    document.body.appendChild(effect);
+    requestAnimationFrame(() => { effect.classList.add("show"); });
+    setTimeout(() => { effect.classList.remove("show"); }, 1200);
+    setTimeout(() => { effect.remove(); }, 1600);
+};
+
+/**
+ * Cộng xu cho user hiện tại dựa trên actionCode.
+ * Ghi trực tiếp vào Firestore dùng increment.
+ * Kiểm tra "once" dựa vào field `coins.claimedOnce` trong user doc.
+ */
+window.rewardCoins = async function(actionCode) {
+    if (!auth.currentUser) return { success: false, reason: "NOT_AUTHED" };
+    const policy = window.COIN_POLICY[actionCode];
+    if (!policy || policy.amount <= 0) return { success: false, reason: "INVALID_POLICY" };
+
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return { success: false, reason: "USER_NOT_FOUND" };
+
+    const data = userSnap.data();
+    const coins = data.coins || { received: 0, used: 0 };
+    const claimedOnce = data.claimedOnce || [];
+
+    // Kiểm tra "once"
+    if (policy.once && claimedOnce.includes(actionCode)) {
+        return { success: false, reason: "ALREADY_CLAIMED" };
+    }
+
+    const amount = Math.abs(policy.amount);
+    const updateData = {
+        'coins.received': increment(amount)
+    };
+
+    // Nếu là once, thêm vào danh sách claimed
+    if (policy.once) {
+        updateData.claimedOnce = claimedOnce.concat([actionCode]);
+    }
+
+    await updateDoc(userRef, updateData);
+
+    // Hiệu ứng
+    window.showCoinEffect(amount);
+    console.log(`🪙 +${amount} xu (${policy.label})`);
+
+    return { success: true, amount };
+};
+
+/**
+ * Trừ xu cho user hiện tại dựa trên actionCode.
+ * Kiểm tra số dư và oncePerTarget.
+ */
+window.spendCoins = async function(actionCode, targetId) {
+    if (!auth.currentUser) return { success: false, reason: "NOT_AUTHED" };
+    const policy = window.COIN_POLICY[actionCode];
+    if (!policy || policy.amount >= 0) return { success: false, reason: "INVALID_POLICY" };
+
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return { success: false, reason: "USER_NOT_FOUND" };
+
+    const data = userSnap.data();
+    const coins = data.coins || { received: 0, used: 0 };
+    const balance = (coins.received || 0) - (coins.used || 0);
+    const unlockedTargets = data.unlockedTargets || [];
+
+    const amount = Math.abs(policy.amount);
+    const targetKey = targetId ? `${actionCode}:${targetId}` : null;
+
+    // Kiểm tra oncePerTarget
+    if (policy.oncePerTarget) {
+        if (!targetId) return { success: false, reason: "MISSING_TARGET_ID" };
+        if (unlockedTargets.includes(targetKey)) {
+            return { success: true, amount: 0, alreadyUnlocked: true };
+        }
+    }
+
+    // Kiểm tra số dư
+    if (balance < amount) {
+        return { success: false, reason: "INSUFFICIENT_BALANCE" };
+    }
+
+    const updateData = {
+        'coins.used': increment(amount)
+    };
+
+    if (policy.oncePerTarget) {
+        updateData.unlockedTargets = unlockedTargets.concat([targetKey]);
+    }
+
+    await updateDoc(userRef, updateData);
+
+    // Hiệu ứng
+    window.showCoinEffect(-amount);
+    console.log(`🪙 -${amount} xu (${policy.label})`);
+
+    return { success: true, amount };
+};
 
