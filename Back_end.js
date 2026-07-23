@@ -172,6 +172,7 @@ document.addEventListener('click', function(e) {
         window.isRegisterMode = false; // Toggle login/register
         window.targetEditUid = null; // For admin role editing
         window.currentDocId = null; // ID of doc being viewed
+        window.__guestActive = false; // Flag for guest mode
 
 
 
@@ -241,29 +242,18 @@ window.trackTelemetry = function(eventName, params = {}) {
                         if (typeof window.renderResources === 'function') window.renderResources();
                         if (typeof window.loadEnergyStatus === 'function') window.loadEnergyStatus();
                     } else {
-    // KHI KHÁCH VÀO WEB (CHƯA LOGIN) - VÀO THẲNG APP VỚI TƯ CÁCH KHÁCH
-    loginScreen.style.display = 'none';
-    appContainer.style.display = 'flex';
-    appContainer.style.opacity = '1';
-    appContainer.style.visibility = 'visible';
+    // KHI CHƯA ĐĂNG NHẬP: KIỂM TRA NẾU ĐANG Ở CHẾ ĐỘ KHÁCH THÌ BỎ QUA
+    if (window.__guestActive) {
+        console.log("🌌 Đang ở chế độ Khách, giữ nguyên giao diện.");
+        return;
+    }
+    // KHI CHƯA ĐĂNG NHẬP: HIỆN MÀN HÌNH LOGIN
+    loginScreen.style.display = 'flex';
+    appContainer.style.display = 'none';
+    appContainer.style.opacity = '0';
+    appContainer.style.visibility = 'hidden';
 
-    // Set guest variables
-    window.currentUserRank = "GUEST";
-    window.currentUserName = "Galactic Explorer";
-    window.currentUserRoles = [];
-    window.currentMsv = "GUEST";
-
-    // Cập nhật UI guest
-    const nameEl = document.getElementById('user-display-name');
-    const welcomeEl = document.getElementById('welcome-name');
-    if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
-    if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
-
-    console.log("🌌 Khách đang xem Cosmic Base...");
-
-    // Load dữ liệu
-    if (typeof window.initResourceHub === 'function') window.initResourceHub();
-    if (typeof window.initVoidChat === 'function') window.initVoidChat();
+    console.log("🌌 Vui lòng đăng nhập hoặc chọn 'Tiếp tục với tư cách Khách'");
 }
                 });
             }
@@ -377,7 +367,11 @@ window.trackTelemetry = function(eventName, params = {}) {
     // 4. Xử lý ĐĂNG XUẤT
         window.handleLogout = async function() {
             try {
-                await signOut(auth);
+                // Reset guest flag nếu đang ở chế độ khách
+                window.__guestActive = false;
+                if (auth.currentUser) {
+                    await signOut(auth);
+                }
                 location.reload(); 
             } catch (error) { console.error("Logout error", error); }
         };
@@ -417,9 +411,8 @@ window.trackTelemetry = function(eventName, params = {}) {
     
     // Xác định định danh Admin
     const userEmail = user.email.toLowerCase();
-    const userPass  = user.pass;
     const msv = userEmail.split('@')[0];
-    const isAdminAccount = (userEmail === 'achievermisa@gmail.com',userPass ==='25082024');
+    const isAdminAccount = (userEmail === 'achievermisa@gmail.com');
 
     if (userSnap.exists()) {
         // --- TRƯỜNG HỢP 1: PROFILE ĐÃ CÓ TRÊN DATABASE ---
@@ -427,6 +420,7 @@ window.trackTelemetry = function(eventName, params = {}) {
 
         // ĐẢM BẢO CÁC FIELD QUAN TRỌNG LUÔN CÓ (kể cả khi đăng ký cũ chưa có)
         let needsUpdate = false;
+        const fallbackName = "Cadet " + msv;
         const defaults = {
             coins: { received: 0, used: 0 },
             stats: { focus: 0, upload: 0, interact: 0, online: 1 },
@@ -434,7 +428,7 @@ window.trackTelemetry = function(eventName, params = {}) {
             rank: data.rank || "Space Debris",
             energy: typeof data.energy === 'number' ? data.energy : 0,
             msv: data.msv || msv,
-            displayName: data.displayName || data.fullName || initialName
+            displayName: data.displayName || data.fullName || fallbackName
         };
 
         // Chỉ update nếu thiếu field
@@ -1677,7 +1671,10 @@ window.rejectDocument = async function(docId) {
         alert("Lỗi: " + e.message);
     }
 };
-        document.getElementById('auth-msv').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
+        const authEmailEl = document.getElementById('auth-email');
+        if (authEmailEl) {
+            authEmailEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
+        }
         document.getElementById('chat-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
         document.getElementById('void-input-field').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); }) 
 
@@ -1837,32 +1834,72 @@ window.spendCoins = async function(actionCode, targetId) {
 
 // --- HÀM VÀO VỚI TƯ CÁCH KHÁCH (GUEST MODE) ---
 window.enterAsGuest = function() {
-    const loginScreen = document.getElementById('login-screen');
-    const appContainer = document.getElementById('app-container');
-    
-    // Ẩn login, hiện app
-    loginScreen.style.display = 'none';
-    appContainer.style.display = 'flex';
-    appContainer.style.opacity = '1';
-    appContainer.style.visibility = 'visible';
-    
-    // Set các giá trị mặc định cho Guest
-    window.currentUserRank = "GUEST";
-    window.currentUserName = "Galactic Explorer";
-    window.currentUserRoles = [];
-    window.currentMsv = "GUEST";
-    
-    // Cập nhật UI
-    const nameEl = document.getElementById('user-display-name');
-    const welcomeEl = document.getElementById('welcome-name');
-    if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
-    if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
-    
-    console.log("🌌 Khách đã vào Cosmic Base!");
-    
-    // Load tài liệu cho khách
-    if (typeof window.initResourceHub === 'function') {
-        window.initResourceHub();
+    try {
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        
+        if (!loginScreen || !appContainer) {
+            console.error("Không tìm thấy login-screen hoặc app-container!");
+            return;
+        }
+        
+        // Đánh dấu đang ở chế độ khách để onAuthStateChanged không ghi đè
+        window.__guestActive = true;
+        
+        // Ẩn login, hiện app
+        loginScreen.style.display = 'none';
+        appContainer.style.display = 'flex';
+        appContainer.style.opacity = '1';
+        appContainer.style.visibility = 'visible';
+        
+        // Set các biến toàn cục
+        window.currentUserRank = "GUEST";
+        window.currentUserName = "Galactic Explorer";
+        window.currentUserRoles = [];
+        window.currentMsv = "GUEST";
+        
+        // Cập nhật UI cơ bản ngay lập tức
+        const nameEl = document.getElementById('user-display-name');
+        const welcomeEl = document.getElementById('welcome-name');
+        const rankTitle = document.getElementById('user-rank-title');
+        const tierTag = document.getElementById('user-tier-tag');
+        const quoteBox = document.getElementById('quote-box');
+        const energyBar = document.getElementById('energy-bar');
+        
+        if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
+        if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
+        if (rankTitle) {
+            rankTitle.className = "rank-title rank-standard";
+            rankTitle.innerText = "GUEST";
+        }
+        if (tierTag) {
+            tierTag.className = "tier-tag tag-standard";
+            tierTag.innerText = "Tier 0 • Guest";
+        }
+        if (quoteBox) {
+            quoteBox.innerHTML = `<h4 style="color: #aaa;">GUEST</h4><p style="font-size:12px; color:#666;">Explorer Class • Read-only mode</p>`;
+        }
+        if (energyBar) energyBar.style.width = "0%";
+        
+        const energyText = document.getElementById('energy-text');
+        if (energyText) energyText.innerText = "0";
+        
+        // Gọi loadUserProfile an toàn (dùng try-catch riêng)
+        try {
+            window.loadUserProfile({
+                displayName: "Galactic Explorer",
+                rank: "GUEST",
+                energy: 0,
+                roles: [],
+                msv: "GUEST",
+                stats: { focus: 0, upload: 0, interact: 0, online: 0 },
+                coins: { received: 0, used: 0 }
+            });
+        } catch (e) { console.warn("Guest loadUserProfile error:", e); }
+        
+        console.log("🌌 Khách đã vào Cosmic Base!");
+    } catch (e) {
+        console.error("enterAsGuest error:", e);
     }
 };
 
