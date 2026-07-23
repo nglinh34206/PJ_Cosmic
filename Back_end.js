@@ -257,7 +257,6 @@ window.trackTelemetry = function(eventName, params = {}) {
 }
                 });
             }
-
         // 2. Chuyển đổi giao diện Đăng nhập / Đăng ký
         window.toggleAuthMode = function() {
             isLoginMode = !isLoginMode;
