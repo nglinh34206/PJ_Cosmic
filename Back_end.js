@@ -172,6 +172,9 @@ document.addEventListener('click', function(e) {
         window.isRegisterMode = false; // Toggle login/register
         window.targetEditUid = null; // For admin role editing
         window.currentDocId = null; // ID of doc being viewed
+
+
+
 // --- MODULE TELEMETRY (TRACKING SYSTEM) ---
 window.docStartTime = 0; // Biến đếm giờ đọc
 
@@ -218,7 +221,7 @@ window.trackTelemetry = function(eventName, params = {}) {
         window.isLoginMode = true;
         // 1. Tự động kiểm tra trạng thái khi vừa vào web
         if (auth) {
-                onAuthStateChanged(auth, async (user) => { // Thêm async ở đây
+                onAuthStateChanged(auth, async (user) => {
                     const loginScreen = document.getElementById('login-screen');
                     const appContainer = document.getElementById('app-container');
 
@@ -238,18 +241,29 @@ window.trackTelemetry = function(eventName, params = {}) {
                         if (typeof window.renderResources === 'function') window.renderResources();
                         if (typeof window.loadEnergyStatus === 'function') window.loadEnergyStatus();
                     } else {
-    // KHI KHÁCH VÀO WEB (CHƯA LOGIN)
+    // KHI KHÁCH VÀO WEB (CHƯA LOGIN) - VÀO THẲNG APP VỚI TƯ CÁCH KHÁCH
     loginScreen.style.display = 'none';
     appContainer.style.display = 'flex';
     appContainer.style.opacity = '1';
-    appContainer.style.visibility = 'visible'; // Chắc cú cho nó hiện rõ ràng
+    appContainer.style.visibility = 'visible';
 
-    // GỌI ĐÚNG TÊN HÀM LOAD TÀI LIỆU
-    if (typeof window.initResourceHub === 'function') {
-        window.initResourceHub();
-    }
-    
-    console.log("Khách đang xem Cosmic Base...");
+    // Set guest variables
+    window.currentUserRank = "GUEST";
+    window.currentUserName = "Galactic Explorer";
+    window.currentUserRoles = [];
+    window.currentMsv = "GUEST";
+
+    // Cập nhật UI guest
+    const nameEl = document.getElementById('user-display-name');
+    const welcomeEl = document.getElementById('welcome-name');
+    if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
+    if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
+
+    console.log("🌌 Khách đang xem Cosmic Base...");
+
+    // Load dữ liệu
+    if (typeof window.initResourceHub === 'function') window.initResourceHub();
+    if (typeof window.initVoidChat === 'function') window.initVoidChat();
 }
                 });
             }
@@ -310,17 +324,29 @@ window.trackTelemetry = function(eventName, params = {}) {
                     const user = userCredential.user;
                     
                     // Bước 2: Lưu thông tin bổ sung vào Database (Firestore)
+                    // Đã bao gồm coins +100 thưởng đăng ký ngay trong lần tạo đầu
+                    const msv = email.split('@')[0];
                     await setDoc(doc(db, "users", userCredential.user.uid), {
                         fullName: name,
+                        displayName: name,
+                        msv: msv,
                         age: age || "N/A",
                         gender: gender || "N/A",
                         email: email,
                         createdAt: serverTimestamp(),
-                        pass: pass
+                        pass: pass,
+                        coins: { received: 100, used: 0 },
+                        stats: { focus: 0, upload: 0, interact: 0, online: 0 },
+                        energy: 0,
+                        roles: ['user']
                     });
 
-                    alert("Đăng ký thành công! Đang chuyển về trang đăng nhập.");
-                    window.toggleAuthMode(); // Quay về login theo yêu cầu của bạn
+                    // Hiệu ứng +100 xu
+                    if (window.showCoinEffect) {
+                        window.showCoinEffect(100);
+                    }
+
+                    alert("✅ Đăng ký thành công! 🪙 Bạn được thưởng +100 xu!");
                 }
             } catch (error) {
                 console.error("Auth Error:", error);
@@ -1142,6 +1168,12 @@ window.addEnergy = async function(amount, statType) {
         };
 
 window.submitUpload = async function() {
+    // Kiểm tra đăng nhập trước
+    if (!auth.currentUser) {
+        alert("Vui lòng đăng nhập trước khi upload tài liệu!");
+        return;
+    }
+
     const title = document.getElementById('up-title').value.trim();
     const category = document.getElementById('up-category').value.trim();
     const fileInput = document.getElementById('up-file');
@@ -1220,11 +1252,23 @@ window.submitUpload = async function() {
         window.addEnergy(10, 'guardian');
 
         // 3. Cộng xu UPLOAD_DOCUMENT (+2 xu)
-        window.rewardCoins('UPLOAD_DOCUMENT');
+        try {
+            if (auth.currentUser) {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                    'coins.received': increment(2)
+                });
+                if (window.showCoinEffect) window.showCoinEffect(2);
+                console.log("🪙 +2 xu (UPLOAD_DOCUMENT)");
+            }
+        } catch (coinErr) {
+            console.warn("Không thể cộng xu:", coinErr);
+        }
 
-        // 4. Thông báo & Đóng Modal
-        alert("Upload thành công! Tài liệu đang chờ duyệt.");
-        window.closeUploadModal();
+        // 4. Hiệu ứng xu + đợi 1.5s rồi mới alert
+        setTimeout(() => {
+            alert("✅ Upload thành công! 🪙 Bạn được thưởng +2 xu!\nTài liệu đang chờ duyệt.");
+            window.closeUploadModal();
+        }, 1500);
 
     } catch (e) {
         console.error("Upload error:", e);
@@ -1600,19 +1644,17 @@ window.approveDocument = async function(docId) {
         if (docSnap.exists()) {
             const docData = docSnap.data();
             if (docData.uploaderUid) {
-                // Tạm thời gọi rewardCoins với uid của người upload
-                // Vì rewardCoins dùng auth.currentUser, nên cần xử lý riêng
                 try {
-                    // Lưu uid vào biến tạm
                     const targetUid = docData.uploaderUid;
                     const targetUserRef = doc(db, "users", targetUid);
                     const targetUserSnap = await getDoc(targetUserRef);
                     if (targetUserSnap.exists()) {
-                        const targetData = targetUserSnap.data();
-                        const targetCoins = targetData.coins || { received: 0, used: 0 };
                         await updateDoc(targetUserRef, {
                             'coins.received': increment(8)
                         });
+                        // Show coin effect + alert for the approver
+                        if (window.showCoinEffect) window.showCoinEffect(8);
+                        alert("✅ Đã duyệt tài liệu! 🪙 Người upload được thưởng +8 xu!");
                         console.log(`🪙 +8 xu (DOCUMENT_APPROVED) cho user ${targetUid}`);
                     }
                 } catch (err) {
@@ -1790,5 +1832,37 @@ window.spendCoins = async function(actionCode, targetId) {
     console.log(`🪙 -${amount} xu (${policy.label})`);
 
     return { success: true, amount };
+};
+
+
+// --- HÀM VÀO VỚI TƯ CÁCH KHÁCH (GUEST MODE) ---
+window.enterAsGuest = function() {
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    
+    // Ẩn login, hiện app
+    loginScreen.style.display = 'none';
+    appContainer.style.display = 'flex';
+    appContainer.style.opacity = '1';
+    appContainer.style.visibility = 'visible';
+    
+    // Set các giá trị mặc định cho Guest
+    window.currentUserRank = "GUEST";
+    window.currentUserName = "Galactic Explorer";
+    window.currentUserRoles = [];
+    window.currentMsv = "GUEST";
+    
+    // Cập nhật UI
+    const nameEl = document.getElementById('user-display-name');
+    const welcomeEl = document.getElementById('welcome-name');
+    if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
+    if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
+    
+    console.log("🌌 Khách đã vào Cosmic Base!");
+    
+    // Load tài liệu cho khách
+    if (typeof window.initResourceHub === 'function') {
+        window.initResourceHub();
+    }
 };
 
