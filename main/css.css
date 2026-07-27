@@ -42,7 +42,8 @@
                 var(--cosmo-bg);
 
             color: var(--text-main);
-            height: 100%;
+            height: 100vh;
+            width: 100vw;
             display: flex;
             overflow: hidden;
             position: relative;
@@ -102,7 +103,11 @@
                 radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.05), transparent 40%);
             z-index: -2;
             pointer-events: none;
-            filter: blur(20px);
+            /* Giảm từ 20px xuống 6px: blur() trên toàn màn hình rất tốn GPU,
+               nhất là khi lớp này luôn hiển thị phía sau toàn bộ trang.
+               Gradient bên trên vốn đã có viền mờ dần (transparent 40%/45%)
+               nên không cần blur mạnh vẫn giữ được cảm giác tinh vân. */
+            filter: blur(6px);
         }
 
         .solar-system-container {
@@ -319,27 +324,56 @@
             overflow: hidden;
         }
 
-        /* --- SIDEBAR --- */
+        /* --- TOP NAVBAR (trước đây là sidebar dọc, nay là header ngang) --- */
+        /* Nền lấy từ --cosmo-dark (css.css) theo yêu cầu, không dùng theme sáng của Introduction.css */
         .sidebar {
-            width: 80px;
-            height: 100vh;
-            position: relative;
+            width: 100%;
+            height: 64px;
+            position: fixed; /* position:fixed cũng đóng vai trò điểm neo cho .topbar-nav absolute bên trong */
             left: 0;
             top: 0;
-            flex-shrink: 0;  
-           background: rgba(28, 36, 56, 0.85); /* = --cosmo-dark */ /* background: rgba(21, 25, 33, 0.85); */
-            border-right: 1px solid rgba(224, 255, 255, 0.08); /* border-right: 1px solid rgba(255,255,255,0.08); */
-            backdrop-filter: blur(12px);
+            flex-shrink: 0;
+            background: rgba(28, 36, 56, 0.92); /* = --cosmo-dark */
+            border-right: none;
+            border-bottom: 1px solid rgba(224, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
 
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            padding-top: 20px;
+            padding: 0 28px;
+            gap: 4px;
             z-index: 1000;
+        }
+        .topbar-title {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-right: 28px;
+            white-space: nowrap;
+        }
+        .topbar-nav {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            /* Canh giữa tuyệt đối theo chiều ngang của header, không phụ thuộc
+               độ rộng của logo bên trái hay nút logout bên phải */
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .nav-label {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
         }
         .sidebar i {
             color: var(--text-dim);
-            font-size: 22px;
+            font-size: 17px;
             transition: 0.25s ease;
         }
         .sidebar .nav-item:hover i {
@@ -356,27 +390,24 @@
         }
         .nav-item {
             position: relative;
-            width: 100%;
-            height: 60px;
-
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
 
-        /* Neon line */
+        /* Neon underline (đổi từ vạch dọc bên trái sang gạch chân cho thanh ngang) */
         .nav-item::before {
             content: "";
             position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%) scaleY(0);
+            left: 50%;
+            bottom: -1px;
+            transform: translateX(-50%) scaleX(0);
 
-            width: 3px;
-            height: 60%;
+            width: 70%;
+            height: 3px;
             background: var(--neon-cyan);
-            border-radius: 0 4px 4px 0;
+            border-radius: 3px 3px 0 0;
 
             box-shadow: 0 0 10px var(--neon-cyan);
             transition: 0.3s ease;
@@ -384,17 +415,18 @@
 
         /* Active = bật neon line */
         .nav-item.active::before {
-            transform: translateY(-50%) scaleY(1);
+            transform: translateX(-50%) scaleX(1);
         }
 
 
         .logo {
-            width: 50px;
-            height: 50px;
+            width: 38px;
+            height: 38px;
            background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
             /* background: linear-gradient(135deg, var(--neon-blue), var(--neon-teal)); */
             border-radius: 50%;
-            margin-bottom: 40px;
+            margin-bottom: 0;
+            margin-right: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -404,13 +436,16 @@
             box-shadow: 0 0 15px var(--neon-cyan);
             /* box-shadow: 0 0 15px var(--neon-teal); */
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .nav-item {
-            width: 50px;
-            height: 50px;
-            margin-bottom: 20px;
-            border-radius: 12px;
+            width: auto;
+            height: 40px;
+            margin-bottom: 0;
+            padding: 0 14px;
+            gap: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -431,10 +466,11 @@
         }
         
         .logout-btn {
-            margin-top: auto;
-            margin-bottom: 20px;
-            width: 50px;
-            height: 50px;
+            margin-top: 0;
+            margin-bottom: 0;
+            margin-left: auto;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: #111;
             color: var(--neon-red);
@@ -462,13 +498,13 @@
         /* --- MAIN CONTENT --- */
         .main-content {
             flex: 1;
-            padding: 30px;
             overflow-y: auto;
             position: relative;
             background: transparent;
             margin-left: 0px; /* Căn lề trái cố định */
             margin-right: 20px; /* Nếu cần cân đối hai bên */ 
-            padding: 16px; /* Khoảng cách bên trong module */ 
+            padding: 16px; /* Khoảng cách bên trong module */
+            padding-top: 84px; /* Chừa chỗ cho topbar cố định (64px) + khoảng cách */
             box-sizing: border-box; 
         }
 
@@ -731,6 +767,61 @@
         }
 
         /* --- RESOURCE HUB & SPLIT VIEW STYLES --- */
+
+        /* Folder grid (Level 1: Trường, Level 2: Môn học) */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .folder-item {
+            background: var(--cosmo-dark);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 22px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .folder-item:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 221, 235, 0.08);
+            transform: translateY(-3px);
+        }
+
+        .folder-item .folder-icon {
+            font-size: 36px;
+            color: var(--neon-cyan);
+            filter: drop-shadow(0 0 6px rgba(0,221,235,0.4));
+        }
+
+        .folder-item .folder-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        /* Badge "Loại tài liệu" trên từng item trong list */
+        .doctype-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+        .doctype-badge.theory { background: rgba(58,175,255,0.15); color: var(--neon-blue); border: 1px solid var(--neon-blue); }
+        .doctype-badge.test   { background: rgba(255,79,216,0.15); color: var(--neon-pink); border: 1px solid var(--neon-pink); }
+        .doctype-badge.cram   { background: rgba(255,215,0,0.15); color: var(--neon-gold); border: 1px solid var(--neon-gold); }
+
         .resource-list {
             display: flex;
             flex-direction: column;
@@ -753,7 +844,12 @@
             align-items: center;
             border: 1px solid transparent;
             transition: all 0.2s;
-            backdrop-filter: blur(5px);
+            /* Đã bỏ backdrop-filter: blur(5px) — mỗi item trong danh sách cuộn
+               (.resource-list, overflow-y:auto) đều bị làm mờ riêng, nên khi
+               danh sách có nhiều tài liệu, trình duyệt phải tính lại blur cho
+               từng item mỗi khung hình lúc cuộn → đây là nguyên nhân chính
+               gây giật khi lướt Kho tài liệu. var(--cosmo-dark) đã gần như
+               đặc màu nên bỏ blur không ảnh hưởng nhiều tới hình ảnh. */
             cursor: pointer;
         }
 
@@ -819,6 +915,8 @@
             color:var(--text-main); border-radius: 8px; outline: none;
         }
         .modal-input:focus { border-color: var(--neon-cyan); }
+        select.modal-input { cursor: pointer; }
+        select.modal-input option { background: var(--cosmo-dark); color: var(--text-main); }
         .file-drop-area {
             border: 2px dashed rgba(0, 221, 235, 0.35); padding: 30px; text-align: center;
             margin-bottom: 20px; border-radius: 8px; cursor: pointer; color:var(--text-dim);
@@ -839,25 +937,133 @@
         }
         .role-option input { margin-right: 10px; transform: scale(1.2); }
 
-        /* Split View Container (Hidden initially) */
-        #split-view-container {
-            display: none;
-            height: calc(100vh - 100px);
+        /* --- RESOURCE HUB REVIEW TABS (Admin/Op only) --- */
+        .review-tabs {
             display: flex;
-            gap: 20px;
-            animation: fadeIn 0.3s ease;
+            gap: 4px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);  /* ← cái này */
+
+            margin-bottom: 20px;
         }
-        
-        .split-left {
-            flex: 2;
+
+        .review-tab {
+            padding: 10px 18px;
+            font-size: 14px;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .review-tab:hover {
+            color: var(--text-main);
+        }
+
+        .review-tab.active {
+            color: var(--neon-cyan);
+            border-bottom-color: var(--neon-cyan);
+            text-shadow: 0 0 6px rgba(0,221,235,0.5);
+        }
+
+        .review-tab-badge {
+            background: var(--neon-red);
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        /* --- SIDEBAR PENDING DOT --- */
+        .nav-pending-dot {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--neon-red);
+            box-shadow: 0 0 8px var(--neon-red);
+            animation: navDotPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes navDotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.75); }
+        }
+
+        /* --- DOCUMENT REVIEW PANEL (Full-width, replaces Split View) --- */
+        #doc-review-container {
             background: rgba(10, 14, 23, 0.85);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px;
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            height: calc(100vh - 100px);
         }
-        
+
+        .doc-content-placeholder-full {
+            flex: 1;
+        }
+
+        .doc-status-badge {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .doc-status-badge.pending { background: rgba(255,140,0,0.15); color: #FF8C00; border: 1px solid #FF8C00; }
+        .doc-status-badge.approved { background: rgba(0,221,235,0.12); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
+        .doc-status-badge.rejected { background: rgba(255,69,0,0.12); color: var(--neon-red); border: 1px solid var(--neon-red); }
+
+        .btn-approve-doc {
+            background: var(--neon-cyan);
+            color: #000;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-approve-doc:hover { box-shadow: 0 0 12px var(--neon-cyan); }
+
+        .btn-reject-doc {
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 6px 14px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-reject-doc:hover { background: var(--neon-red); color: #fff; }
+
+        .rejection-reason-banner {
+            background: rgba(255,69,0,0.1);
+            border-bottom: 1px solid rgba(255,69,0,0.4);
+            color: var(--neon-red);
+            font-size: 13px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
         .doc-viewer-header {
             padding: 15px;
             background: rgba(28, 36, 56, 0.9); /* cosmo-dark */
@@ -865,6 +1071,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
         
         .doc-content-placeholder {
@@ -884,121 +1091,6 @@
             height: 100%;
             border: none;
             background: var(--cosmo-bg);
-        }
-
-        .split-right {
-            flex: 1;
-            background: rgba(10, 14, 23, 0.85);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .chat-header {
-            padding: 15px;
-            background: linear-gradient(90deg, var(--cosmo-dark), var(--cosmo-bg));
-            border-bottom: 1px solid var(--neon-cyan);
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .chat-msg {
-            padding: 8px 12px;
-            border-radius: 8px;
-            max-width: 85%;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        .msg-system {
-            background: rgba(255, 69, 0, 0.12);
-            border: 1px solid rgba(255, 69, 0, 0.4);
-            color: var(--neon-red);
-            text-align: center;
-            align-self: center;
-            font-size: 12px;
-            font-style: italic;
-        }
-
-        .msg-other {
-            background: rgba(255,255,255,0.06);
-            color: var(--text-main);
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-        }
-        
-        .msg-me {
-            background: rgba(0, 221, 235, 0.2);
-            color: var(--neon-cyan);
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
-            border: 1px solid rgba(0, 221, 235, 0.3);
-        }
-
-        .chat-input-area {
-            padding: 15px;
-            background: rgba(28,36,56,0.85);
-            border-top: 1px solid rgba(255,255,255,0.08);
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input {
-            flex: 1;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: var(--text-main);
-            padding: 8px;
-            border-radius: 5px;
-        }
-
-        .btn-send {
-            background: var(--neon-cyan);
-            color: #000;
-            /* background: var(--neon-teal);
-            color: black; */
-            border: none;
-            padding: 0 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-sos-trigger {
-            background: transparent;
-            border: 1px solid var(--neon-red);
-            color: var(--neon-red);
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            animation: pulseDot 2s infinite;
-        }
-        
-        .btn-sos-trigger:hover {
-            background: var(--neon-red);
-            color: #000;
-        }
-        /* Active state for SOS button */
-        .btn-sos-trigger.active {
-            background: var(--neon-red);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-red);
-            animation: pulseDot 0.5s infinite;
         }
 
         .btn-back {
@@ -1235,7 +1327,10 @@
     margin-top: 11px; /* thay transform G*/
 }
 
-#suggestion-box {
+#suggestion-box,
+#school-suggestion-box,
+#filter-school-box,
+#filter-subject-box {
     position: absolute;
     top: 100%;
     left: 0;
@@ -1253,8 +1348,14 @@
 }
 
 /* Tùy chỉnh thanh cuộn cho đẹp */
-#suggestion-box::-webkit-scrollbar { width: 5px; }
-#suggestion-box::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 5px; }
+#suggestion-box::-webkit-scrollbar,
+#school-suggestion-box::-webkit-scrollbar,
+#filter-school-box::-webkit-scrollbar,
+#filter-subject-box::-webkit-scrollbar { width: 5px; }
+#suggestion-box::-webkit-scrollbar-thumb,
+#school-suggestion-box::-webkit-scrollbar-thumb,
+#filter-school-box::-webkit-scrollbar-thumb,
+#filter-subject-box::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 5px; }
 
 .suggestion-item {
     padding: 10px 12px;
@@ -1282,32 +1383,51 @@
 }
 /* --- RESPONSIVE CHO MOBILE (Dưới 768px) --- */
 @media (max-width: 768px) {
-    /* 1. Sidebar: Chuyển từ cột đứng sang thanh ngang nằm dưới hoặc trên */
+    /* 1. Topbar: trên mobile vẫn nằm ngang nhưng đưa xuống dưới cho dễ bấm bằng ngón cái */
     .sidebar {
         width: 100%;
         height: 60px;
         flex-direction: row;
         position: fixed;
+        top: auto;
         bottom: 0; /* Đưa menu xuống dưới cho dễ bấm bằng ngón cái */
-        padding-top: 0;
+        padding: 0;
         justify-content: space-around;
         border-right: none;
+        border-bottom: none;
         border-top: 1px solid rgba(224, 255, 255, 0.08);
     }
 
-    .logo {
-        display: none; /* Ẩn logo ở sidebar khi trên mobile để tiết kiệm diện tích */
+    .logo, .topbar-title {
+        display: none; /* Ẩn logo/tên app trên mobile để tiết kiệm diện tích */
+    }
+
+    .topbar-nav {
+        position: static;
+        transform: none;
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .nav-label {
+        display: none; /* Chỉ hiện icon trên mobile, giống thiết kế icon-only ban đầu */
     }
 
     .nav-item {
         margin-bottom: 0;
         height: 100%;
+        padding: 0 8px;
     }
 
-    /* 2. Main Content: Đẩy lề để không bị menu che */
+    .logout-btn {
+        margin-left: 0;
+    }
+
+    /* 2. Main Content: Đẩy lề để không bị menu che (menu giờ ở dưới, không phải trên) */
     .main-content {
         margin-right: 0;
-        padding-bottom: 80px; /* Chừa chỗ cho sidebar nằm dưới */
+        padding-top: 16px;
+        padding-bottom: 80px; /* Chừa chỗ cho thanh nav nằm dưới */
     }
 
     /* 3. Login Box: Cho rộng ra gần hết màn hình */
@@ -1326,23 +1446,21 @@
         display: none;
     }
 
-#split-view-container {
-        display: flex !important; 
-        flex-direction: column !important; /* Xếp dọc thay vì xếp ngang */
-        height: calc(100vh - 60px) !important; /* Trừ đi chiều cao của menu mobile */
-        gap: 0 !important;
+    /* DOCUMENT REVIEW PANEL responsive */
+    #doc-review-container {
+        height: calc(100vh - 60px) !important;
+        border-radius: 0;
     }
 
-    /* 2. Cho phần xem tài liệu (Bên trái) chiếm hết 100% màn hình */
-    .split-left {
-        flex: 1 !important;
-        width: 100% !important;
-        display: block !important;
+    .doc-viewer-header {
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    /* 3. ĐÂY LÀ CHỖ BẠN CẦN: Ẩn hoàn toàn khung chat (Bên phải) */
-    .split-right {
-        display: none !important;
+    .review-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
     }
 
     /* 4. Điều chỉnh Sidebar để không che mất nội dung */
@@ -1361,61 +1479,283 @@
         padding-bottom: 70px; /* Chừa chỗ cho menu ở dưới */
     }
 }
-
-/* ===== FILTER BAR STYLES ===== */
-#filter-subject-box {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #1a1f2e;
-    border: 1px solid #333;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 100;
+.main-content {
+    scrollbar-width: none;
+}
+.main-content::-webkit-scrollbar {
     display: none;
-}
-
-#filter-subject-box .suggestion-item {
-    padding: 9px 14px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text-dim);
-    transition: background 0.15s;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-
-#filter-subject-box .suggestion-item:hover {
-    background: rgba(0, 221, 235, 0.1);
-    color: var(--neon-cyan);
-}
-
-#filter-subject-box .suggestion-item strong {
-    color: var(--neon-cyan);
-}
-
-#filter-subject {
-    transition: border-color 0.2s;
-}
-
-#filter-subject:focus, #filter-subject.active {
-    border-color: var(--neon-cyan) !important;
-    outline: none;
-    box-shadow: 0 0 8px rgba(0, 221, 235, 0.2);
-}
-
-#filter-time {
-    transition: border-color 0.2s;
-}
-
-#filter-time:focus {
-    border-color: var(--neon-cyan) !important;
-    outline: none;
 }
 
 #filter-reset-btn:hover {
     border-color: var(--neon-red) !important;
     color: var(--neon-red) !important;
+}
+
+.coin-effect{
+
+    position:fixed;
+
+    left:50%;
+
+    top:50%;
+
+    transform:translate(-50%,-50%) scale(.7);
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:18px 30px;
+
+    background:rgba(0,0,0,.8);
+
+    border-radius:18px;
+
+    color:#FFD700;
+
+    font-size:38px;
+
+    font-weight:bold;
+
+    opacity:0;
+
+    transition:.35s;
+
+    z-index:999999;
+
+}
+
+.coin-effect.show{
+
+    opacity:1;
+
+    transform:translate(-50%,-50%) scale(1);
+
+}
+
+/* =====================================================================
+   INTRO / GIỚI THIỆU VIEW
+   Nội dung merge từ Introduction.html, nhưng restyle hoàn toàn theo theme
+   tối (cosmo-dark / neon) của css.css thay vì theme sáng gốc của
+   Introduction.css — nền chính vẫn là starfield/nebula phía sau app.
+   ===================================================================== */
+
+#intro { padding-bottom: 20px; }
+
+.cx-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 40px;
+    align-items: center;
+    padding: 20px 4px 54px;
+}
+@media (max-width: 900px) {
+    .cx-hero { grid-template-columns: 1fr; padding-top: 10px; }
+}
+
+.cx-eyebrow {
+    color: var(--neon-cyan);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.cx-hero-title {
+    font-size: 2.3rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 16px 0;
+    color: var(--text-main);
+    text-transform: none;
+    letter-spacing: 0;
+}
+.cx-hero-title .accent {
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.cx-hero-desc {
+    color: var(--text-dim);
+    font-size: 1rem;
+    max-width: 34rem;
+    margin-bottom: 26px;
+    line-height: 1.6;
+}
+
+.cx-btn {
+    background: var(--neon-cyan);
+    color: #00131a;
+    border: none;
+    padding: 12px 26px;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 18px rgba(0, 221, 235, 0.35);
+    transition: 0.25s;
+}
+.cx-btn:hover {
+    box-shadow: 0 0 28px rgba(0, 221, 235, 0.6);
+    transform: translateY(-2px);
+}
+
+.cx-hero-visual {
+    aspect-ratio: 16 / 11;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(143, 90, 255, 0.28), rgba(0, 221, 235, 0.22));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.cx-hero-panel {
+    width: 82%;
+    height: 64%;
+    background: rgba(10, 14, 23, 0.55);
+    border-radius: 16px 16px 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 10px;
+    padding-bottom: 22px;
+}
+.cx-bar {
+    width: 14px;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+    box-shadow: 0 0 12px rgba(0, 221, 235, 0.5);
+}
+.cx-bar.b1 { height: 56px; }
+.cx-bar.b2 { height: 92px; }
+.cx-bar.b3 { height: 40px; }
+.cx-bar.b4 { height: 74px; }
+
+.cx-section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-align: center;
+    margin: 10px 0 26px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.cx-section-title .accent { color: var(--neon-cyan); }
+
+.cx-values {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 54px;
+}
+@media (max-width: 900px) { .cx-values { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .cx-values { grid-template-columns: 1fr; } }
+
+.cx-value-card {
+    background: rgba(28, 36, 56, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 22px 18px;
+    text-align: center;
+    transition: 0.25s;
+}
+.cx-value-card:hover {
+    border-color: var(--neon-cyan);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+.cx-value-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 18px;
+}
+.cx-value-icon.cyan { background: rgba(0, 221, 235, 0.15); }
+.cx-value-icon.purple { background: rgba(143, 90, 255, 0.18); }
+.cx-value-icon.pink { background: rgba(255, 79, 216, 0.15); }
+.cx-value-icon.gold { background: rgba(255, 215, 0, 0.15); }
+.cx-value-card h3 { font-size: 14px; margin: 0 0 6px; color: var(--text-main); }
+.cx-value-card p { font-size: 12.5px; color: var(--text-dim); margin: 0; line-height: 1.5; }
+
+.cx-ecosystem { margin-bottom: 54px; }
+.cx-eco-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+@media (max-width: 900px) { .cx-eco-grid { grid-template-columns: 1fr; } }
+
+.cx-eco-card {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    border-radius: 16px;
+    height: 170px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: 0.25s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+.cx-eco-card.static { cursor: default; }
+.cx-eco-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4); }
+.cx-eco-card.cyan { background: linear-gradient(160deg, rgba(0, 221, 235, 0.12), rgba(28, 36, 56, 0.7)); }
+.cx-eco-card.purple { background: linear-gradient(160deg, rgba(143, 90, 255, 0.14), rgba(28, 36, 56, 0.7)); }
+.cx-eco-card.gold { background: linear-gradient(160deg, rgba(255, 215, 0, 0.12), rgba(28, 36, 56, 0.7)); }
+.cx-eco-card h3 { margin: 0 0 6px; font-size: 16px; color: var(--text-main); }
+.cx-eco-card p { margin: 0; font-size: 12.5px; color: var(--text-dim); }
+.cx-eco-card .cx-emoji { position: absolute; top: 16px; right: 18px; font-size: 34px; opacity: 0.18; }
+.cx-eco-card .cx-go { margin-top: 10px; font-size: 11px; color: var(--neon-cyan); font-weight: 700; letter-spacing: 0.5px; }
+
+.cx-cta {
+    border-radius: 22px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 18px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+@media (min-width: 768px) {
+    .cx-cta { flex-direction: row; justify-content: space-between; text-align: left; }
+}
+.cx-cta h2 { margin: 0 0 6px; font-size: 1.5rem; color: #fff; }
+.cx-cta h2 .accent { color: var(--neon-cyan); }
+.cx-cta p { margin: 0; color: rgba(224, 255, 255, 0.65); font-size: 0.9rem; }
+.cx-cta .cx-btn { flex-shrink: 0; background: #fff; color: #1e1b4b; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+.cx-cta .cx-btn:hover { box-shadow: 0 0 30px rgba(255, 255, 255, 0.5); }
+
+.cx-star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: cxTwinkle var(--duration, 3s) infinite ease-in-out;
+}
+@keyframes cxTwinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
 }
