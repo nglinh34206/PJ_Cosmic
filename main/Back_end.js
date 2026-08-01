@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
         // Import Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
      //   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // Thêm dòng này vào cụm import: import { logEvent, setUserProperties } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
         // Firebase Configuration (From User)
@@ -743,8 +743,19 @@ window.trackTelemetry = function(eventName, params = {}) {
     window.currentUserRoles = roles;
     window.currentMsv = data.msv;
 
-    document.getElementById('user-display-name').innerText = displayName;
-    document.getElementById('welcome-name').innerText = displayName;
+    const nameEl = document.getElementById('user-display-name');
+    const welcomeEl = document.getElementById('welcome-name');
+    if (nameEl) nameEl.innerText = displayName;
+    if (welcomeEl) welcomeEl.innerText = displayName;
+    else console.warn("⚠️ [loadUserProfile] Không tìm thấy phần tử #welcome-name trong HTML.");
+
+    // Năm học / Chuyên ngành / Giới thiệu bản thân trên khoang cá nhân
+    const cabinYearEl = document.getElementById('cabin-year-text');
+    const cabinRoleSubEl = document.getElementById('cabin-role-sub');
+    const cabinIntroEl = document.getElementById('cabin-profile-intro');
+    if (cabinYearEl) cabinYearEl.innerText = data.year || "Chưa cập nhật";
+    if (cabinRoleSubEl) cabinRoleSubEl.innerText = "Chuyên ngành: " + (data.major || "Chưa cập nhật");
+    if (cabinIntroEl) cabinIntroEl.innerText = data.bio || "Chưa có giới thiệu.";
 
     // --- 2. LOGIC TÍNH TOÁN RANK & TIER (MỚI) ---
     const rankTitle = document.getElementById('user-rank-title');
@@ -752,6 +763,7 @@ window.trackTelemetry = function(eventName, params = {}) {
     const avatarFrame = document.getElementById('user-avatar-frame');
     const quoteBox = document.getElementById('quote-box');
     const energyBar = document.getElementById('energy-bar');
+    if (!quoteBox) console.warn("⚠️ [loadUserProfile] Không tìm thấy phần tử #quote-box trong HTML.");
 
     let displayRank = "Probe"; // Mặc định
     let tierClass = "rank-standard";
@@ -854,46 +866,54 @@ window.trackTelemetry = function(eventName, params = {}) {
     }
 
     // --- 3. RENDER UI ---
-    rankTitle.className = "rank-title " + tierClass;
-    rankTitle.innerText = displayRank; 
-    
-    tierTag.className = "tier-tag " + tagClass;
-    tierTag.innerText = tierName;
+    if (rankTitle) {
+        rankTitle.className = "rank-title " + tierClass;
+        rankTitle.innerText = displayRank;
+    }
 
-    avatarFrame.className = "avatar-container avatar-frame " + frameClass;
-    quoteBox.innerHTML = quoteHtml;
-    
-    document.getElementById('energy-text').innerText = energy;
-    
+    if (tierTag) {
+        tierTag.className = "tier-tag " + tagClass;
+        tierTag.innerText = tierName;
+    }
+
+    if (avatarFrame) avatarFrame.className = "avatar-container avatar-frame " + frameClass;
+    if (quoteBox) quoteBox.innerHTML = quoteHtml;
+
+    const energyTextEl = document.getElementById('energy-text');
+    if (energyTextEl) energyTextEl.innerText = energy;
+
     // --- 4. THANH NĂNG LƯỢNG (ENERGY BAR) ---
-    if (roles.includes('admin') || tierClass === "rank-genesis" || energy >= 10000) {
-        // Admin, Staff hoặc Max Level -> Full cây
-        energyBar.style.width = "100%";
-    } else {
-        // User đang cày -> Tính % trong cấp hiện tại
-        let currentBase = 0;
-        let nextTarget = 200;
-        
-        // Tìm mốc hiện tại
-        for (let i = 0; i < RANK_SYSTEM.thresholds.length; i++) {
-            if (energy >= RANK_SYSTEM.thresholds[i]) {
-                currentBase = RANK_SYSTEM.thresholds[i];
-                nextTarget = RANK_SYSTEM.thresholds[i+1] || 10000;
+    if (energyBar) {
+        if (roles.includes('admin') || tierClass === "rank-genesis" || energy >= 10000) {
+            // Admin, Staff hoặc Max Level -> Full cây
+            energyBar.style.width = "100%";
+        } else {
+            // User đang cày -> Tính % trong cấp hiện tại
+            let currentBase = 0;
+            let nextTarget = 200;
+
+            // Tìm mốc hiện tại
+            for (let i = 0; i < RANK_SYSTEM.thresholds.length; i++) {
+                if (energy >= RANK_SYSTEM.thresholds[i]) {
+                    currentBase = RANK_SYSTEM.thresholds[i];
+                    nextTarget = RANK_SYSTEM.thresholds[i+1] || 10000;
+                }
             }
+
+            // Tính toán
+            let range = nextTarget - currentBase;
+            let gained = energy - currentBase;
+            let pct = (range > 0) ? (gained / range) * 100 : 100;
+            energyBar.style.width = Math.max(5, pct) + "%"; // Tối thiểu 5% để nhìn thấy vạch
         }
-        
-        // Tính toán
-        let range = nextTarget - currentBase;
-        let gained = energy - currentBase;
-        let pct = (range > 0) ? (gained / range) * 100 : 100;
-        energyBar.style.width = Math.max(5, pct) + "%"; // Tối thiểu 5% để nhìn thấy vạch
     }
 
     // --- 5. KHỞI TẠO CÁC MODULE KHÁC ---
-    
+
     // Admin Panel
     if (roles.includes('admin')) {
-        document.getElementById('admin-panel').style.display = 'block';
+        const adminPanel = document.getElementById('admin-panel');
+        if (adminPanel) adminPanel.style.display = 'block';
         window.loadCrewList();
     }
 
@@ -908,6 +928,7 @@ window.trackTelemetry = function(eventName, params = {}) {
     window.initVoidChat();
     window.initResourceHub();
     window.setupHighCommand();
+    if (typeof window.loadActivityHistory === 'function') window.loadActivityHistory();
        window.renderCoinDisplay(data.coins);
 window.identifyUserForTracking(data);
 };
@@ -985,22 +1006,30 @@ window.markAsRead = async function(id, collectionName) {
             // CHECK ACCESS FOR BRIDGE
             if (tabId === 'bridge') {
                 const hasAccess = window.currentUserRoles.some(r => ['admin','tester','op','mkt'].includes(r));
-                document.getElementById('bridge-locked').style.display = hasAccess ? 'none' : 'block';
-                document.getElementById('bridge-content').style.display = hasAccess ? 'block' : 'none';
-                
+                const bridgeLocked = document.getElementById('bridge-locked');
+                const bridgeContent = document.getElementById('bridge-content');
+                if (bridgeLocked) bridgeLocked.style.display = hasAccess ? 'none' : 'block';
+                if (bridgeContent) bridgeContent.style.display = hasAccess ? 'block' : 'none';
+
                 if (hasAccess) {
                     // Show panels based on role
-                    document.getElementById('panel-admin').style.display = window.currentUserRoles.includes('admin') ? 'block' : 'none';
-                    document.getElementById('panel-tester').style.display = window.currentUserRoles.includes('tester') ? 'block' : 'none';
-                    document.getElementById('panel-op').style.display = window.currentUserRoles.includes('op') ? 'block' : 'none';
-                    document.getElementById('panel-mkt').style.display = window.currentUserRoles.includes('mkt') ? 'block' : 'none';
+                    const panelAdmin = document.getElementById('panel-admin');
+                    const panelTester = document.getElementById('panel-tester');
+                    const panelOp = document.getElementById('panel-op');
+                    const panelMkt = document.getElementById('panel-mkt');
+                    if (panelAdmin) panelAdmin.style.display = window.currentUserRoles.includes('admin') ? 'block' : 'none';
+                    if (panelTester) panelTester.style.display = window.currentUserRoles.includes('tester') ? 'block' : 'none';
+                    if (panelOp) panelOp.style.display = window.currentUserRoles.includes('op') ? 'block' : 'none';
+                    if (panelMkt) panelMkt.style.display = window.currentUserRoles.includes('mkt') ? 'block' : 'none';
                 }
             }
 
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            element.classList.add('active');
+            const targetSection = document.getElementById(tabId);
+            if (targetSection) targetSection.classList.add('active');
+            else console.warn(`⚠️ [switchTab] Không tìm thấy tab #${tabId} trong HTML.`);
+            if (element) element.classList.add('active');
         };
 
         // --- ADMIN: CREW MANAGEMENT LOGIC ---
@@ -1117,6 +1146,17 @@ window.markAsRead = async function(id, collectionName) {
 };
 
         // ... [Giữ nguyên các hàm openSplitView, closeSplitView, initVoidChat, etc.] ...
+        // Chuyển sang tab "Resource Hub" rồi mới mở tài liệu — dùng cho nút
+        // "Xem lại"/"Xem tài liệu" ở khung Lịch sử hoạt động (khoang cá nhân),
+        // vì openSplitView chỉ đổi hiển thị BÊN TRONG tab resources, không tự chuyển tab.
+        window.jumpToDocument = function(docName, fileUrl, docId, uploaderName) {
+            const resourcesNav = document.getElementById('resources-nav');
+            if (typeof window.switchTab === 'function') {
+                window.switchTab('resources', resourcesNav);
+            }
+            window.openSplitView(docName, fileUrl, docId, uploaderName);
+        };
+
         window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
 // Thêm vào đầu hàm:
 window.docStartTime = Date.now(); // Bắt đầu bấm giờ
@@ -1124,6 +1164,7 @@ window.trackTelemetry('view_document', {
     doc_title: docName, 
     doc_id: docId
 });
+window.logActivity('view', docName, { docId, fileUrl, uploaderName: uploaderName || '' });
 // Kích hoạt Smartlink khi user mở xem tài liệu (có cooldown, xem index.html)
 if (typeof window.triggerSmartlink === 'function') {
     window.triggerSmartlink();
@@ -1517,7 +1558,7 @@ window.submitUpload = async function() {
         const categoryKey = window.normalizeKey(category);
 
         // Save to Firestore
-        await addDoc(collection(db, "resources"), {
+        const newResourceRef = await addDoc(collection(db, "resources"), {
             title,
             school,
             schoolKey,
@@ -1540,6 +1581,7 @@ window.submitUpload = async function() {
             doc_category: category,
             status: 'pending' 
         });
+        window.logActivity('upload', title, { school, category, docId: newResourceRef.id, fileUrl, uploaderName: window.currentUserName });
 
         // 2. Cộng điểm GUARDIAN (+10 Energy)
         window.addEnergy(10, 'guardian');
@@ -1551,6 +1593,7 @@ window.submitUpload = async function() {
                     'coins.received': increment(2)
                 });
                 if (window.showCoinEffect) window.showCoinEffect(2);
+                window.logActivity('coin_receive', 'Upload tài liệu: ' + title, { amount: 2 });
                 console.log("🪙 +2 xu (UPLOAD_DOCUMENT)");
             }
         } catch (coinErr) {
@@ -2304,6 +2347,298 @@ window.COIN_POLICY = Object.freeze({
     },
 });
 
+// --- MODAL: CHỈNH SỬA HỒ SƠ (EDIT PROFILE) ---
+window.openEditProfileModal = async function() {
+    const modal = document.getElementById('cabin-edit-modal');
+    if (!modal) {
+        console.warn("⚠️ Không tìm thấy #cabin-edit-modal trong HTML.");
+        return;
+    }
+
+    if (!auth.currentUser) {
+        alert("Bạn cần đăng nhập để chỉnh sửa hồ sơ! (Chế độ khách không thể lưu thay đổi)");
+        return;
+    }
+
+    modal.classList.add('open');
+
+    try {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) return;
+
+        const d = snap.data();
+        const nameEl = document.getElementById('cabin-edit-name');
+        const yearEl = document.getElementById('cabin-edit-year');
+        const majorEl = document.getElementById('cabin-edit-major');
+        const phoneEl = document.getElementById('cabin-edit-phone');
+        const introEl = document.getElementById('cabin-edit-intro');
+        const emailEl = document.getElementById('cabin-edit-email');
+        const coinTextEl = document.getElementById('cabin-edit-coin-text');
+        const charCountEl = document.getElementById('cabin-intro-char-count');
+        const avatarPreview = document.getElementById('cabin-avatar-circle-preview');
+
+        const displayName = d.displayName || d.fullName || "";
+        if (nameEl) nameEl.value = displayName;
+        if (yearEl) yearEl.value = d.year || "";
+        if (majorEl) majorEl.value = d.major || "";
+        if (phoneEl) phoneEl.value = d.phone || "";
+        if (introEl) introEl.value = d.bio || "";
+        if (emailEl) emailEl.value = d.email || auth.currentUser.email || "";
+        if (charCountEl) charCountEl.innerText = (d.bio || "").length;
+
+        const coins = d.coins || { received: 0, used: 0 };
+        if (coinTextEl) coinTextEl.innerText = window.formatCoin((coins.received || 0) - (coins.used || 0)) + " Xu";
+
+        if (avatarPreview) {
+            const span = avatarPreview.querySelector('span');
+            if (span) span.innerText = (displayName.trim()[0] || "?").toUpperCase();
+        }
+    } catch (e) {
+        console.error("Lỗi tải hồ sơ để chỉnh sửa:", e);
+        alert("Không thể tải dữ liệu hồ sơ: " + e.message);
+    }
+};
+
+window.closeEditProfileModal = function() {
+    const modal = document.getElementById('cabin-edit-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+window.saveProfileChanges = async function() {
+    if (!auth.currentUser) {
+        alert("Bạn cần đăng nhập để lưu thay đổi hồ sơ!");
+        return;
+    }
+
+    const btn = document.getElementById('cabin-edit-save');
+    const originalText = btn ? btn.innerText : "Lưu thay đổi";
+    if (btn) { btn.innerText = "Đang lưu..."; btn.disabled = true; }
+
+    try {
+        const updates = {
+            displayName: (document.getElementById('cabin-edit-name')?.value || "").trim(),
+            year: (document.getElementById('cabin-edit-year')?.value || "").trim(),
+            major: (document.getElementById('cabin-edit-major')?.value || "").trim(),
+            phone: (document.getElementById('cabin-edit-phone')?.value || "").trim(),
+            bio: (document.getElementById('cabin-edit-intro')?.value || "").trim()
+        };
+
+        await updateDoc(doc(db, "users", auth.currentUser.uid), updates);
+
+        // Cập nhật trực tiếp các phần tử hiển thị trên khoang cá nhân —
+        // KHÔNG gọi lại toàn bộ loadUserProfile() để tránh tạo trùng lặp
+        // các listener real-time (chat, tài liệu) mỗi lần lưu hồ sơ,
+        // và KHÔNG reload cả trang (tránh flash màn hình đăng nhập).
+        window.currentUserName = updates.displayName || window.currentUserName;
+
+        const nameEl = document.getElementById('user-display-name');
+        const welcomeEl = document.getElementById('welcome-name');
+        const cabinYearEl = document.getElementById('cabin-year-text');
+        const cabinRoleSubEl = document.getElementById('cabin-role-sub');
+        const cabinIntroEl = document.getElementById('cabin-profile-intro');
+
+        if (nameEl) nameEl.innerText = updates.displayName || "Unknown Pilot";
+        if (welcomeEl) welcomeEl.innerText = updates.displayName || "Unknown Pilot";
+        if (cabinYearEl) cabinYearEl.innerText = updates.year || "Chưa cập nhật";
+        if (cabinRoleSubEl) cabinRoleSubEl.innerText = "Chuyên ngành: " + (updates.major || "Chưa cập nhật");
+        if (cabinIntroEl) cabinIntroEl.innerText = updates.bio || "Chưa có giới thiệu.";
+
+        alert("✅ Đã cập nhật hồ sơ thành công!");
+        window.closeEditProfileModal();
+    } catch (e) {
+        console.error("Lỗi khi lưu hồ sơ:", e);
+        alert("❌ Lỗi khi lưu hồ sơ: " + e.message);
+    } finally {
+        if (btn) { btn.innerText = originalText; btn.disabled = false; }
+    }
+};
+
+// Đếm ký tự cho ô giới thiệu bản thân
+const cabinEditIntroEl = document.getElementById('cabin-edit-intro');
+const cabinIntroCharCountEl = document.getElementById('cabin-intro-char-count');
+if (cabinEditIntroEl && cabinIntroCharCountEl) {
+    cabinEditIntroEl.addEventListener('input', () => {
+        cabinIntroCharCountEl.innerText = cabinEditIntroEl.value.length;
+    });
+}
+
+// Gán sự kiện cho nút mở / đóng / hủy / lưu modal Edit Profile
+const btnOpenEditProfile = document.getElementById('btn-open-edit-profile');
+if (btnOpenEditProfile) btnOpenEditProfile.addEventListener('click', window.openEditProfileModal);
+else console.warn("⚠️ Không tìm thấy #btn-open-edit-profile trong HTML.");
+
+const btnEditClose = document.getElementById('cabin-edit-close');
+if (btnEditClose) btnEditClose.addEventListener('click', window.closeEditProfileModal);
+
+const btnEditCancel = document.getElementById('cabin-edit-cancel');
+if (btnEditCancel) btnEditCancel.addEventListener('click', window.closeEditProfileModal);
+
+const btnEditSave = document.getElementById('cabin-edit-save');
+if (btnEditSave) btnEditSave.addEventListener('click', window.saveProfileChanges);
+
+// Click ra ngoài overlay để đóng modal
+const cabinEditModalEl = document.getElementById('cabin-edit-modal');
+if (cabinEditModalEl) {
+    cabinEditModalEl.addEventListener('click', (e) => {
+        if (e.target === cabinEditModalEl) window.closeEditProfileModal();
+    });
+}
+
+// --- LỊCH SỬ HOẠT ĐỘNG (ACTIVITY LOG) ---
+// Ghi 1 dòng hoạt động vào Firestore collection "activity_logs".
+// Chống trùng lặp: nếu cùng loại hoạt động + cùng tài liệu (docId) đã có sẵn,
+// chỉ cập nhật lại thời gian (createdAt) thay vì tạo thêm 1 dòng mới.
+window.logActivity = async function(type, title, meta = {}) {
+    if (!auth.currentUser) return; // Chế độ khách: không lưu lịch sử
+    try {
+        const dedupeKey = (meta && meta.docId) ? `${type}_${meta.docId}` : null;
+
+        if (dedupeKey) {
+            const dupQ = query(
+                collection(db, "activity_logs"),
+                where("uid", "==", auth.currentUser.uid),
+                where("dedupeKey", "==", dedupeKey),
+                limit(1)
+            );
+            const dupSnap = await getDocs(dupQ);
+            if (!dupSnap.empty) {
+                // Đã có log này rồi -> chỉ "đẩy" lên đầu danh sách bằng cách cập nhật thời gian
+                const existingRef = dupSnap.docs[0].ref;
+                await updateDoc(existingRef, { title, meta, createdAt: serverTimestamp() });
+                return;
+            }
+        }
+
+        await addDoc(collection(db, "activity_logs"), {
+            uid: auth.currentUser.uid,
+            type,   // 'view' | 'upload' | 'coin_receive' | 'coin_spend'
+            title,
+            meta,
+            dedupeKey, // null nếu không áp dụng chống trùng (vd: giao dịch xu)
+            createdAt: serverTimestamp()
+        });
+    } catch (e) {
+        console.warn("⚠️ Không thể ghi lịch sử hoạt động:", e);
+    }
+};
+
+const ACTIVITY_ICON_MAP = {
+    view:         { cls: 'video', icon: 'fa-eye' },
+    upload:       { cls: 'doc',   icon: 'fa-cloud-arrow-up' },
+    coin_receive: { cls: 'doc',   icon: 'fa-coins', color: '#FFD700' },
+    coin_spend:   { cls: 'doc',   icon: 'fa-coins', color: '#FF6B6B' }
+};
+
+function formatActivityTimeAgo(date) {
+    const diffMs = Date.now() - date.getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'Vừa xong';
+    if (mins < 60) return `${mins} phút trước`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ngày trước`;
+    return date.toLocaleDateString('vi-VN');
+}
+
+function renderActivityItem(item) {
+    const cfg = ACTIVITY_ICON_MAP[item.type] || { cls: 'doc', icon: 'fa-circle-info' };
+    const dateObj = item.createdAt && item.createdAt.toDate ? item.createdAt.toDate() : new Date();
+    const timeText = formatActivityTimeAgo(dateObj);
+
+    let subText = timeText;
+    if (item.type === 'coin_receive') subText = `+${(item.meta && item.meta.amount) || ''} xu • ${timeText}`;
+    if (item.type === 'coin_spend') subText = `-${(item.meta && item.meta.amount) || ''} xu • ${timeText}`;
+
+    const safeTitle = (item.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const iconStyle = cfg.color ? ` style="color:${cfg.color};"` : '';
+
+    // Nút "Xem lại" / "Xem tài liệu": chỉ hiện cho hoạt động view/upload có kèm docId + fileUrl
+    let continueBtnHtml = '';
+    const meta = item.meta || {};
+    if ((item.type === 'view' || item.type === 'upload') && meta.docId && meta.fileUrl) {
+        const btnLabel = item.type === 'view' ? 'Xem lại' : 'Xem tài liệu';
+        const attrTitle = (item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const attrUrl = (meta.fileUrl || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const attrDocId = (meta.docId || '').replace(/'/g, "\\'");
+        const attrUploader = (meta.uploaderName || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        continueBtnHtml = `<button type="button" class="cabin-btn-continue" onclick="jumpToDocument('${attrTitle}', '${attrUrl}', '${attrDocId}', '${attrUploader}')">${btnLabel}</button>`;
+    }
+
+    return `
+        <div class="cabin-history-item">
+            <div class="cabin-history-icon ${cfg.cls}"${iconStyle}><i class="fa-solid ${cfg.icon}"></i></div>
+            <div class="cabin-history-body">
+                <p class="cabin-history-title">${safeTitle}</p>
+                <div class="cabin-history-foot">
+                    <span class="cabin-percent">${subText}</span>
+                    ${continueBtnHtml}
+                </div>
+            </div>
+        </div>`;
+}
+
+// Tải & render lịch sử hoạt động (real-time) lên khoang cá nhân
+window.loadActivityHistory = function() {
+    const listEl = document.getElementById('cabinHistoryList');
+    const extraEl = document.getElementById('cabinHistoryExtra');
+    const toggleBtn = document.getElementById('cabinToggleAllBtn');
+
+    if (!listEl) return; // Không có khung lịch sử trong HTML
+
+    if (!auth.currentUser) {
+        listEl.innerHTML = `<div style="text-align:center; padding:16px; color:#666; font-size:13px;">Đăng nhập để xem lịch sử hoạt động.</div>`;
+        if (extraEl) extraEl.innerHTML = '';
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        return;
+    }
+
+    // Chỉ lọc theo uid (không orderBy trên server) để tránh cần composite index;
+    // sắp xếp mới nhất trước ngay trên client.
+    const q = query(collection(db, "activity_logs"), where("uid", "==", auth.currentUser.uid), limit(50));
+    onSnapshot(q, (snapshot) => {
+        let items = [];
+        snapshot.forEach(docSnap => items.push({ id: docSnap.id, ...docSnap.data() }));
+
+        items.sort((a, b) => {
+            const ta = (a.createdAt && a.createdAt.toMillis) ? a.createdAt.toMillis() : 0;
+            const tb = (b.createdAt && b.createdAt.toMillis) ? b.createdAt.toMillis() : 0;
+            return tb - ta;
+        });
+
+        if (items.length === 0) {
+            listEl.innerHTML = `<div style="text-align:center; padding:16px; color:#666; font-size:13px;">Chưa có hoạt động nào.</div>`;
+            if (extraEl) extraEl.innerHTML = '';
+            if (toggleBtn) toggleBtn.style.display = 'none';
+            return;
+        }
+
+        const mainItems = items.slice(0, 3);
+        const extraItems = items.slice(3, 20);
+
+        listEl.innerHTML = mainItems.map(renderActivityItem).join('');
+        if (extraEl) extraEl.innerHTML = extraItems.map(renderActivityItem).join('');
+        if (toggleBtn) toggleBtn.style.display = extraItems.length > 0 ? 'flex' : 'none';
+    }, (err) => {
+        console.error("Lỗi tải lịch sử hoạt động (Kiểm tra Firestore Index/Rules):", err);
+        listEl.innerHTML = `<div style="text-align:center; padding:16px; color:#666; font-size:13px;">Không thể tải lịch sử hoạt động.</div>`;
+    });
+};
+
+// Nút "Xem tất cả lịch sử" / "Ẩn bớt"
+const cabinToggleAllBtnEl = document.getElementById('cabinToggleAllBtn');
+if (cabinToggleAllBtnEl) {
+    cabinToggleAllBtnEl.addEventListener('click', () => {
+        const extraEl = document.getElementById('cabinHistoryExtra');
+        const labelEl = document.getElementById('cabinToggleAllLabel');
+        if (!extraEl) return;
+        const isShown = extraEl.classList.toggle('show');
+        cabinToggleAllBtnEl.classList.toggle('expanded', isShown);
+        if (labelEl) labelEl.innerText = isShown ? 'Ẩn bớt' : 'Xem tất cả lịch sử';
+    });
+}
+
 /** Định dạng số xu: 1250 -> "1.250" */
 window.formatCoin = function(value) {
     const n = Math.max(0, Math.round(Number(value) || 0));
@@ -2362,6 +2697,7 @@ window.rewardCoins = async function(actionCode) {
 
     // Hiệu ứng
     window.showCoinEffect(amount);
+    window.logActivity('coin_receive', policy.label, { amount });
     console.log(`🪙 +${amount} xu (${policy.label})`);
 
     return { success: true, amount };
@@ -2413,6 +2749,7 @@ window.spendCoins = async function(actionCode, targetId) {
 
     // Hiệu ứng
     window.showCoinEffect(-amount);
+    window.logActivity('coin_spend', policy.label, { amount });
     console.log(`🪙 -${amount} xu (${policy.label})`);
 
     return { success: true, amount };
