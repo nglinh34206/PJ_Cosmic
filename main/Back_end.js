@@ -2842,3 +2842,29 @@ window.renderCoinDisplay = function(coins) {
     if (recEl) recEl.innerText = window.formatCoin(received);
     if (usedEl) usedEl.innerText = window.formatCoin(used);
 };
+
+/* ======================================================================
+   THEME SÁNG / TỐI — điều khiển từ nút "Chế độ giao diện" trong Khoang cá nhân
+   Lưu lựa chọn vào localStorage để giữ nguyên qua các lần tải trang.
+   ====================================================================== */
+window.applyThemeUI = function(isLight) {
+    const label = document.getElementById('cabin-pref-label');
+    const toggle = document.getElementById('cabin-theme-toggle');
+    if (label) label.textContent = isLight ? 'Chế độ giao diện (Sáng)' : 'Chế độ giao diện (Tối)';
+    // "on" biểu thị chế độ Tối đang bật (theo trạng thái mặc định có sẵn trong HTML)
+    if (toggle) toggle.classList.toggle('on', !isLight);
+};
+
+window.toggleTheme = function() {
+    const isLight = document.body.classList.toggle('light');
+    try { localStorage.setItem('cosmicTheme', isLight ? 'light' : 'dark'); } catch (e) {}
+    window.applyThemeUI(isLight);
+};
+
+(function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem('cosmicTheme'); } catch (e) {}
+    const isLight = saved === 'light';
+    document.body.classList.toggle('light', isLight);
+    window.applyThemeUI(isLight);
+})();
