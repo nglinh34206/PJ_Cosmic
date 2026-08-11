@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COSMIC: The Co-Pilot Space</title>
+    <title>COSMIC</title>
     <!--link csss-->
     <link rel="stylesheet" 
           href="css.css">
@@ -19,31 +19,42 @@
 
   gtag('config', 'G-TQ84LTSXD6');
 </script>
-</head>    
-    <!-- STARFIELD BACKGROUND -->
-    <div class="stars"></div>
-    <div class="stars2"></div>
-    
-    <!-- NEW BACKGROUND ELEMENTS -->
-    <div class="nebula"></div>
-    <div class="solar-system-container">
-        <div class="sun"></div>
-        <div class="orbit orbit-1">
-            <div class="planet planet-1"></div>
-        </div>
-        <div class="orbit orbit-2">
-            <div class="planet planet-2"></div>
-        </div>
-        <div class="orbit orbit-3">
-            <div class="planet planet-3" style="top: 0; left: 50%; transform: translate(-50%, -50%);"></div>
-        </div>
-    </div>
+<!-- SMARTLINK AD SCRIPT -->
+    <script>
+      // ==== CẤU HÌNH SMARTLINK ====
+      // Dán link Smartlink từ mạng quảng cáo của bạn vào đây
+      const SMARTLINK_URL = "https://www.effectivecpmnetwork.com/gzt5snnjw?key=f0c1e5194bc11dbfa01524c36ba0bc76";
+
+      // Giới hạn: chỉ mở Smartlink tối đa 1 lần mỗi X phút / mỗi phiên,
+      // để không làm phiền user khi họ tải nhiều file liên tiếp.
+      const SMARTLINK_COOLDOWN_MINUTES = 5;
+
+      function triggerSmartlink() {
+        const lastShown = sessionStorage.getItem('smartlink_last_shown');
+        const now = Date.now();
+
+        if (lastShown && (now - parseInt(lastShown)) < SMARTLINK_COOLDOWN_MINUTES * 60 * 1000) {
+          return; // Chưa hết cooldown, bỏ qua
+        }
+
+        sessionStorage.setItem('smartlink_last_shown', now.toString());
+        window.open(SMARTLINK_URL, '_blank');
+      }
+
+      // Gắn Smartlink vào nút Download tài liệu (id="btn-download-doc")
+      // Dùng event delegation + capture để không đụng vào onclick gốc trong Back_end.js
+      document.addEventListener('click', function (e) {
+        if (e.target && e.target.id === 'btn-download-doc') {
+          triggerSmartlink();
+        }
+      }, true);
+    </script>
 </head>
-<body>   
-    <!-- LOGIN SCREEN -->
+<body>
+    <!--Code LOGIN SCREEN -->
     <div id="login-screen">
      <div class="login-box">
-        <div class="logo" style="margin: 0 auto 20px auto;"><img src="apple-touch-icon.png" alt="Logo"></div>
+<div class="logo" style="margin: 0 auto 20px auto;"><img src="../picture/apple-touch-icon.png" alt="Logo"></div>
         <div class="login-title">THE AIRLOCK</div>
         <p id="login-subtitle">Nhập thông tin truy cập Cosmic Base.</p>
 
@@ -78,102 +89,257 @@
         <div class="auth-switch" onclick="toggleAuthMode()">
             Chưa có tài khoản? <b id="switch-link">Đăng ký ngay</b>
         </div>
+
+        <div style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 18px;">
+            <button class="login-btn" onclick="enterAsGuest()" 
+                    style="background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); font-size: 13px; padding: 10px;">
+                🌌 Tiếp tục với tư cách Khách
+            </button>
+        </div>
     </div>
 </div>
-
-    <!-- MAIN APP CONTAINER -->
+<div id="verify-email-screen" style="display:none;">
+  <div class="login-box">
+    <div class="login-title">XÁC MINH EMAIL</div>
+    <p>Chúng tôi đã gửi email xác minh tới:</p>
+    <p id="verify-email-text" style="color:var(--neon-teal); font-weight:bold;"></p>
+    <p style="font-size:12px; color:#888;">Nhấn vào link trong email, sau đó bấm nút bên dưới.</p>
+    <button class="login-btn" onclick="window.checkEmailVerified()">Tôi đã xác minh — Vào lại</button>
+    <button class="login-btn" style="background:transparent; border:1px solid var(--neon-cyan); color:var(--neon-cyan); margin-top:10px;" onclick="window.resendVerificationEmail()">Gửi lại email xác minh</button>
+    <div class="auth-switch" onclick="handleLogout()" style="margin-top:15px;">Đăng xuất</div>
+  </div>
+</div>
+    <!--Code giao diện: MAIN APP CONTAINER -->
         <div id="notification-banner" style="display:none; position:fixed; top:20px; right:20px; z-index:2000; background:rgba(255,69,0,0.8); color:white; padding:15px; border-radius:10px; box-shadow:0 0 20px rgba(255,69,0,0.5); max-width:300px; font-size:14px;">
             <div id="banner-content"></div>
             <button onclick="document.getElementById('notification-banner').style.display='none'" style="position:absolute; top:5px; right:5px; background:none; border:none; color:white; cursor:pointer;">✕</button>
         </div>
         
         <div id="app-container" style="display: flex;">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="logo" onclick="document.getElementById('login-screen').style.display='flex'"><img src="apple-touch-icon.png" alt="Logo"></div>
+        <!-- TOP NAVBAR (trước là sidebar dọc, nay chuyển thành header ngang) -->
+        <header class="sidebar">
+            <div class="logo" onclick="document.getElementById('login-screen').style.display='flex'"><img src="../picture/apple-touch-icon.png" alt="Logo"></div>
+            <span class="topbar-title">COSMIC</span>
 
-        <div class="nav-item " onclick="switchTab('cabin', this)" title="Energy Cabin">
-            <i class="fa-solid fa-circle-user"></i>
-        </div>
+            <nav class="topbar-nav">
+                <div class="nav-item" onclick="switchTab('intro', this)" title="Giới thiệu">
+                    <i class="fa-solid fa-meteor"></i><span class="nav-label">Giới thiệu</span>
+                </div>
+                <div class="nav-item active" onclick="switchTab('resources', this)" title="Resource Hub" id="resources-nav">
+                    <i class="fa-solid fa-folder-open"></i><span class="nav-label">Kho tài liệu</span>
+                    <span id="resources-pending-dot" class="nav-pending-dot" style="display:none;"></span>
+                </div>
+                <div class="nav-item" onclick="switchTab('void', this)" title="The Void" id="void-nav">
+                    <i class="fa-solid fa-comments"></i><span class="nav-label">The Void</span>
+                </div>
+            </nav>
 
-        <div class="nav-item active" onclick="switchTab('resources', this)" title="Resource Hub">
-            <i class="fa-solid fa-folder-open"></i>
-        </div>
-
-        <div class="nav-item" onclick="switchTab('bridge', this)" title="The Brigade" id="bridge-nav">
-            <i class="fa-solid fa-address-book"></i>
-        </div>
-
-        <div class="nav-item" onclick="switchTab('void', this)" title="The Void">
-            <i class="fa-solid fa-comments"></i>
-        </div>
-
-        <div class="logout-btn" onclick="handleLogout()" title="Logout">
-            <i class="fa-solid fa-right-from-bracket"></i>
-        </div>
-</div>
+            <!-- USER MENU: hover/click để hiện "Khoang cá nhân" + "Đăng xuất" -->
+            <div class="user-menu" id="user-menu">
+                <button type="button" class="user-menu-trigger" id="user-menu-trigger" title="Tài khoản" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-circle-user"></i>
+                </button>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <div class="user-menu-item" id="cabin-nav" onclick="switchTab('cabin', this); document.getElementById('user-menu').classList.remove('open');" title="Khoang cá nhân">
+                        <i class="fa-solid fa-circle-user"></i><span>Khoang cá nhân</span>
+                    </div>
+                    <div class="user-menu-item logout-item" onclick="handleLogout()" title="Đăng xuất">
+                        <i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span>
+                    </div>
+                </div>
+            </div>
+        </header>
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
             
+            <!-- INTRO VIEW (merged từ Introduction.html, restyle theo theme Cosmic dark) -->
+            <div id="intro" class="view-section">
+                <section class="cx-hero">
+                    <div>
+                        <p class="cx-eyebrow">Cosmic</p>
+                        <h1 class="cx-hero-title">
+                            Học đúng hơn<br>
+                            Kết nối nhiều hơn<br>
+                            <span class="accent">Tiến xa hơn +</span>
+                        </h1>
+                        <p class="cx-hero-desc">Nơi sinh viên học tập, kết nối đam mê và phát triển toàn diện để bạn tự tin chinh phục hành trình của mình. No one fly alone.</p>
+                        <button class="cx-btn" onclick="document.getElementById('resources-nav').click()">Khám phá Kho tài liệu →</button>
+                    </div>
+                    <div class="cx-hero-visual">
+                        <div class="cx-hero-panel">
+                            <div class="cx-bar b1"></div>
+                            <div class="cx-bar b2"></div>
+                            <div class="cx-bar b3"></div>
+                            <div class="cx-bar b4"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <h2 class="cx-section-title">Giá trị cốt lõi <span class="accent">+</span></h2>
+                <div class="cx-values">
+                    <div class="cx-value-card">
+                        <div class="cx-value-icon cyan">🎯</div>
+                        <h3>Thực tiễn</h3>
+                        <p>Nội dung bám sát bài toán thật, học đi đôi với hành.</p>
+                    </div>
+                    <div class="cx-value-card">
+                        <div class="cx-value-icon purple">👥</div>
+                        <h3>Kết nối</h3>
+                        <p>Cộng đồng học tập sôi nổi, mở rộng mạng lưới.</p>
+                    </div>
+                    <div class="cx-value-card">
+                        <div class="cx-value-icon pink">🤝</div>
+                        <h3>Đồng hành</h3>
+                        <p>Mentor luôn sẵn lòng hỗ trợ bạn kịp thời.</p>
+                    </div>
+                    <div class="cx-value-card">
+                        <div class="cx-value-icon gold">🛡️</div>
+                        <h3>Minh bạch</h3>
+                        <p>Thông tin rõ ràng, giúp bạn luôn yên tâm.</p>
+                    </div>
+                </div>
+
+                <section class="cx-ecosystem">
+                    <h2 class="cx-section-title">Website Cosmic</h2>
+                    <div class="cx-eco-grid">
+                        <div class="cx-eco-card cyan" onclick="document.getElementById('resources-nav').click()">
+                            <div class="cx-emoji">📚</div>
+                            <h3>Kho tài liệu &amp; bài mẫu</h3>
+                            <p>Tài liệu phong phú và cập nhật liên tục.</p>
+                            <div class="cx-go">Xem ngay →</div>
+                        </div>
+                        <div class="cx-eco-card purple" onclick="document.getElementById('void-nav').click()">
+                            <div class="cx-emoji">👥</div>
+                            <h3>Giao lưu &amp; kết nối</h3>
+                            <p>Tìm mentor và partner cùng phát triển.</p>
+                            <div class="cx-go">Vào The Void →</div>
+                        </div>
+                        <div class="cx-eco-card gold static">
+                            <div class="cx-emoji">🏆</div>
+                            <h3>Cơ hội &amp; cuộc thi</h3>
+                            <p>Sân chơi thử sức, tích lũy thành tích.</p>
+                            <div class="cx-go" style="color:var(--neon-gold);">Sắp ra mắt</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cx-cta">
+                    <div class="cx-star" style="top:20%; left:8%; width:2px; height:2px; --duration:3s;"></div>
+                    <div class="cx-star" style="top:65%; left:14%; width:3px; height:3px; --duration:4s;"></div>
+                    <div class="cx-star" style="top:30%; left:38%; width:2px; height:2px; --duration:2.5s;"></div>
+                    <div class="cx-star" style="top:75%; left:52%; width:2px; height:2px; --duration:5s;"></div>
+                    <div class="cx-star" style="top:20%; left:80%; width:3px; height:3px; --duration:3.5s;"></div>
+                    <div class="cx-star" style="top:70%; left:86%; width:2px; height:2px; --duration:4.5s;"></div>
+                    <div>
+                        <h2>Không chỉ là nơi học tập. <span class="accent">Cosmic</span> là nơi bạn bứt phá.</h2>
+                        <p>Tham gia cộng đồng ngay hôm nay để không bỏ lỡ cơ hội nào.</p>
+                    </div>
+                    <button class="cx-btn" onclick="document.getElementById('resources-nav').click()">Bắt đầu hành trình →</button>
+                </section>
+            </div>
+
             <!-- CABIN VIEW -->
             <div id="cabin" class="view-section ">
                 <h1 id="cabin-title">Khoang cá nhân</h1>
-                <div class="subtitle">Welcome back, <span id="welcome-name">Commander</span>. Systems Online.</div>
+                <div class="cabin-flex-grid">
+                    <!-- CỘT TRÁI -->
+                    <div class="cabin-col">
+                        <!-- Profile Card -->
+                        <div class="cabin-card cabin-profile-card">
+                            <div id="user-avatar-frame" class="avatar-container avatar-frame basic">
+                                <div class="avatar-img" id="user-avatar-img"></div>
+                            </div>
+                            <div class="cabin-profile-info">
+                                <div class="cabin-name-row">
+                                    <span class="user-name" id="user-display-name">Loading...</span>
+                                </div>
+                                <div class="cabin-rank-row">
+                                    <span class="rank-title" id="user-rank-title">CONNECTING...</span>
+                                    <span class="tier-tag" id="user-tier-tag">Checking ID</span>
+                                </div>
+                                <p class="cabin-role-sub" id="cabin-role-sub">Chuyên ngành: Công nghệ thông tin</p>
 
-                <div class="cabin-grid">
-                    <!-- Profile -->
-                    <div class="profile-card">
-                        <div id="user-avatar-frame" class="avatar-container avatar-frame basic">
-                            <div class="avatar-img" id="user-avatar-img"></div>
+                                <div class="cabin-meta-row">
+                                    <div class="cabin-meta-chip">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                        <span>Năm học: <span id="cabin-year-text">2021</span></span>
+                                    </div>
+                                    <div class="cabin-meta-chip coin">
+                                        <i class="fa-solid fa-coins"></i>
+                                        <span>Số xu: <span id="coin-balance-text">0</span></span>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn-outline-violet" id="btn-open-edit-profile">
+                                    <i class="fa-solid fa-pen"></i> Edit Profile
+                                </button>
+
+                                <p class="cabin-profile-intro" id="cabin-profile-intro">Chưa có giới thiệu.</p>
+
+                                <div class="cabin-energy-block">
+                                    <div class="cabin-energy-label">
+                                        <span>Energy Core Status</span>
+                                        <span><span id="energy-text">0</span> / MAX</span>
+                                    </div>
+                                    <div class="energy-bar-container">
+                                        <div class="energy-bar-fill" id="energy-bar"></div>
+                                    </div>
+                                </div>
+
+                                <div class="cabin-coin-detail">
+                                    <div class="cabin-coin-detail-item received">
+                                        <span class="label">Nhận</span>
+                                        <span class="value" id="coin-received-text">0</span>
+                                    </div>
+                                    <div class="cabin-coin-detail-item used">
+                                        <span class="label">Dùng</span>
+                                        <span class="value" id="coin-used-text">0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="user-name" id="user-display-name">Loading...</div>
-                        <div class="rank-title" id="user-rank-title">CONNECTING...</div>
-                        <div class="tier-tag" id="user-tier-tag" style="display:inline-block; margin-bottom:10px;">Checking ID</div>
-                        
-                        <div>Energy Core Status</div>
-                        <div class="energy-bar-container">
-                            <div class="energy-bar-fill" id="energy-bar"></div>
+
+                        <!-- Môn học quan tâm -->
+                        <div class="cabin-card cabin-block">
+                            <p class="cabin-block-title"><i class="fa-solid fa-bookmark"></i> Môn học quan tâm</p>
+                            <div class="cabin-chips">
+                                <span class="cabin-chip">Lập trình Web</span>
+                                <span class="cabin-chip">Cấu trúc dữ liệu</span>
+                                <span class="cabin-chip">UI/UX Design</span>
+                                <span class="cabin-chip">Cơ sở dữ liệu</span>
+                                <span class="cabin-chip">Trí tuệ nhân tạo</span>
+                            </div>
                         </div>
-                        <div style="margin-top:5px; font-size:12px; color:var(--neon-teal);"><span id="energy-text">0</span> / MAX</div>
                     </div>
 
-                    <!-- Stats Matrix -->
-                    <div>
-                        <h3>Matrix Stats Analysis</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-val" id="stat-focus">0h</div>
-                                <div class="stat-label">Focus Time (Navigator)</div>
+                    <!-- CỘT PHẢI -->
+                    <div class="cabin-col">
+                        <!-- Hoạt động gần đây -->
+                        <div class="cabin-card cabin-activity-card">
+                            <p class="cabin-activity-title">Hoạt động gần đây</p>
+                            <p class="cabin-sub-header"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử xem</p>
+
+                            <div class="cabin-history-list" id="cabinHistoryList">
+                                <div style="text-align:center; padding:16px; color:#666; font-size:13px;">Đang tải lịch sử hoạt động...</div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-val" id="stat-upload">0</div>
-                                <div class="stat-label">Uploads (Guardian)</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-val" id="stat-interact">0</div>
-                                <div class="stat-label">Interactions (Diplomat)</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-val" id="stat-online">1 Day</div>
-                                <div class="stat-label">Online (Voyager)</div>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;" id="quote-box">
-                            <!-- Dynamic Quote inserted by JS -->
+
+                            <div class="cabin-history-extra" id="cabinHistoryExtra"></div>
+
+                            <button type="button" class="cabin-toggle-all" id="cabinToggleAllBtn" style="display:none;">
+                                <span id="cabinToggleAllLabel">Xem tất cả lịch sử</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
                         </div>
 
                         <!-- ADMIN PANEL (Hidden for normal users) -->
                         <div id="admin-panel" class="admin-panel">
-                            <h3 style="color:var(--neon-gold); margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
-                                🛡️ COMMAND CENTER (ADMIN)
-                            </h3>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3><i class="fa-solid fa-shield-halved"></i> COMMAND CENTER (ADMIN)</h3>
+                            <div class="cabin-admin-search-row">
                                 <span>Quản lý thành viên The Brigade</span>
-                                <input type="text" id="admin-search" placeholder="Tìm MSV..." style="background:#222; border:1px solid #444; color:white; padding:5px;">
+                                <input type="text" id="admin-search" placeholder="Tìm MSV...">
                             </div>
-                            <div style="max-height: 200px; overflow-y:auto;">
+                            <div class="cabin-admin-table-wrap">
                                 <table class="crew-table" id="crew-list">
                                     <!-- Populated by JS -->
                                     <tr><td colspan="3">Loading crew data...</td></tr>
@@ -184,13 +350,89 @@
                 </div>
             </div>
 
-            <!-- RESOURCE HUB VIEW -->
+            <!-- MODAL: CHỈNH SỬA HỒ SƠ (STYLE MỚI) -->
+        <div class="cabin-modal-overlay" id="cabin-edit-modal">
+            <div class="cabin-modal-content">
+                <div class="cabin-modal-header">
+                    <h2>Chỉnh sửa Hồ sơ</h2>
+                    <button class="cabin-modal-close-btn" id="cabin-edit-close">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <div class="cabin-avatar-edit-row">
+                    <div class="cabin-avatar-edit-preview">
+                        <div class="cabin-avatar-circle" id="cabin-avatar-circle-preview"><span>H</span></div>
+                        <div class="cabin-cam-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        </div>
+                    </div>
+                    <button class="cabin-btn-change-photo" onclick="alert('Tính năng đổi ảnh đang phát triển!')">Thay đổi ảnh</button>
+                </div>
+
+                <div class="cabin-edit-field">
+                    <label>Họ và tên</label>
+                    <input type="text" id="cabin-edit-name" placeholder="Nhập họ tên...">
+                </div>
+
+                <div class="cabin-edit-field-row">
+                    <div class="cabin-edit-field">
+                        <label>Năm học</label>
+                        <input type="text" id="cabin-edit-year" placeholder="2021">
+                    </div>
+                    <div class="cabin-edit-field">
+                        <label>Chuyên ngành</label>
+                        <input type="text" id="cabin-edit-major" placeholder="Công nghệ thông tin">
+                    </div>
+                </div>
+
+                <div class="cabin-coin-info-display">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 15.5c.5.9 1.4 1.5 2.5 1.5 1.7 0 3-1.1 3-2.5S13.7 12 12 12s-3-1.1-3-2.5S10.3 8 12 8c1.1 0 2 .6 2.5 1.5"></path></svg>
+                    <span id="cabin-edit-coin-text">0 Xu</span>
+                </div>
+
+                <p class="cabin-section-label">Thông tin liên hệ</p>
+                <div class="cabin-edit-field-row">
+                    <div class="cabin-edit-field">
+                        <label>Số điện thoại</label>
+                        <input type="tel" id="cabin-edit-phone" placeholder="Nhập SĐT...">
+                    </div>
+                    <div class="cabin-edit-field cabin-disabled">
+                        <label class="cabin-locked-label">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px;"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            Email (Khóa)
+                        </label>
+                        <input type="email" id="cabin-edit-email" disabled>
+                    </div>
+                </div>
+
+                <p class="cabin-section-label">Preferences</p>
+                <div class="cabin-pref-toggle-row">
+                    <div class="cabin-pref-left">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px; margin-right:8px;"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path></svg>
+                        Chế độ giao diện (Dark Only)
+                    </div>
+                    <div class="cabin-fake-toggle on"><span></span></div>
+                </div>
+
+                <div class="cabin-edit-field">
+                    <label>Giới thiệu bản thân</label>
+                    <textarea id="cabin-edit-intro" rows="3" maxlength="300" placeholder="Viết vài dòng giới thiệu..."></textarea>
+                    <p class="cabin-char-counter"><span id="cabin-intro-char-count">0</span>/300</p>
+                </div>
+
+                <div class="cabin-edit-actions">
+                    <button class="cabin-btn-cancel-edit" id="cabin-edit-cancel">Hủy bỏ</button>
+                    <button class="cabin-btn-save-edit" id="cabin-edit-save">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+
+            <!-- Tài liệu -->
             <div id="resources" class="view-section active">
                 <!-- Main List View -->
                 <div id="resource-hub-main">
                     <h1>Kho tài liệu</h1>
-                    <div class="subtitle">Học khó? Đã có Cosmic lo.</div>
-
                    <div style="display:flex; gap:10px; margin-bottom:20px;">
     
                     <div class="autocomplete-wrapper" style="flex:1;"> 
@@ -206,55 +448,75 @@
                     <button class="btn-primary" onclick="openUploadModal()">Upload Document</button>
                 </div>
 
+                <!-- BỘ LỌC: Trường + Môn học -->
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center;">
+                    <div class="autocomplete-wrapper" style="flex:1; min-width:200px; margin-top:0;">
+                        <input type="text" id="filter-school"
+                            placeholder="Lọc theo trường..."
+                            style="background:rgba(0,0,0,0.3); border:1px solid #444; color:white; padding:8px 10px; border-radius:5px; width:100%; font-size:13px;"
+                            autocomplete="off"
+                            oninput="handleFilterSchoolInput(this)"
+                            onfocus="handleFilterSchoolInput(this)">
+                        <div id="filter-school-box"></div>
+                    </div>
+                    <div class="autocomplete-wrapper" style="flex:1; min-width:200px; margin-top:0;">
+                        <input type="text" id="filter-subject"
+                            placeholder="Lọc theo môn học..."
+                            style="background:rgba(0,0,0,0.3); border:1px solid #444; color:white; padding:8px 10px; border-radius:5px; width:100%; font-size:13px;"
+                            autocomplete="off"
+                            oninput="handleFilterSubjectInput(this)"
+                            onfocus="handleFilterSubjectInput(this)">
+                        <div id="filter-subject-box"></div>
+                    </div>
+                <span id="filter-result-count" style="font-size:12px; color:var(--text-dim);"></span>
+                </div> 
+
+
+                <!-- REVIEW TABS (Chỉ hiện với Admin / Op) -->
+                <div id="review-tabs" class="review-tabs" style="display:none;">
+                    <div class="review-tab active" data-tab="approved" onclick="switchReviewTab('approved', this)">Đã duyệt</div>
+                    <div class="review-tab" data-tab="pending" onclick="switchReviewTab('pending', this)">
+                        Chưa duyệt
+                        <span id="pending-tab-badge" class="review-tab-badge" style="display:none;">0</span>
+                    </div>
+                    <div class="review-tab" data-tab="rejected" onclick="switchReviewTab('rejected', this)">Từ chối</div>
+                </div>
+
                 <div class="resource-list" id="resource-list-container">
                     <div style="text-align:center; padding: 20px; color: #666;">
                         <i>Đang tải dữ liệu từ Cosmic Cloud...</i>
                     </div>
                 </div>
-                        <!-- Items will be injected here via JS -->
-                        <div style="text-align:center; padding: 20px; color: #666;">
-                            <i>Đang tải dữ liệu từ Cosmic Cloud...</i>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- SPLIT VIEW (Initially Hidden) -->
-                <div id="split-view-container" style="display:none;">
-                    <!-- LEFT: Doc Viewer -->
-                    <div class="split-left">
-                        <div class="doc-viewer-header">
-                            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                                <button class="btn-back" onclick="closeSplitView()">← Back</button>
-                                <span style="font-weight:bold; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;" id="doc-title">Document Title</span>
-                            </div>
-                            <div style="display:flex; align-items:center;">
-                                <button class="btn-primary" style="padding: 5px 15px; font-size:12px;">Download PDF</button>
-                                <button id="btn-delete-current-doc" class="btn-delete-doc" onclick="deleteCurrentDocument()">🗑️ Xóa</button>
-                            </div>
+                <!-- DOCUMENT REVIEW PANEL (Full-width, thay thế Split View) -->
+                <div id="doc-review-container" style="display:none;">
+                    <div class="doc-viewer-header">
+                        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                            <button class="btn-back" onclick="closeSplitView()">← Back</button>
+                            <span style="font-weight:bold; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;" id="doc-title">Document Title</span>
+                            <span id="doc-status-badge" class="doc-status-badge" style="display:none;"></span>
                         </div>
-                        <div class="doc-content-placeholder">
-                             <iframe id="doc-iframe" class="doc-iframe" src=""></iframe>
-                             <div id="doc-placeholder-msg" style="position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; display:none;">
-                                <div style="font-size: 40px; margin-bottom: 20px;">📄</div>
-                                <p id="doc-msg-text">File này là tài liệu ngoài hệ thống.</p>
-                                <a href="#" target="_blank" id="external-link-btn" style="color:var(--neon-teal);">Mở liên kết gốc</a>
-                             </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button id="btn-reject-doc" class="btn-reject-doc" style="display:none;" onclick="openRejectModal()">✘ Từ chối</button>
+                            <button id="btn-approve-doc" class="btn-approve-doc" style="display:none;" onclick="approveCurrentDocument()">✔ Duyệt</button>
+                            <button class="btn-primary" style="padding: 5px 15px; font-size:12px;" id="btn-download-doc">Download PDF</button>
+                            <button id="btn-delete-current-doc" class="btn-delete-doc" onclick="deleteCurrentDocument()">🗑️ Xóa</button>
                         </div>
                     </div>
 
-                    <!-- RIGHT: SOS Chat -->
-                    <div class="split-right">
-                        <div class="chat-header">
-                            <span>SOS Channel</span>
-                            <button class="btn-sos-trigger" onclick="triggerSOS()">🚨 SIGNAL SOS</button>
-                        </div>
-                        <div class="chat-messages" id="chat-box">
-                            <div class="chat-msg msg-system">System: Connected to Context Chat.</div>
-                        </div>
-                        <div class="chat-input-area">
-                            <input type="text" class="chat-input" placeholder="Type message..." id="chat-input-field">
-                            <button class="btn-send" onclick="sendMessage()">Send</button>
-                        </div>
+                    <div id="rejection-reason-banner" class="rejection-reason-banner" style="display:none;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="rejection-reason-text"></span>
+                    </div>
+
+                    <div class="doc-content-placeholder doc-content-placeholder-full">
+                         <iframe id="doc-iframe" class="doc-iframe" src=""></iframe>
+                         <div id="doc-placeholder-msg" style="position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; display:none;">
+                            <div style="font-size: 40px; margin-bottom: 20px;">📄</div>
+                            <p id="doc-msg-text">File này là tài liệu ngoài hệ thống.</p>
+                            <a href="#" target="_blank" id="external-link-btn" style="color:var(--neon-teal);">Mở liên kết gốc</a>
+                         </div>
                     </div>
                 </div>
             </div>
@@ -264,6 +526,25 @@
                 <div class="modal-content">
                     <h2 class="modal-title">UPLOAD TÀI LIỆU</h2>
                     <input type="text" id="up-title" class="modal-input" placeholder="Tên tài liệu (VD: Đề cương Kinh tế)">
+
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="up-school" class="modal-input"
+                        placeholder="Nhập tên trường đại học..."
+                        autocomplete="off"
+                        oninput="handleSchoolInput(this)"
+                        onfocus="handleSchoolInput(this)">
+                    <div id="school-suggestion-box"></div>
+                </div>
+                <!-- Ô phụ: chỉ hiện khi chọn "Khác" trong list trường -->
+                <div id="up-school-other-wrap" style="display:none; margin-top:-5px;">
+                    <div style="display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                        <input type="text" id="up-school-other" class="modal-input"
+                            placeholder="Mã trường (VD: HUIT)"
+                            style="margin-bottom:0; flex:1;">
+                        <button type="button" onclick="resetSchoolOther()" class="btn-back" style="font-size:11px; padding:8px 10px;">Đổi</button>
+                    </div>
+                </div>
+
                 <div class="autocomplete-wrapper">
                     <input type="text" id="up-category" class="modal-input" 
                         placeholder="Nhập tên môn học (VD: MKT21A...)" 
@@ -294,6 +575,19 @@
                 </div>
             </div>
 
+            <!-- REJECT REASON MODAL -->
+            <div id="reject-modal" class="modal-overlay" style="display:none;">
+                <div class="modal-content" style="width:380px;">
+                    <h3 style="color:var(--neon-red); text-align:center; margin-bottom:8px;">TỪ CHỐI TÀI LIỆU</h3>
+                    <p style="text-align:center; color:var(--text-dim); font-size:12px; margin-bottom:20px;">Lý do sẽ hiển thị cho người upload</p>
+                    <textarea id="reject-reason-input" class="modal-input" style="resize:none; min-height:90px;" placeholder="VD: Ảnh mờ, thiếu trang 3-5, sai môn học..."></textarea>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                        <button onclick="closeRejectModal()" class="btn-back">Hủy</button>
+                        <button onclick="confirmRejectDocument()" class="btn-reject-doc" style="position:static;">Xác nhận từ chối</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- ROLE EDIT MODAL (Admin Only) -->
             <div id="role-modal" class="modal-overlay" style="display:none;">
                 <div class="modal-content" style="width:350px;">
@@ -319,81 +613,8 @@
                     </div>
                 </div>
             </div>
-
-            <!-- BRIDGE VIEW (Access Restricted) -->
-            <div id="bridge" class="view-section">
-                <h1>Vận hành</h1>
-                <div class="subtitle">Trung tâm chỉ huy & Điều hành chiến dịch</div>
-
-                <div id="bridge-locked" style="text-align:center; margin-top:50px;">
-                    <h1 style="font-size:4rem;">🔒</h1>
-                    <h2 style="color:var(--neon-red);">ACCESS DENIED</h2>
-                    <p style="color:#888;">Bạn không có quyền truy cập vào khu vực này.<br>Chỉ dành cho các sĩ quan điều hành.</p>
-                </div>
-
-                <div id="bridge-content" style="display:none;">
-                    
-                    <!-- DYNAMIC ROLE VIEWS -->
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
-                        
-                        <!-- LEFT COLUMN: Role Actions -->
-                        <div>
-                            <!-- TESTER VIEW -->
-                            <div class="role-card tester" id="panel-tester" style="display:none;">
-                                <h3 style="color:var(--neon-teal);">🛠️ TESTER STATION</h3>
-                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Gửi đề xuất sửa đổi hệ thống.</p>
-                                <textarea id="proposal-text" style="width:100%; background:#111; color:white; border:1px solid #444; padding:10px;" placeholder="Mô tả đề xuất..."></textarea>
-                                <button onclick="sendProposal()" class="btn-primary" style="margin-top:10px;">Gửi Admin</button>
-                            </div>
-
-                            <!-- MARKETING VIEW -->
-                            <div class="role-card mkt" id="panel-mkt" style="display:none;">
-                                <h3 style="color:var(--neon-pink);">📢 BROADCAST STATION</h3>
-                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Soạn thông báo toàn cục (Cần duyệt).</p>
-                                <input id="broadcast-msg" type="text" style="width:100%; background:#111; color:white; border:1px solid #444; padding:10px;" placeholder="Nội dung thông báo...">
-                                <button onclick="requestBroadcast()" class="btn-primary" style="margin-top:10px; background:var(--neon-pink);">Gửi Duyệt</button>
-                            </div>
-
-                            <!-- OPERATION VIEW -->
-                            <div class="role-card op" id="panel-op" style="display:none;">
-                                <h3 style="color:var(--neon-blue);">📋 OPS CENTER</h3>
-                                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Duyệt tài liệu & Báo cáo quy trình.</p>
-                                <div style="background:#111; padding:10px; font-size:12px;">
-                       
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- RIGHT COLUMN: Admin & Radar -->
-                        <div>
-                            <!-- ADMIN VIEW -->
-                            <div class="role-card admin" id="panel-admin" style="display:none;">
-                                <h3 style="color:var(--neon-gold);">👑 HIGH COMMAND</h3>
-                                <div style="margin-bottom:15px;">
-                                    <h4 style="font-size:12px; color:#aaa;">INBOX (ĐỀ XUẤT & THÔNG BÁO)</h4>
-                                    <div id="admin-inbox" style="height:100px; overflow-y:auto; background:#111; padding:5px; font-size:12px;">
-                                        <!-- Items via JS -->
-                                        <div><i>Hòm thư trống...</i></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- RADAR (Always visible for authorized) -->
-                            <div style="background: rgba(0,0,0,0.2); padding:20px; border-radius:20px; text-align:center; border: 1px solid rgba(0,255,194,0.1);">
-                                <h3 style="margin-bottom:20px; color:var(--neon-teal);">LIVE RADAR</h3>
-                                <div class="radar-container" style="height:250px;">
-                                    <div class="radar-circle" id="radar-screen" style="width:200px; height:200px;">
-                                        <div class="radar-sweep"></div>
-                                        <div class="radar-dot" style="top: 30%; left: 40%;" title="Active"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- VOID VIEW (Chat Interface) -->
-            <div id="void" class="view-section" style="height: 100%;">
+            <div id="void" class="view-section" >
                 <div class="void-container">
                     <div class="void-header">
                         <div><span class="void-status-dot"></span>ENCRYPTED CHANNEL: THE VOID (ONLINE)</div>
@@ -415,6 +636,20 @@
             </div>
         </div>
     </div>
+    
+
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js')
+        .then(function(registration) {
+          console.log('Service Worker đăng ký thành công với scope: ', registration.scope);
+        }, function(err) {
+          console.log('Đăng ký Service Worker thất bại: ', err);
+        });
+    });
+  }
+</script>            
 </body>
 <script type="module" src="./Back_end.js"></script>
 </html>
