@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 //   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // Thêm dòng này vào cụm import: import { logEvent, setUserProperties } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 // Firebase Configuration (From User)
 const firebaseConfig = {
@@ -326,7 +326,8 @@ window.isSOSActive = false;
 window.isRegisterMode = false; // Toggle login/register
 window.targetEditUid = null; // For admin role editing
 window.currentDocId = null; // ID of doc being viewed
-window.__guestActive = false; // Flag for guest mode
+// Đăng ký mới đang chờ xác nhận mã OTP (chỉ tồn tại trong bộ nhớ, không lưu localStorage)
+window.__pendingRegistration = null; // { email, password, name, age, gender }
 
 
 
@@ -377,27 +378,15 @@ if (auth) {
     onAuthStateChanged(auth, async (user) => {
         const loginScreen = document.getElementById('login-screen');
         const appContainer = document.getElementById('app-container');
-        const verifyScreen = document.getElementById('verify-email-screen');
+        const otpScreen = document.getElementById('verify-otp-screen');
 
         if (user) {
-            await user.reload(); // lấy trạng thái emailVerified mới nhất từ server
-
-            if (!user.emailVerified) {
-                console.log("⛔ User chưa xác minh email:", user.email);
-                loginScreen.style.display = 'none';
-                appContainer.style.display = 'none';
-                appContainer.style.opacity = '0';
-                appContainer.style.visibility = 'hidden';
-                if (verifyScreen) {
-                    verifyScreen.style.display = 'flex';
-                    const emailTextEl = document.getElementById('verify-email-text');
-                    if (emailTextEl) emailTextEl.innerText = user.email;
-                }
-                return; // DỪNG LẠI, KHÔNG cho vào app
-            }
-
+            // Tài khoản Firebase chỉ được TẠO sau khi mã OTP đã xác nhận thành công
+            // (xem window.verifyRegistrationOtp), nên tới đây user coi như đã xác thực.
             console.log("✅ Đã xác thực Auth:", user.email);
-            if (verifyScreen) verifyScreen.style.display = 'none';
+            if (otpScreen) otpScreen.style.display = 'none';
+            window.__loginPromptOpen = false;
+            if (typeof window.updateAccountMenuUI === 'function') window.updateAccountMenuUI(true);
 
             // 1. Chạy hàm đảm bảo Profile & Phân quyền (Admin/User)
             await window.ensureUserProfile(user);
@@ -412,23 +401,65 @@ if (auth) {
             if (typeof window.renderResources === 'function') window.renderResources();
             if (typeof window.loadEnergyStatus === 'function') window.loadEnergyStatus();
         } else {
-            if (verifyScreen) verifyScreen.style.display = 'none';
-
-            // KHI CHƯA ĐĂNG NHẬP: KIỂM TRA NẾU ĐANG Ở CHẾ ĐỘ KHÁCH THÌ BỎ QUA
-            if (window.__guestActive) {
-                console.log("🌌 Đang ở chế độ Khách, giữ nguyên giao diện.");
+            // KHÁCH (CHƯA ĐĂNG NHẬP): KHÔNG ép vào màn hình Login nữa.
+            // Cho phép khách xem thẳng "Kho tài liệu" và dùng hầu hết tính năng.
+            // Chỉ hiện màn Login khi khách chủ động bấm đăng nhập,
+            // hoặc khi cố thực hiện hành động cần tài khoản (tải tài liệu, khoang cá nhân...).
+            if (otpScreen && otpScreen.style.display === 'flex') {
+                console.log("🔐 Đang chờ xác nhận mã OTP, giữ nguyên màn hình.");
                 return;
             }
-            // KHI CHƯA ĐĂNG NHẬP: HIỆN MÀN HÌNH LOGIN
-            loginScreen.style.display = 'flex';
-            appContainer.style.display = 'none';
-            appContainer.style.opacity = '0';
-            appContainer.style.visibility = 'hidden';
 
-            console.log("🌌 Vui lòng đăng nhập hoặc chọn 'Tiếp tục với tư cách Khách'");
+            // Reset về trạng thái khách (không quyền hạn đặc biệt)
+            window.currentUserRank = "GUEST";
+            window.currentUserName = "Khách";
+            window.currentUserRoles = [];
+
+            if (!window.__loginPromptOpen) {
+                loginScreen.style.display = 'none';
+            }
+            appContainer.style.display = 'flex';
+            appContainer.style.opacity = '1';
+            appContainer.style.visibility = 'visible';
+
+            // Ẩn các khu vực chỉ dành cho tài khoản đã đăng nhập/nhân sự
+            const adminPanelGuest = document.getElementById('admin-panel');
+            if (adminPanelGuest) adminPanelGuest.style.display = 'none';
+            if (typeof window.updateAccountMenuUI === 'function') window.updateAccountMenuUI(false);
+
+            // Vẫn cho khách xem Kho tài liệu (chỉ tài liệu đã duyệt) & The Void
+            if (typeof window.initResourceHub === 'function') window.initResourceHub();
+            if (typeof window.initVoidChat === 'function') window.initVoidChat();
+
+            console.log("🌌 Đang ở chế độ Khách. Đăng nhập để tải tài liệu hoặc vào Khoang cá nhân.");
         }
     });
 }
+
+// 1b. Hiện màn hình Login khi khách cần đăng nhập cho 1 hành động cụ thể
+//     (tải tài liệu, vào khoang cá nhân...), có thể đóng lại để tiếp tục xem khách.
+window.promptLogin = function(message) {
+    window.__loginPromptOpen = true;
+    if (message && typeof window.showNotificationBanner === 'function') {
+        window.showNotificationBanner(message);
+    }
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        loginScreen.style.opacity = '1';
+        loginScreen.style.display = 'flex';
+    }
+    const subtitle = document.getElementById('login-subtitle');
+    if (subtitle && message) {
+        subtitle.innerText = message.replace(/^[^\wÀ-ỹ]+/, '').trim();
+    }
+};
+
+// Đóng màn hình Login, quay lại xem web với tư cách khách
+window.closeLoginPrompt = function() {
+    window.__loginPromptOpen = false;
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) loginScreen.style.display = 'none';
+};
 
 // 2. Chuyển đổi giao diện Đăng nhập / Đăng ký
 window.toggleAuthMode = function() {
@@ -476,38 +507,42 @@ window.handleAuth = async function() {
 
     try {
         if (window.isLoginMode) {
-            // Logic ĐĂNG NHẬP
+            // Logic ĐĂNG NHẬP (tài khoản đã xác minh OTP từ lúc đăng ký, vào thẳng)
             await signInWithEmailAndPassword(auth, email, pass);
         } else {
-            // Logic ĐĂNG KÝ
+            // Logic ĐĂNG KÝ — bước 1: gửi mã OTP xác nhận, CHƯA tạo tài khoản
             if (!name) { showError("Vui lòng nhập họ và tên đầy đủ"); return; }
+            if (pass.length < 6) { showError("Mật khẩu cần tối thiểu 6 ký tự."); return; }
 
-            // Bước 1: Tạo tài khoản trên Firebase Auth
-            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            const user = userCredential.user;
-            const msv = email.split('@')[0];
+            const btn = document.getElementById('btn-auth-action');
+            if (btn) { btn.disabled = true; btn.innerText = 'ĐANG GỬI MÃ...'; }
 
-            // Bước 2: Lưu thông tin bổ sung vào Database (Firestore)
-            // KHÔNG cộng 100 xu ở đây — chỉ cộng sau khi email đã được xác minh
-            // (xem window.ensureUserProfile), để tránh bot spam tạo tài khoản lấy xu ảo.
-            await setDoc(doc(db, "users", user.uid), {
-                fullName: name,
-                displayName: name,
-                msv: msv,
-                age: age || "N/A",
-                gender: gender || "N/A",
-                email: email,
-                createdAt: serverTimestamp(),
-                coins: { received: 0, used: 0 },
-                roles: ['user']
-            });
+            try {
+                const { error: otpError } = await supabase.auth.signInWithOtp({
+                    email: email,
+                    options: { shouldCreateUser: true }
+                });
+                if (otpError) throw otpError;
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerText = 'CREATE ACCOUNT'; }
+            }
 
-            // Bước 3: Gửi email xác minh + đăng xuất để bắt xác minh trước khi vào app
-            await sendEmailVerification(user);
-            await signOut(auth);
+            // Lưu thông tin đăng ký tạm trong bộ nhớ, chờ người dùng nhập mã OTP
+            window.__pendingRegistration = { email, password: pass, name, age, gender };
+            localStorage.setItem('otp_last_sent_' + email, Date.now().toString());
 
-            alert("✅ Đăng ký thành công! 📧 Vui lòng kiểm tra email (kể cả mục Spam) để xác minh, sau đó đăng nhập lại.");
-            window.toggleAuthMode(); // quay về màn hình Login
+            // Chuyển sang màn hình nhập mã OTP
+            const loginScreen = document.getElementById('login-screen');
+            const otpScreen = document.getElementById('verify-otp-screen');
+            const otpEmailEl = document.getElementById('otp-target-email');
+            const otpInput = document.getElementById('otp-code-input');
+            const otpErrorEl = document.getElementById('otp-error');
+
+            if (otpEmailEl) otpEmailEl.innerText = email;
+            if (otpInput) otpInput.value = '';
+            if (otpErrorEl) otpErrorEl.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (otpScreen) otpScreen.style.display = 'flex';
         }
     } catch (error) {
         console.error("Auth Error:", error);
@@ -521,6 +556,8 @@ window.handleAuth = async function() {
             msg = "Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác.";
         } else if (error.code === 'auth/invalid-email') {
             msg = "Định dạng email không hợp lệ.";
+        } else if (error.message) {
+            msg = error.message;
         }
         showError(msg);
     }
@@ -537,12 +574,32 @@ function showError(msg) {
 // 4. Xử lý ĐĂNG XUẤT
 window.handleLogout = async function() {
     try {
-        window.__guestActive = false;
         if (auth.currentUser) {
             await signOut(auth);
         }
         location.reload();
     } catch (error) { console.error("Logout error", error); }
+};
+
+// Menu tài khoản: nếu đã đăng nhập -> Đăng xuất, nếu là khách -> mở màn hình Đăng nhập
+window.handleLogoutOrLogin = function() {
+    if (auth && auth.currentUser) {
+        window.handleLogout();
+    } else {
+        const menu = document.getElementById('user-menu');
+        if (menu) menu.classList.remove('open');
+        window.promptLogin();
+    }
+};
+
+// Cập nhật nhãn nút trong menu tài khoản theo trạng thái đăng nhập
+window.updateAccountMenuUI = function(isLoggedIn) {
+    const icon = document.getElementById('logout-menu-icon');
+    const text = document.getElementById('logout-menu-text');
+    const item = document.getElementById('logout-menu-item');
+    if (text) text.innerText = isLoggedIn ? 'Đăng xuất' : 'Đăng nhập';
+    if (icon) icon.className = isLoggedIn ? 'fa-solid fa-right-from-bracket' : 'fa-solid fa-right-to-bracket';
+    if (item) item.title = isLoggedIn ? 'Đăng xuất' : 'Đăng nhập';
 };
 
 // Hàm định danh User (Gọi khi Login xong)
@@ -1002,6 +1059,12 @@ window.markAsRead = async function(id, collectionName) {
     }
 };
 window.switchTab = function(tabId, element) {
+    // Khoang cá nhân yêu cầu đăng nhập
+    if (tabId === 'cabin' && (!auth || !auth.currentUser)) {
+        window.promptLogin('🔒 Vui lòng đăng nhập để vào Khoang cá nhân.');
+        return;
+    }
+
     if (tabId === 'bridge') {
         const hasAccess = window.currentUserRoles.some(r => ['admin','tester','op','mkt'].includes(r));
         const bridgeLocked = document.getElementById('bridge-locked');
@@ -1219,6 +1282,10 @@ window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
 
     if (btnDownload) {
         btnDownload.onclick = function() {
+            if (!auth.currentUser) {
+                window.promptLogin('🔒 Vui lòng đăng nhập để tải tài liệu.');
+                return;
+            }
             if (fileUrl) window.open(fileUrl, '_blank');
         };
     }
@@ -1385,10 +1452,26 @@ window.sendVoidMessage = async function() {
         console.error("Lỗi truyền tín hiệu:", e);
     }
 };
+// ✅ SỬA THÀNH: Đảm bảo HTML đã load xong mới gán sự kiện
+document.addEventListener('DOMContentLoaded', () => {
+    const otpCodeEl = document.getElementById('otp-code-input');
+    if (otpCodeEl) {
+        otpCodeEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.verifyRegistrationOtp(); });
+    }
 
-document.getElementById('void-input-field').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        window.sendVoidMessage();
+    const authEmailEl = document.getElementById('auth-email');
+    if (authEmailEl) {
+        authEmailEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
+    }
+
+    const chatInputEl = document.getElementById('chat-input-field');
+    if (chatInputEl) {
+        chatInputEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
+    }
+
+    const voidInputEl = document.getElementById('void-input-field');
+    if (voidInputEl) {
+        voidInputEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); });
     }
 });
 // --- HÀM CỘNG NĂNG LƯỢNG (ENERGY) VÀ CHỈ SỐ (STAT) ---
@@ -2157,6 +2240,11 @@ window.rejectDocument = async function(docId) {
         alert("Lỗi: " + e.message);
     }
 };
+const otpCodeEl = document.getElementById('otp-code-input');
+if (otpCodeEl) {
+    otpCodeEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.verifyRegistrationOtp(); });
+}
+
 const authEmailEl = document.getElementById('auth-email');
 if (authEmailEl) {
     authEmailEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
@@ -2592,72 +2680,6 @@ window.spendCoins = async function(actionCode, targetId) {
 };
 
 
-// --- HÀM VÀO VỚI TƯ CÁCH KHÁCH (GUEST MODE) ---
-window.enterAsGuest = function() {
-    try {
-        const loginScreen = document.getElementById('login-screen');
-        const appContainer = document.getElementById('app-container');
-
-        if (!loginScreen || !appContainer) {
-            console.error("Không tìm thấy login-screen hoặc app-container!");
-            return;
-        }
-
-        window.__guestActive = true;
-
-        loginScreen.style.display = 'none';
-        appContainer.style.display = 'flex';
-        appContainer.style.opacity = '1';
-        appContainer.style.visibility = 'visible';
-
-        window.currentUserRank = "GUEST";
-        window.currentUserName = "Galactic Explorer";
-        window.currentUserRoles = [];
-        window.currentMsv = "GUEST";
-
-        const nameEl = document.getElementById('user-display-name');
-        const welcomeEl = document.getElementById('welcome-name');
-        const rankTitle = document.getElementById('user-rank-title');
-        const tierTag = document.getElementById('user-tier-tag');
-        const quoteBox = document.getElementById('quote-box');
-        const energyBar = document.getElementById('energy-bar');
-
-        if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
-        if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
-        if (rankTitle) {
-            rankTitle.className = "rank-title rank-standard";
-            rankTitle.innerText = "GUEST";
-        }
-        if (tierTag) {
-            tierTag.className = "tier-tag tag-standard";
-            tierTag.innerText = "Tier 0 • Guest";
-        }
-        if (quoteBox) {
-            quoteBox.innerHTML = `<h4 style="color: #aaa;">GUEST</h4><p style="font-size:12px; color:#666;">Explorer Class • Read-only mode</p>`;
-        }
-        if (energyBar) energyBar.style.width = "0%";
-
-        const energyText = document.getElementById('energy-text');
-        if (energyText) energyText.innerText = "0";
-
-
-        try {
-            window.loadUserProfile({
-                displayName: "Galactic Explorer",
-                rank: "GUEST",
-                energy: 0,
-                roles: [],
-                msv: "GUEST",
-                stats: { focus: 0, upload: 0, interact: 0, online: 0 },
-                coins: { received: 0, used: 0 }
-            });
-        } catch (e) { console.warn("Guest loadUserProfile error:", e); }
-
-        console.log("🌌 Khách đã vào Cosmic Base!");
-    } catch (e) {
-        console.error("enterAsGuest error:", e);
-    }
-};
 // Render coin display (vùng UI - chỉ nhận data, không gọi Firestore)
 window.renderCoinDisplay = function(coins) {
     const c = coins || { received: 0, used: 0 };
@@ -2674,33 +2696,128 @@ window.renderCoinDisplay = function(coins) {
     if (usedEl) usedEl.innerText = window.formatCoin(used);
 };
 
-// --- EMAIL VERIFICATION HELPERS ---
-window.checkEmailVerified = async function() {
-    if (!auth.currentUser) return;
-    await auth.currentUser.reload();
-    if (auth.currentUser.emailVerified) {
-        location.reload(); // để onAuthStateChanged chạy lại và cho vào app
-    } else {
-        alert("Email chưa được xác minh. Vui lòng kiểm tra hộp thư (kể cả Spam).");
+// --- OTP REGISTRATION HELPERS (Supabase Auth OTP qua email) ---
+
+// Hiện lỗi trên màn hình nhập OTP
+function showOtpError(msg) {
+    const errEl = document.getElementById('otp-error');
+    if (!errEl) return;
+    errEl.innerText = msg;
+    errEl.style.display = 'block';
+}
+
+// Bước 2: Người dùng nhập mã 6 số -> đối chiếu với Supabase -> nếu đúng thì mới tạo tài khoản Firebase
+window.verifyRegistrationOtp = async function() {
+    const pending = window.__pendingRegistration;
+    const otpInput = document.getElementById('otp-code-input');
+    const code = (otpInput ? otpInput.value : '').trim();
+    const errEl = document.getElementById('otp-error');
+    if (errEl) errEl.style.display = 'none';
+
+    if (!pending) {
+        showOtpError("Phiên đăng ký đã hết hạn. Vui lòng đăng ký lại.");
+        return;
+    }
+    if (!/^\d{6}$/.test(code)) {
+        showOtpError("Vui lòng nhập đủ 6 chữ số.");
+        return;
+    }
+
+    const btn = document.getElementById('btn-otp-confirm');
+    if (btn) { btn.disabled = true; btn.innerText = 'ĐANG XÁC NHẬN...'; }
+
+    try {
+        // Đối chiếu mã OTP với Supabase
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+            email: pending.email,
+            token: code,
+            type: 'email'
+        });
+        if (verifyError) throw verifyError;
+
+        // Mã đúng -> thoát phiên Supabase (chỉ dùng Supabase để xác thực mã, không cần giữ session)
+        await supabase.auth.signOut().catch(() => {});
+
+        // Tạo tài khoản chính thức trên Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, pending.email, pending.password);
+        const user = userCredential.user;
+        const msv = pending.email.split('@')[0];
+
+        // Lưu thông tin bổ sung vào Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            fullName: pending.name,
+            displayName: pending.name,
+            msv: msv,
+            age: pending.age || "N/A",
+            gender: pending.gender || "N/A",
+            email: pending.email,
+            createdAt: serverTimestamp(),
+            coins: { received: 0, used: 0 },
+            roles: ['user']
+        });
+
+        // Dọn dữ liệu tạm
+        localStorage.removeItem('otp_last_sent_' + pending.email);
+        window.__pendingRegistration = null;
+
+        // onAuthStateChanged sẽ tự động đưa người dùng vào app vì user đã đăng nhập
+        console.log("✅ Xác minh OTP thành công, tài khoản đã được tạo:", pending.email);
+    } catch (error) {
+        console.error("Verify OTP Error:", error);
+        let msg = "Mã xác nhận không đúng hoặc đã hết hạn. Vui lòng thử lại.";
+        if (error.code === 'auth/email-already-in-use') {
+            msg = "Email này đã được đăng ký. Vui lòng đăng nhập.";
+        } else if (error.message) {
+            msg = error.message;
+        }
+        showOtpError(msg);
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerText = 'XÁC NHẬN MÃ'; }
     }
 };
 
-window.resendVerificationEmail = async function() {
-    if (!auth.currentUser) return;
-    const key = 'verify_last_sent_' + auth.currentUser.uid;
+// Gửi lại mã OTP (giới hạn 60s/lần để chặn spam)
+window.resendRegistrationOtp = async function() {
+    const pending = window.__pendingRegistration;
+    if (!pending) {
+        showOtpError("Phiên đăng ký đã hết hạn. Vui lòng đăng ký lại.");
+        return;
+    }
+
+    const key = 'otp_last_sent_' + pending.email;
     const last = parseInt(localStorage.getItem(key) || '0');
-    const cooldownMs = 60 * 1000; // 60s giữa các lần gửi, chặn spam nút
+    const cooldownMs = 60 * 1000;
 
     if (Date.now() - last < cooldownMs) {
         const remain = Math.ceil((cooldownMs - (Date.now() - last)) / 1000);
-        alert(`Vui lòng đợi ${remain}s trước khi gửi lại.`);
+        showOtpError(`Vui lòng đợi ${remain}s trước khi gửi lại mã.`);
         return;
     }
+
+    const btn = document.getElementById('btn-otp-resend');
+    if (btn) { btn.disabled = true; btn.innerText = 'ĐANG GỬI...'; }
     try {
-        await sendEmailVerification(auth.currentUser);
+        const { error } = await supabase.auth.signInWithOtp({
+            email: pending.email,
+            options: { shouldCreateUser: true }
+        });
+        if (error) throw error;
         localStorage.setItem(key, Date.now().toString());
-        alert("📧 Đã gửi lại email xác minh!");
+        showOtpError("📧 Đã gửi lại mã mới. Vui lòng kiểm tra email (kể cả Spam).");
     } catch (e) {
-        alert("Lỗi: " + e.message);
+        showOtpError("Lỗi: " + e.message);
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerText = 'Gửi lại mã'; }
     }
+};
+
+// Hủy quá trình xác minh OTP, quay lại màn hình đăng nhập
+window.cancelOtpVerification = function() {
+    window.__pendingRegistration = null;
+    const otpScreen = document.getElementById('verify-otp-screen');
+    const loginScreen = document.getElementById('login-screen');
+    if (otpScreen) otpScreen.style.display = 'none';
+    if (loginScreen) loginScreen.style.display = 'flex';
+    window.isRegisterMode = false;
+    if (window.isLoginMode === false) window.toggleAuthMode();
 };
