@@ -23,7 +23,7 @@
     <script>
       // ==== CẤU HÌNH SMARTLINK ====
       // Dán link Smartlink từ mạng quảng cáo của bạn vào đây
-      const SMARTLINK_URL = "https://www.effectivecpmnetwork.com/gzt5snnjw?key=f0c1e5194bc11dbfa01524c36ba0bc76";
+      const SMARTLINK_URL = "https://www.effectivecpmnetwork.com/jtpjr0pja?key=223739155c565d254df39d7b0699c3a0";
 
       // Giới hạn: chỉ mở Smartlink tối đa 1 lần mỗi X phút / mỗi phiên,
       // để không làm phiền user khi họ tải nhiều file liên tiếp.
@@ -51,6 +51,24 @@
     </script>
 </head>
 <body>
+    <!-- Code background: NEW BACKGROUND ELEMENTS -->
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    
+    <div class="nebula"></div>
+    <div class="solar-system-container">
+        <div class="sun"></div>
+        <div class="orbit orbit-1">
+            <div class="planet planet-1"></div>
+        </div>
+        <div class="orbit orbit-2">
+            <div class="planet planet-2"></div>
+        </div>
+        <div class="orbit orbit-3">
+            <div class="planet planet-3" style="top: 0; left: 50%; transform: translate(-50%, -50%);"></div>
+        </div>
+    </div>
+
     <!--Code LOGIN SCREEN -->
     <div id="login-screen">
      <div class="login-box">
@@ -90,19 +108,15 @@
             Chưa có tài khoản? <b id="switch-link">Đăng ký ngay</b>
         </div>
 
+        <div style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 18px;">
+            <button class="login-btn" onclick="enterAsGuest()" 
+                    style="background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); font-size: 13px; padding: 10px;">
+                🌌 Tiếp tục với tư cách Khách
+            </button>
+        </div>
     </div>
 </div>
-<div id="verify-email-screen" style="display:none;">
-  <div class="login-box">
-    <div class="login-title">XÁC MINH EMAIL</div>
-    <p>Chúng tôi đã gửi email xác minh tới:</p>
-    <p id="verify-email-text" style="color:var(--neon-teal); font-weight:bold;"></p>
-    <p style="font-size:13px; margin-bottom: 10px; padding: 10px; color:#888;">Nhấn vào link trong email, sau đó bấm nút bên dưới.</p>
-    <button class="login-btn" onclick="window.checkEmailVerified()">Tôi đã xác minh. Đăng nhập lại</button>
-    <button class="login-btn" style="background:transparent; border:1px solid var(--neon-cyan); color:var(--neon-cyan); margin-top:10px;" onclick="window.resendVerificationEmail()">Gửi lại email xác minh</button>
-    <div class="auth-switch" onclick="handleLogout()" style="margin-top:15px;">Đăng xuất</div>
-  </div>
-</div>
+
     <!--Code giao diện: MAIN APP CONTAINER -->
         <div id="notification-banner" style="display:none; position:fixed; top:20px; right:20px; z-index:2000; background:rgba(255,69,0,0.8); color:white; padding:15px; border-radius:10px; box-shadow:0 0 20px rgba(255,69,0,0.5); max-width:300px; font-size:14px;">
             <div id="banner-content"></div>
@@ -112,11 +126,11 @@
         <div id="app-container" style="display: flex;">
         <!-- TOP NAVBAR (trước là sidebar dọc, nay chuyển thành header ngang) -->
         <header class="sidebar">
-            <div class="logo" onclick="document.getElementById('login-screen').style.display='flex'"><img src="../picture/apple-touch-icon.png" alt="Logo"></div>
+<div class="logo" onclick="switchTab('intro', this)" title="Về trang chủ"><img src="../picture/apple-touch-icon.png" alt="Logo"></div>
             <span class="topbar-title">COSMIC</span>
 
             <nav class="topbar-nav">
-                <div class="nav-item" onclick="switchTab('intro', this)" title="Giới thiệu" id="intro-nav">
+                <div class="nav-item" onclick="switchTab('intro', this)" title="Giới thiệu">
                     <i class="fa-solid fa-meteor"></i><span class="nav-label">Giới thiệu</span>
                 </div>
                 <div class="nav-item active" onclick="switchTab('resources', this)" title="Resource Hub" id="resources-nav">
@@ -173,44 +187,44 @@
                 <h2 class="cx-section-title">Giá trị cốt lõi <span class="accent">+</span></h2>
                 <div class="cx-values">
                     <div class="cx-value-card">
-                        <div class="cx-value-icon cyan">🎯</div>
+                        <div class="cx-value-icon cyan"><i class="fa-solid fa-bullseye"></i></div>
                         <h3>Thực tiễn</h3>
                         <p>Nội dung bám sát bài toán thật, học đi đôi với hành.</p>
                     </div>
                     <div class="cx-value-card">
-                        <div class="cx-value-icon purple">👥</div>
+                        <div class="cx-value-icon purple"><i class="fa-solid fa-link"></i></i></div>
                         <h3>Kết nối</h3>
                         <p>Cộng đồng học tập sôi nổi, mở rộng mạng lưới.</p>
                     </div>
                     <div class="cx-value-card">
-                        <div class="cx-value-icon pink">🤝</div>
+                        <div class="cx-value-icon pink"><i class="fa-solid fa-handshake"></i></div>
                         <h3>Đồng hành</h3>
                         <p>Mentor luôn sẵn lòng hỗ trợ bạn kịp thời.</p>
                     </div>
                     <div class="cx-value-card">
-                        <div class="cx-value-icon gold">🛡️</div>
+                        <div class="cx-value-icon gold"><i class="fa-solid fa-shield"></i></div>
                         <h3>Minh bạch</h3>
                         <p>Thông tin rõ ràng, giúp bạn luôn yên tâm.</p>
                     </div>
                 </div>
 
                 <section class="cx-ecosystem">
-                    <h2 class="cx-section-title">Website Cosmic</h2>
+                    <h2 class="cx-section-title">Website Cosmic<span class="accent">+</span></h2>
                     <div class="cx-eco-grid">
                         <div class="cx-eco-card cyan" onclick="document.getElementById('resources-nav').click()">
-                            <div class="cx-emoji">📚</div>
+                            <div class="cx-emoji"><i class="fa-solid fa-book"></i></div>
                             <h3>Kho tài liệu &amp; bài mẫu</h3>
                             <p>Tài liệu phong phú và cập nhật liên tục.</p>
                             <div class="cx-go">Xem ngay →</div>
                         </div>
                         <div class="cx-eco-card purple" onclick="document.getElementById('void-nav').click()">
-                            <div class="cx-emoji">👥</div>
+                            <div class="cx-emoji"><i class="fa-solid fa-people-arrows"></i></div>
                             <h3>Giao lưu &amp; kết nối</h3>
                             <p>Tìm mentor và partner cùng phát triển.</p>
-                            <div class="cx-go">Vào The Void →</div>
+                            <div class="cx-go">Sắp ra mắt → </div>
                         </div>
                         <div class="cx-eco-card gold static">
-                            <div class="cx-emoji">🏆</div>
+                            <div class="cx-emoji"><i class="fa-solid fa-trophy"></i></div>
                             <h3>Cơ hội &amp; cuộc thi</h3>
                             <p>Sân chơi thử sức, tích lũy thành tích.</p>
                             <div class="cx-go" style="color:var(--neon-gold);">Sắp ra mắt</div>
@@ -232,6 +246,8 @@
                     <button class="cx-btn" onclick="document.getElementById('resources-nav').click()">Bắt đầu hành trình →</button>
                 </section>
             </div>
+        
+            
 
             <!-- CABIN VIEW -->
             <div id="cabin" class="view-section ">
@@ -401,12 +417,12 @@
                 </div>
 
                 <p class="cabin-section-label">Preferences</p>
-                <div class="cabin-pref-toggle-row">
+<div class="cabin-pref-toggle-row" onclick="toggleTheme()" title="Nhấn để chuyển Sáng / Tối" style="cursor:pointer;">
                     <div class="cabin-pref-left">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px; margin-right:8px;"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path></svg>
-                        Chế độ giao diện (Dark Only)
+                        <span id="cabin-pref-label">Chế độ giao diện (Tối)</span>
                     </div>
-                    <div class="cabin-fake-toggle on"><span></span></div>
+                    <div class="cabin-fake-toggle on" id="cabin-theme-toggle"><span></span></div>
                 </div>
 
                 <div class="cabin-edit-field">
@@ -505,13 +521,7 @@
                     </div>
 
                     <div class="doc-content-placeholder doc-content-placeholder-full">
-                         <iframe id="doc-iframe" class="doc-iframe" src="" style="display:none;"></iframe>
-                         <img id="doc-image" class="doc-iframe" style="display:none; object-fit:contain;" src="" alt="">
-                         <div id="doc-pdf-container" style="display:none; width:100%; height:100%; overflow-y:auto; text-align:center; padding:15px 0; box-sizing:border-box;"></div>
-                         <div id="doc-pdf-loading" style="display:none; color:var(--text-dim);">
-                            <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i>
-                            <p style="margin-top:10px;">Đang tải tài liệu...</p>
-                         </div>
+                         <iframe id="doc-iframe" class="doc-iframe" src=""></iframe>
                          <div id="doc-placeholder-msg" style="position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; display:none;">
                             <div style="font-size: 40px; margin-bottom: 20px;">📄</div>
                             <p id="doc-msg-text">File này là tài liệu ngoài hệ thống.</p>
@@ -610,34 +620,41 @@
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                         <button onclick="document.getElementById('role-modal').style.display='none'" class="btn-back">Hủy</button>
                         <button onclick="submitRoleChange()" class="btn-primary" style="background:var(--neon-gold); color:black;">Lưu Quyền</button>
-                    </div>
+                     </div>
                 </div>
             </div>
-            <!-- VOID VIEW (Chat Interface) -->
-            <div id="void" class="view-section" >
-                <div class="void-container">
-                    <div class="void-header">
-                        <div><span class="void-status-dot"></span>ENCRYPTED CHANNEL: THE VOID (ONLINE)</div>
-                        <div id="void-user-identity" style="font-weight: bold; color: #888;">CONNECTING...</div>
-                    </div>
-                    
-                    <div class="void-messages-area" id="void-messages">
-                        <!-- Messages will be injected here -->
-                        <div style="text-align: center; color: #444; margin-top: 20px; font-style: italic;">
-                            -- Connecting to Cosmic Network... --
-                        </div>
-                    </div>
+        <!-- THE VOID VIEW -->
+        <div id="void" class="view-section">
 
-                    <div class="void-input-area">
-                        <span style="color: var(--neon-teal); margin-right: 10px;">></span>
-                        <input type="text" class="void-input" id="void-input-field" placeholder="Nhập tín hiệu... (Enter để gửi)" autocomplete="off">
-                    </div>
-                </div>
+            <div style="min-height: 550px; display: flex; flex-direction: column; justify-content: center; align-items: center;text-align: center; padding: 40px; ">
+                <div class="logo" style="width: 100px; height: 100px; object-fit: contain;"><img src="../picture/apple-touch-icon.png" alt="Logo"></div>
+                 <h1 style="
+                    color: var(--text-blue);
+                    font-size: 32px;
+                    margin-bottom: 12px;">
+                    THE VOID
+                </h1>
+                <p style=" color: var(--text-main); font-size: 18px;margin-bottom: 8px;  ">  Tính năng đang được phát triển   </p>
+                <p style=" color: #666; font-size: 14px; max-width: 500px;
+                    line-height: 1.6;
+                ">
+                    Cosmic Network đang chuẩn bị một không gian mới
+                    để kết nối và giao lưu giữa các thành viên.
+                </p>
+
+                <div style="
+                    margin-top: 25px;
+                    padding: 10px 20px;
+                    border: 1px solid var(--neon-purple);
+                    border-radius: 8px;
+                    color: var(--neon-purple);
+                    font-size: 13px;
+                    letter-spacing: 1px;
+                ">
+                    COMING SOON
             </div>
-        </div>
-    </div>
-    
-
+      </div>
+ </div>
     <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {

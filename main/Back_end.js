@@ -1,33 +1,33 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-// Import Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-//   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+     //   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // Thêm dòng này vào cụm import: import { logEvent, setUserProperties } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-// Firebase Configuration (From User)
-const firebaseConfig = {
-    apiKey: "AIzaSyC4LY3lNNIMhsmC5fuJAG3ejABe3cWj41M",
-    authDomain: "resource-9a362.firebaseapp.com",
-    projectId: "resource-9a362",
-    storageBucket: "resource-9a362.firebasestorage.app",
-    messagingSenderId: "64359181492",
-    appId: "1:64359181492:web:10d0622bd941451b5a7be1",
-    measurementId: "G-TQ84LTSXD6"
-};
+        // Firebase Configuration (From User)
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4LY3lNNIMhsmC5fuJAG3ejABe3cWj41M",
+            authDomain: "resource-9a362.firebaseapp.com",
+            projectId: "resource-9a362",
+            storageBucket: "resource-9a362.firebasestorage.app",
+            messagingSenderId: "64359181492",
+            appId: "1:64359181492:web:10d0622bd941451b5a7be1",
+            measurementId: "G-TQ84LTSXD6"
+        };
 
-// Initialize Firebase with try-catch
-let app, analytics, db, auth;
-try {
-    app = initializeApp(firebaseConfig);
-    analytics = null; // getAnalytics(app);
-    db = getFirestore(app);
-    auth = getAuth(app);
-    console.log("Firebase & Auth Initialized!");
-} catch (e) {
-    console.error("Firebase Init Error:", e);
-    alert("Lỗi kết nối hệ thống! Vui lòng kiểm tra lại cấu hình.");
-}
+        // Initialize Firebase with try-catch
+        let app, analytics, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            analytics = null; // getAnalytics(app);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase & Auth Initialized!");
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+            alert("Lỗi kết nối hệ thống! Vui lòng kiểm tra lại cấu hình.");
+        }
 
 
 // --- SUPABASE CONFIG ---
@@ -40,18 +40,18 @@ console.log("Supabase Initialized!");  // Để test console
 const RANK_SYSTEM = {
     // 8 Mốc điểm tương ứng từ Lv1 -> Lv8
     thresholds: [0, 200, 1000, 2000, 4000, 6000, 8000, 10000],
-
+    
     // Bảng tên danh hiệu theo 4 trụ cột (User thường)
     titles: {
         // Cột 1: NAVIGATOR (Diligence - Focus)
         navigator: ["Probe", "Rover", "Lander", "Orbiter", "Ranger", "Pioneer", "Voyager", "Horizon"],
-
+        
         // Cột 2: GUARDIAN (Contribution - Upload)
         guardian:  ["Dust", "Meteor", "Asteroid", "Moon", "Planet", "Star", "Nebula", "Galaxy"],
-
+        
         // Cột 3: DIPLOMAT (Social - Chat)
         diplomat:  ["Ping", "Echo", "Wave", "Pulse", "Beam", "Signal", "Resonance", "Spectrum"],
-
+        
         // Cột 4: VOYAGER (Enthusiastic - Online)
         voyager:   ["Second", "Minute", "Hour", "Day", "Year", "Century", "Millennium", "Eternity"]
     },
@@ -207,6 +207,10 @@ const SCHOOL_LIST = [
 const SCHOOL_OTHER_LABEL = "Khác (trường không có trong danh sách)";
 
 // --- CHUẨN HÓA KHÓA GOM NHÓM (dùng chung cho Trường & Môn học) ---
+// Bỏ dấu tiếng Việt, viết thường, gộp khoảng trắng thừa, trim.
+// Mục đích: "Kinh tế học", "kinh te hoc", "KINH TẾ HỌC " đều cho cùng 1 normalizeKey,
+// nhờ đó gom nhóm/lọc đúng dù người dùng gõ khác kiểu — trong khi giá trị hiển thị
+// gốc (school/category) vẫn được lưu nguyên văn để hiện đúng những gì người dùng đã gõ.
 window.normalizeKey = function(str) {
     if (!str) return '';
     return str
@@ -221,7 +225,7 @@ window.normalizeKey = function(str) {
 window.handleCategoryInput = function(input) {
     const val = input.value.toLowerCase();
     const box = document.getElementById('suggestion-box');
-
+    
     const filtered = SUBJECT_LIST.filter(sub => sub.toLowerCase().includes(val));
 
     if (filtered.length === 0) {
@@ -229,10 +233,14 @@ window.handleCategoryInput = function(input) {
         return;
     }
 
+    // Giới hạn tối đa 8 dòng hiển thị (CSS đã có max-height + scroll, nhưng
+    // giới hạn ở đây giúp tránh render thừa hàng chục node DOM không cần thiết)
     const display = filtered.slice(0, 8);
 
+    // Tạo HTML cho list
     let html = '';
     display.forEach(sub => {
+        // Highlight từ khóa tìm kiếm
         const regex = new RegExp(`(${val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         const highlighted = sub.replace(regex, '<strong>$1</strong>');
         html += `<div class="suggestion-item" onclick="selectCategory('${sub.replace(/'/g, "\\'")}')">${highlighted}</div>`;
@@ -255,6 +263,8 @@ window.handleSchoolInput = function(input) {
 
     const matches = SCHOOL_LIST.filter(sub => sub !== SCHOOL_OTHER_LABEL && sub.toLowerCase().includes(val));
 
+    // Giới hạn tối đa 8 kết quả khớp + luôn thêm "Khác" ở cuối (không tính vào giới hạn 8,
+    // để người gõ tên trường lạ luôn thấy được lựa chọn này dù danh sách bị cắt bớt).
     const display = matches.slice(0, 8);
     display.push(SCHOOL_OTHER_LABEL);
 
@@ -282,7 +292,7 @@ window.selectSchool = function(value) {
 
     if (value === SCHOOL_OTHER_LABEL) {
         schoolInput.value = SCHOOL_OTHER_LABEL;
-        schoolInput.disabled = true;
+        schoolInput.disabled = true; // Khóa ô chính lại, người dùng nhập mã ở ô phụ
         otherWrap.style.display = 'block';
         otherInput.focus();
     } else {
@@ -306,7 +316,9 @@ window.resetSchoolOther = function() {
     schoolInput.focus();
 };
 
-// Ẩn box khi click ra ngoài
+// Ẩn box khi click ra ngoài (kiểm tra TẤT CẢ autocomplete-wrapper trên trang,
+// không chỉ wrapper đầu tiên — trước đây dùng querySelector() chỉ lấy 1 phần tử
+// nên với 2 ô autocomplete (Trường + Môn học) cùng lúc, 1 trong 2 sẽ bị đóng sai)
 document.addEventListener('click', function(e) {
     document.querySelectorAll('.autocomplete-wrapper').forEach(wrapper => {
         if (!wrapper.contains(e.target)) {
@@ -314,20 +326,18 @@ document.addEventListener('click', function(e) {
             if (box) box.style.display = 'none';
         }
     });
-});
-
-// GLOBAL VARS attached to window for HTML access
-window.currentUserRank = "UNKNOWN";
-window.currentUserName = "Unknown Pilot";
-window.currentUserRoles = []; // Stores roles: ['admin', 'tester', 'op', 'mkt']
-window.currentMsv = "";
-window.voidIdentity = "";
-window.isSOSActive = false;
-window.isRegisterMode = false; // Toggle login/register
-window.targetEditUid = null; // For admin role editing
-window.currentDocId = null; // ID of doc being viewed
-// Đăng ký mới đang chờ xác nhận mã OTP (chỉ tồn tại trong bộ nhớ, không lưu localStorage)
-window.__pendingRegistration = null; // { email, password, name, age, gender }
+});   
+     // GLOBAL VARS attached to window for HTML access
+        window.currentUserRank = "UNKNOWN";
+        window.currentUserName = "Unknown Pilot";
+        window.currentUserRoles = []; // Stores roles: ['admin', 'tester', 'op', 'mkt']
+        window.currentMsv = "";
+        window.voidIdentity = "";
+        window.isSOSActive = false;
+        window.isRegisterMode = false; // Toggle login/register
+        window.targetEditUid = null; // For admin role editing
+        window.currentDocId = null; // ID of doc being viewed
+        window.__guestActive = false; // Flag for guest mode
 
 
 
@@ -340,304 +350,224 @@ window.trackTelemetry = function(eventName, params = {}) {
 
     const now = new Date();
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
+    
+    // Tự động lấy giờ & thứ để vẽ Heatmap
     const timeContext = {
         hour_of_day: now.getHours(),      // 0-23
         day_of_week: days[now.getDay()],  // Thứ
         timestamp_iso: now.toISOString()
     };
 
+    // Gộp data và bắn lên Google
     const finalParams = { ...timeContext, ...params };
-
+    
     try {
         logEvent(analytics, eventName, finalParams);
-        // console.log(`📡 SENT [${eventName}]`, finalParams);
+        // Bật dòng dưới nếu muốn soi log để test, chạy thật thì tắt đi cho đỡ rối
+        // console.log(`📡 SENT [${eventName}]`, finalParams); 
     } catch (e) {
         console.warn("Telemetry Error:", e);
     }
 };
 
-// --- AUTH & PROFILE LOGIC ---
+        // --- AUTH & PROFILE LOGIC ---
 
-//Hàm Ẩn/hiện mật khẩu
-window.togglePasswordCheck = function(checkbox) {
-    const passInput = document.getElementById('auth-pass');
-    if (checkbox.checked) {
-        passInput.type = 'text';
-    } else {
-        passInput.type = 'password';
+        //Hàm Ẩn/hiện mật khẩu
+        window.togglePasswordCheck = function(checkbox) {
+            const passInput = document.getElementById('auth-pass');
+            // Nếu checkbox được tích (checked === true) thì hiện text, ngược lại hiện password
+            if (checkbox.checked) {
+                passInput.type = 'text';
+            } else {
+                passInput.type = 'password';
+            }
+        };
+
+        // XỬ LÝ VẤN ĐỀ ĐĂNG NHẬP / ĐĂNG KÝ
+        window.isLoginMode = true;
+        // 1. Tự động kiểm tra trạng thái khi vừa vào web
+        if (auth) {
+                onAuthStateChanged(auth, async (user) => {
+                    const loginScreen = document.getElementById('login-screen');
+                    const appContainer = document.getElementById('app-container');
+
+                    if (user) {
+                        console.log("Đã xác thực Auth:", user.email);
+                        
+                        // 1. Chạy hàm đảm bảo Profile & Phân quyền (Admin/User)
+                        await window.ensureUserProfile(user); 
+
+                        // 2. Giao diện
+                        loginScreen.style.display = 'none'; 
+                        appContainer.style.display = 'flex'; 
+                        appContainer.style.opacity = '1';
+                        appContainer.style.visibility = 'visible';
+
+                        // 3. Gọi các hàm load dữ liệu khác
+                        if (typeof window.renderResources === 'function') window.renderResources();
+                        if (typeof window.loadEnergyStatus === 'function') window.loadEnergyStatus();
+                    } else {
+    // KHI CHƯA ĐĂNG NHẬP: KIỂM TRA NẾU ĐANG Ở CHẾ ĐỘ KHÁCH THÌ BỎ QUA
+    if (window.__guestActive) {
+        console.log("🌌 Đang ở chế độ Khách, giữ nguyên giao diện.");
+        return;
     }
-};
+    // KHI CHƯA ĐĂNG NHẬP: HIỆN MÀN HÌNH LOGIN
+    loginScreen.style.display = 'flex';
+    appContainer.style.display = 'none';
+    appContainer.style.opacity = '0';
+    appContainer.style.visibility = 'hidden';
 
-// XỬ LÝ VẤN ĐỀ ĐĂNG NHẬP / ĐĂNG KÝ
-window.isLoginMode = true;
+    console.log("🌌 Vui lòng đăng nhập hoặc chọn 'Tiếp tục với tư cách Khách'");
+}
+                });
+            }
+        // 2. Chuyển đổi giao diện Đăng nhập / Đăng ký
+        window.toggleAuthMode = function() {
+            isLoginMode = !isLoginMode;
+            const title = document.querySelector('.login-title');
+            const subtitle = document.getElementById('login-subtitle');
+            const btnAction = document.getElementById('btn-auth-action');
+            const switchText = document.querySelector('.auth-switch');
+            const regFields = document.getElementById('register-fields');
 
-// 1. Tự động kiểm tra trạng thái khi vừa vào web
-// === GATE THEO emailVerified: chặn user chưa xác minh vào thẳng app ===
-if (auth) {
-    onAuthStateChanged(auth, async (user) => {
-        const loginScreen = document.getElementById('login-screen');
-        const appContainer = document.getElementById('app-container');
-        const otpScreen = document.getElementById('verify-otp-screen');
+            // Reset thông báo lỗi
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.style.display = 'none';
 
-        if (user) {
-            // Tài khoản Firebase chỉ được TẠO sau khi mã OTP đã xác nhận thành công
-            // (xem window.verifyRegistrationOtp), nên tới đây user coi như đã xác thực.
-            console.log("✅ Đã xác thực Auth:", user.email);
-            if (otpScreen) otpScreen.style.display = 'none';
-            window.__loginPromptOpen = false;
-            if (typeof window.updateAccountMenuUI === 'function') window.updateAccountMenuUI(true);
+            if (isLoginMode) {
+                title.innerText = 'THE AIRLOCK';
+                subtitle.innerText = 'Nhập thông tin truy cập Cosmic Base.';
+                btnAction.innerText = 'LOGIN';
+                switchText.innerHTML = 'Chưa có tài khoản? <b>Đăng ký ngay</b>';
+                regFields.style.display = 'none';
+            } else {
+                title.innerText = 'REGISTRATION';
+                subtitle.innerText = 'Điền thông tin để tạo tài khoản mới.';
+                btnAction.innerText = 'CREATE ACCOUNT';
+                switchText.innerHTML = 'Đã có tài khoản? <b>Đăng nhập</b>';
+                if (regFields) regFields.style.display = 'block';
+            }
+        }
 
-            // 1. Chạy hàm đảm bảo Profile & Phân quyền (Admin/User)
-            await window.ensureUserProfile(user);
+        // 3. Xử lý nút bấm chính (Login hoặc Register)
+        window.handleAuth = async function() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+            const name = document.getElementById('auth-name').value.trim();
+            const age = document.getElementById('auth-age').value;
+            const gender = document.getElementById('auth-gender').value;
+            const errorMsg = document.getElementById('login-error');
 
-            // 2. Giao diện
-            loginScreen.style.display = 'none';
-            appContainer.style.display = 'flex';
-            appContainer.style.opacity = '1';
-            appContainer.style.visibility = 'visible';
-
-            // 3. Gọi các hàm load dữ liệu khác
-            if (typeof window.renderResources === 'function') window.renderResources();
-            if (typeof window.loadEnergyStatus === 'function') window.loadEnergyStatus();
-        } else {
-            // KHÁCH (CHƯA ĐĂNG NHẬP): KHÔNG ép vào màn hình Login nữa.
-            // Cho phép khách xem thẳng "Kho tài liệu" và dùng hầu hết tính năng.
-            // Chỉ hiện màn Login khi khách chủ động bấm đăng nhập,
-            // hoặc khi cố thực hiện hành động cần tài khoản (tải tài liệu, khoang cá nhân...).
-            if (otpScreen && otpScreen.style.display === 'flex') {
-                console.log("🔐 Đang chờ xác nhận mã OTP, giữ nguyên màn hình.");
+            // Kiểm tra dữ liệu chung
+            if (!email || !pass) {
+                showError("Vui lòng nhập Email và Mật khẩu.");
                 return;
             }
 
-            // Reset về trạng thái khách (không quyền hạn đặc biệt)
-            window.currentUserRank = "GUEST";
-            window.currentUserName = "Khách";
-            window.currentUserRoles = [];
-
-            if (!window.__loginPromptOpen) {
-                loginScreen.style.display = 'none';
-            }
-            appContainer.style.display = 'flex';
-            appContainer.style.opacity = '1';
-            appContainer.style.visibility = 'visible';
-
-            // Ẩn các khu vực chỉ dành cho tài khoản đã đăng nhập/nhân sự
-            const adminPanelGuest = document.getElementById('admin-panel');
-            if (adminPanelGuest) adminPanelGuest.style.display = 'none';
-            if (typeof window.updateAccountMenuUI === 'function') window.updateAccountMenuUI(false);
-
-            // Vẫn cho khách xem Kho tài liệu (chỉ tài liệu đã duyệt) & The Void
-            if (typeof window.initResourceHub === 'function') window.initResourceHub();
-            if (typeof window.initVoidChat === 'function') window.initVoidChat();
-
-            console.log("🌌 Đang ở chế độ Khách. Đăng nhập để tải tài liệu hoặc vào Khoang cá nhân.");
-        }
-    });
-}
-
-// 1b. Hiện màn hình Login khi khách cần đăng nhập cho 1 hành động cụ thể
-//     (tải tài liệu, vào khoang cá nhân...), có thể đóng lại để tiếp tục xem khách.
-window.promptLogin = function(message) {
-    window.__loginPromptOpen = true;
-    if (message && typeof window.showNotificationBanner === 'function') {
-        window.showNotificationBanner(message);
-    }
-    const loginScreen = document.getElementById('login-screen');
-    if (loginScreen) {
-        loginScreen.style.opacity = '1';
-        loginScreen.style.display = 'flex';
-    }
-    const subtitle = document.getElementById('login-subtitle');
-    if (subtitle && message) {
-        subtitle.innerText = message.replace(/^[^\wÀ-ỹ]+/, '').trim();
-    }
-};
-
-// Đóng màn hình Login, quay lại xem web với tư cách khách
-window.closeLoginPrompt = function() {
-    window.__loginPromptOpen = false;
-    const loginScreen = document.getElementById('login-screen');
-    if (loginScreen) loginScreen.style.display = 'none';
-};
-
-// 2. Chuyển đổi giao diện Đăng nhập / Đăng ký
-window.toggleAuthMode = function() {
-    isLoginMode = !isLoginMode;
-    const title = document.querySelector('.login-title');
-    const subtitle = document.getElementById('login-subtitle');
-    const btnAction = document.getElementById('btn-auth-action');
-    const switchText = document.querySelector('.auth-switch');
-    const regFields = document.getElementById('register-fields');
-    const loginBox = document.querySelector('.login-box');
-
-    // Reset thông báo lỗi
-    const errorMsg = document.getElementById('login-error');
-    errorMsg.style.display = 'none';
-
-    if (isLoginMode) {
-        title.innerText = 'THE AIRLOCK';
-        subtitle.innerText = 'Nhập thông tin truy cập Cosmic Base.';
-        btnAction.innerText = 'LOGIN';
-        switchText.innerHTML = 'Chưa có tài khoản? <b>Đăng ký ngay</b>';
-        regFields.style.display = 'none';
-        if (loginBox) loginBox.classList.remove('mode-register');
-    } else {
-        title.innerText = 'REGISTRATION';
-        subtitle.innerText = 'Điền thông tin để tạo tài khoản mới.';
-        btnAction.innerText = 'CREATE ACCOUNT';
-        switchText.innerHTML = 'Đã có tài khoản? <b>Đăng nhập</b>';
-        if (regFields) regFields.style.display = 'block';
-        if (loginBox) loginBox.classList.add('mode-register');
-    }
-}
-
-// 3. Xử lý nút bấm chính (Login hoặc Register)
-window.handleAuth = async function() {
-    const email = document.getElementById('auth-email').value.trim();
-    const pass = document.getElementById('auth-pass').value.trim();
-    const name = document.getElementById('auth-name').value.trim();
-    const age = document.getElementById('auth-age').value;
-    const gender = document.getElementById('auth-gender').value;
-
-    if (!email || !pass) {
-        showError("Vui lòng nhập Email và Mật khẩu.");
-        return;
-    }
-
-    try {
-        if (window.isLoginMode) {
-            // Logic ĐĂNG NHẬP (tài khoản đã xác minh OTP từ lúc đăng ký, vào thẳng)
-            await signInWithEmailAndPassword(auth, email, pass);
-        } else {
-            // Logic ĐĂNG KÝ — bước 1: gửi mã OTP xác nhận, CHƯA tạo tài khoản
-            if (!name) { showError("Vui lòng nhập họ và tên đầy đủ"); return; }
-            if (pass.length < 6) { showError("Mật khẩu cần tối thiểu 6 ký tự."); return; }
-
-            const btn = document.getElementById('btn-auth-action');
-            if (btn) { btn.disabled = true; btn.innerText = 'ĐANG GỬI MÃ...'; }
-
             try {
-                const { error: otpError } = await supabase.auth.signInWithOtp({
-                    email: email,
-                    options: { shouldCreateUser: true }
-                });
-                if (otpError) throw otpError;
-            } finally {
-                if (btn) { btn.disabled = false; btn.innerText = 'CREATE ACCOUNT'; }
+                if (window.isLoginMode) {
+                    // Logic ĐĂNG NHẬP
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    // Logic ĐĂNG KÝ
+                    if (!name) { showError("Vui lòng nhập họ và tên đầy đủ"); return; }
+                    
+                    // Bước 1: Tạo tài khoản trên Firebase Auth
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                    const user = userCredential.user;
+                    
+                    // Bước 2: Lưu thông tin bổ sung vào Database (Firestore)
+                    // Đã bao gồm coins +100 thưởng đăng ký ngay trong lần tạo đầu
+                    const msv = email.split('@')[0];
+                    await setDoc(doc(db, "users", userCredential.user.uid), {
+                        fullName: name,
+                        displayName: name,
+                        msv: msv,
+                        age: age || "N/A",
+                        gender: gender || "N/A",
+                        email: email,
+                        createdAt: serverTimestamp(),
+                        pass: pass,
+                        roles: ['user']
+                    });
+                    alert("✅ Đăng ký thành công!");
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                let msg = "Lỗi xác thực. Vui lòng thử lại.";
+
+                // Các trường hợp lỗi cụ thể
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    msg = "Email hoặc mật khẩu không chính xác.";
+                } else if (error.code === 'auth/wrong-password') {
+                    msg = "Mật khẩu không đúng. Vui lòng thử lại.";
+                } else if (error.code === 'auth/email-already-in-use') {
+                    msg = "Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác.";
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = "Định dạng email không hợp lệ.";
+                }
+                showError(msg);
             }
-
-            // Lưu thông tin đăng ký tạm trong bộ nhớ, chờ người dùng nhập mã OTP
-            window.__pendingRegistration = { email, password: pass, name, age, gender };
-            localStorage.setItem('otp_last_sent_' + email, Date.now().toString());
-
-            // Chuyển sang màn hình nhập mã OTP
-            const loginScreen = document.getElementById('login-screen');
-            const otpScreen = document.getElementById('verify-otp-screen');
-            const otpEmailEl = document.getElementById('otp-target-email');
-            const otpInput = document.getElementById('otp-code-input');
-            const otpErrorEl = document.getElementById('otp-error');
-
-            if (otpEmailEl) otpEmailEl.innerText = email;
-            if (otpInput) otpInput.value = '';
-            if (otpErrorEl) otpErrorEl.style.display = 'none';
-            if (loginScreen) loginScreen.style.display = 'none';
-            if (otpScreen) otpScreen.style.display = 'flex';
         }
-    } catch (error) {
-        console.error("Auth Error:", error);
-        let msg = "Lỗi xác thực. Vui lòng thử lại.";
-
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            msg = "Email hoặc mật khẩu không chính xác.";
-        } else if (error.code === 'auth/wrong-password') {
-            msg = "Mật khẩu không đúng. Vui lòng thử lại.";
-        } else if (error.code === 'auth/email-already-in-use') {
-            msg = "Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác.";
-        } else if (error.code === 'auth/invalid-email') {
-            msg = "Định dạng email không hợp lệ.";
-        } else if (error.message) {
-            msg = error.message;
+        //Hàm hiển thị lỗi
+        function showError(msg) {
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.innerText = msg;
+            errorMsg.style.display = 'block';
+            document.querySelector('.login-box').style.animation = 'shake 0.3s';
+            setTimeout(() => { document.querySelector('.login-box').style.animation = 'none'; }, 300);
         }
-        showError(msg);
-    }
-}
-//Hàm hiển thị lỗi
-function showError(msg) {
-    const errorMsg = document.getElementById('login-error');
-    errorMsg.innerText = msg;
-    errorMsg.style.display = 'block';
-    document.querySelector('.login-box').style.animation = 'shake 0.3s';
-    setTimeout(() => { document.querySelector('.login-box').style.animation = 'none'; }, 300);
-}
 
-// 4. Xử lý ĐĂNG XUẤT
-window.handleLogout = async function() {
-    try {
-        if (auth.currentUser) {
-            await signOut(auth);
-        }
-        location.reload();
-    } catch (error) { console.error("Logout error", error); }
-};
+    // 4. Xử lý ĐĂNG XUẤT
+        window.handleLogout = async function() {
+            try {
+                // Reset guest flag nếu đang ở chế độ khách
+                window.__guestActive = false;
+                if (auth.currentUser) {
+                    await signOut(auth);
+                }
+                location.reload(); 
+            } catch (error) { console.error("Logout error", error); }
+        };
+    
+    // Hàm định danh User (Gọi khi Login xong)
+        window.identifyUserForTracking = function(profile) {
+            // Kiểm tra an toàn để không crash app
+            if (typeof analytics === 'undefined' || !analytics || !profile) return;
+            
+            try {
+                setUserProperties(analytics, {
+                    user_name: profile.displayName || profile.fullName || "Unknown Pilot",
+                    user_rank: profile.rank || "Stardust",
+                    user_role: (profile.roles || ['user']).join(','),
+                    last_login_timestamp: new Date().toISOString()
+                });
+                
+                if (window.trackTelemetry) {
+                    window.trackTelemetry('login', { method: 'msv_auth', rank: profile.rank });
+                }
+            } catch (e) {
+                console.warn("Telemetry Error:", e);
+            }
+        };
 
-// Menu tài khoản: nếu đã đăng nhập -> Đăng xuất, nếu là khách -> mở màn hình Đăng nhập
-window.handleLogoutOrLogin = function() {
-    if (auth && auth.currentUser) {
-        window.handleLogout();
-    } else {
-        const menu = document.getElementById('user-menu');
-        if (menu) menu.classList.remove('open');
-        window.promptLogin();
-    }
-};
-
-// Cập nhật nhãn nút trong menu tài khoản theo trạng thái đăng nhập
-window.updateAccountMenuUI = function(isLoggedIn) {
-    const icon = document.getElementById('logout-menu-icon');
-    const text = document.getElementById('logout-menu-text');
-    const item = document.getElementById('logout-menu-item');
-    if (text) text.innerText = isLoggedIn ? 'Đăng xuất' : 'Đăng nhập';
-    if (icon) icon.className = isLoggedIn ? 'fa-solid fa-right-from-bracket' : 'fa-solid fa-right-to-bracket';
-    if (item) item.title = isLoggedIn ? 'Đăng xuất' : 'Đăng nhập';
-};
-
-// Hàm định danh User (Gọi khi Login xong)
-window.identifyUserForTracking = function(profile) {
-    if (typeof analytics === 'undefined' || !analytics || !profile) return;
-
-    try {
-        setUserProperties(analytics, {
-            user_name: profile.displayName || profile.fullName || "Unknown Pilot",
-            user_rank: profile.rank || "Stardust",
-            user_role: (profile.roles || ['user']).join(','),
-            last_login_timestamp: new Date().toISOString()
-        });
-
-        if (window.trackTelemetry) {
-            window.trackTelemetry('login', { method: 'msv_auth', rank: profile.rank });
-        }
-    } catch (e) {
-        console.warn("Telemetry Error:", e);
-    }
-};
-
-// 5. Hàm đảm bảo Profile người dùng tồn tại & Phân quyền
-window.ensureUserProfile = async function(user) {
+    // 5. Hàm đảm bảo Profile người dùng tồn tại & Phân quyền
+        window.ensureUserProfile = async function(user) {
     const userRef = doc(db, "users", user.uid);
     let userSnap;
-
-    try {
-        userSnap = await getDoc(userRef);
-    } catch (e) {
-        console.error("Lỗi đọc profile:", e);
-        return;
+    
+    try { 
+        userSnap = await getDoc(userRef); 
+    } catch (e) { 
+        console.error("Lỗi đọc profile:", e); 
+        return; 
     }
-
+    
     // Xác định định danh Admin
     const userEmail = user.email.toLowerCase();
     const msv = userEmail.split('@')[0];
-    const isAdminAccount = (userEmail === 'huybiyb0000@gmail.com');
+    const isAdminAccount = (userEmail === 'achievermisa@gmail.com');
 
     if (userSnap.exists()) {
         // --- TRƯỜNG HỢP 1: PROFILE ĐÃ CÓ TRÊN DATABASE ---
@@ -656,6 +586,7 @@ window.ensureUserProfile = async function(user) {
             displayName: data.displayName || data.fullName || fallbackName
         };
 
+        // Chỉ update nếu thiếu field
         const updatesToApply = {};
         if (!data.coins) { updatesToApply.coins = defaults.coins; needsUpdate = true; }
         if (!data.stats) { updatesToApply.stats = defaults.stats; needsUpdate = true; }
@@ -680,16 +611,17 @@ window.ensureUserProfile = async function(user) {
             const currentRoles = data.roles || [];
             if (!currentRoles.includes('admin') || data.rank !== 'SUPERNOVA') {
                 console.log("Commander detected. Updating system privileges...");
-
+                
                 const adminUpdates = {
                     rank: "SUPERNOVA",
                     energy: 99999,
-                    displayName: "Admin tổng",
-                    roles: ['admin', 'tester', 'op', 'mkt']
+                    displayName: "Admin tổng", 
+                    roles: ['admin', 'tester', 'op', 'mkt'] 
                 };
 
                 try {
                     await updateDoc(userRef, adminUpdates);
+                    // Gộp dữ liệu mới vào để UI cập nhật ngay lập tức
                     data = { ...data, ...adminUpdates };
                     alert("📡 HỆ THỐNG: Đã xác nhận Admin tổng. Toàn quyền truy cập được kích hoạt!");
                 } catch(err) {
@@ -697,21 +629,6 @@ window.ensureUserProfile = async function(user) {
                 }
             }
         }
-
-        // === THƯỞNG 100 XU ĐĂNG KÝ (chỉ 1 lần, chỉ khi email đã verify) ===
-        // Đặt ở đây (sau khi có "data" hợp lệ) để tránh lỗi tham chiếu biến chưa khai báo.
-        if (user.emailVerified) {
-            const claimed = data.claimedOnce || [];
-            if (!claimed.includes('REGISTER_ACCOUNT')) {
-                const result = await window.rewardCoins('REGISTER_ACCOUNT');
-                if (result && result.success) {
-                    data.claimedOnce = claimed.concat(['REGISTER_ACCOUNT']);
-                    const prevCoins = data.coins || { received: 0, used: 0 };
-                    data.coins = { ...prevCoins, received: (prevCoins.received || 0) + result.amount };
-                }
-            }
-        }
-
         window.loadUserProfile(data);
     } else {
         // --- TRƯỜNG HỢP 2: PROFILE MỚI TOANH (CHƯA TỪNG ĐĂNG NHẬP) ---
@@ -719,11 +636,12 @@ window.ensureUserProfile = async function(user) {
         let initialEnergy = 0;
         let initialName = "Cadet " + msv;
         let initialRoles = ['user'];
-
+        
+        // Đặc cách Admin cho tài khoản của bạn ngay từ lần đầu
         if (isAdminAccount) {
             initialRank = "SUPERNOVA";
             initialEnergy = 99999;
-            initialName = "Admin Tổng";
+            initialName = "Admin Tổng"; 
             initialRoles = ['admin', 'tester', 'op', 'mkt'];
         }
 
@@ -743,36 +661,35 @@ window.ensureUserProfile = async function(user) {
         window.loadUserProfile(defaultProfile);
     }
 };
-
 // --- HÀM HIGH COMMAND - ĐÃ FIX SYNTAX HOÀN TOÀN ---
-window.setupHighCommand = function() {
-    const inbox = document.getElementById('admin-inbox');
-    if (!inbox) {
-        console.error("Không tìm thấy #admin-inbox");
-        return;
-    }
-    inbox.innerHTML = '<div style="color:#00FFC2; text-align:center; padding:20px;">Đang tải inbox...</div>';
-    console.log("High Command: Bắt đầu load...");
-
-    // Proposals
-    const proposalsQ = query(collection(db, "proposals"), where("status", "==", "unread"), orderBy("createdAt", "desc"));
-    onSnapshot(proposalsQ, (snap) => {
-        console.log("Proposals: ", snap.size, "docs");
-        let html = '<h4 style="color:#00FFC2;">Đề xuất Tester</h4>';
-        if (snap.empty) {
-            html += '<div style="color:#888;">Không có đề xuất mới.</div>';
-        } else {
-            snap.forEach(d => {
-                const data = d.data();
-                html += `<div style="padding:10px; border-left:4px solid #00FFC2; margin-bottom:10px;">
-                    ${data.content}<br><small>${data.sender}</small>
-                    <button onclick="markAsRead('${d.id}', 'proposals')" style="background:#333; color:white; border:1px solid #555; padding:2px 5px; font-size:10px; cursor:pointer; margin-top:5px;">Mark Read</button>
-                </div>`;
+        window.setupHighCommand = function() {
+            const inbox = document.getElementById('admin-inbox');
+            if (!inbox) {
+                console.error("Không tìm thấy #admin-inbox");
+                return;
+            }
+            inbox.innerHTML = '<div style="color:#00FFC2; text-align:center; padding:20px;">Đang tải inbox...</div>';
+            console.log("High Command: Bắt đầu load...");
+            
+            // Proposals
+            const proposalsQ = query(collection(db, "proposals"), where("status", "==", "unread"), orderBy("createdAt", "desc"));
+            onSnapshot(proposalsQ, (snap) => {
+                console.log("Proposals: ", snap.size, "docs");
+                let html = '<h4 style="color:#00FFC2;">Đề xuất Tester</h4>';
+                if (snap.empty) {
+                    html += '<div style="color:#888;">Không có đề xuất mới.</div>';
+                } else {
+                    snap.forEach(d => {
+                        const data = d.data();
+                        html += `<div style="padding:10px; border-left:4px solid #00FFC2; margin-bottom:10px;">
+                            ${data.content}<br><small>${data.sender}</small>
+                            <button onclick="markAsRead('${d.id}', 'proposals')" style="background:#333; color:white; border:1px solid #555; padding:2px 5px; font-size:10px; cursor:pointer; margin-top:5px;">Mark Read</button>
+                        </div>`;
+                    });
+                }
+                updateInbox(html + '<hr style="border-color:#444;">');
             });
-        }
-        updateInbox(html + '<hr style="border-color:#444;">');
-    });
-
+    
     // Broadcasts
     const broadcastsQ = query(collection(db, "broadcasts"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
     onSnapshot(broadcastsQ, (snap) => {
@@ -794,17 +711,17 @@ window.setupHighCommand = function() {
         }
         updateInbox(html);
     });
-
+    
     function updateInbox(newHtml) {
+        // Để tránh flicker, append mới hoặc replace nếu cần
         const current = inbox.innerHTML;
         if (current.includes('Đang tải')) {
             inbox.innerHTML = '';
         }
-        inbox.innerHTML += newHtml;
+        inbox.innerHTML += newHtml; // Hoặc logic merge tốt hơn nếu cần
     }
 };
-
-window.loadUserProfile = function(data) {
+      window.loadUserProfile = function(data) {
     if (!data) data = {};
     const displayName = data.displayName || data.fullName || "Unknown Pilot";
     const rank = data.rank || "Space Debris";
@@ -839,92 +756,103 @@ window.loadUserProfile = function(data) {
     const energyBar = document.getElementById('energy-bar');
     if (!quoteBox) console.warn("⚠️ [loadUserProfile] Không tìm thấy phần tử #quote-box trong HTML.");
 
-    let displayRank = "Probe";
+    let displayRank = "Probe"; // Mặc định
     let tierClass = "rank-standard";
     let tagClass = "tag-standard";
     let frameClass = "basic";
-    let tierName = "Tier 1";
+    let tierName = "Tier 1"; 
     let quoteHtml = "";
 
     // A. ADMIN -> TIER 5: ULTIMATE (SUPERNOVA)
     if (roles.includes('admin')) {
-        displayRank = "SUPERNOVA";
-        tierName = "ULTIMATE";
-        tierClass = "rank-ultimate";
+        displayRank = "SUPERNOVA";   
+        tierName = "ULTIMATE"; 
+        tierClass = "rank-ultimate"; 
         tagClass = "tag-ultimate";
-        frameClass = "supernova";
+        frameClass = "supernova";    
         quoteHtml = `<h4 style="color: #FF4500;">🔥 THE COMMANDER</h4><p>Quyền lực tối thượng.</p>`;
     }
     // B. STAFF -> SPECIAL: GENESIS (SANCTUARY/SYMPHONY/ORIGIN)
     else if (roles.some(r => ['op', 'tester', 'mkt'].includes(r))) {
-        tierClass = "rank-genesis";
+        tierClass = "rank-genesis"; 
         tagClass = "tag-genesis";
-        frameClass = "supernova";
-        tierName = "GENESIS";
+        frameClass = "supernova";   
+        tierName = "GENESIS"; 
 
         if (roles.includes('op')) {
-            displayRank = "SANCTUARY";
+            displayRank = "SANCTUARY"; 
             quoteHtml = `<h4 style="color: #DC143C;">🛡️ SANCTUARY</h4><p>Thánh địa vận hành.</p>`;
         } else if (roles.includes('tester')) {
-            displayRank = "SYMPHONY";
+            displayRank = "SYMPHONY"; 
             quoteHtml = `<h4 style="color: #DC143C;">🎹 SYMPHONY</h4><p>Sự phối hợp hoàn hảo.</p>`;
         } else if (roles.includes('mkt')) {
-            displayRank = "ORIGIN";
+            displayRank = "ORIGIN"; 
             quoteHtml = `<h4 style="color: #DC143C;">📢 ORIGIN</h4><p>Khởi nguồn lan tỏa.</p>`;
         } else {
-            displayRank = "GENESIS";
+            displayRank = "GENESIS"; 
             quoteHtml = `<h4 style="color: #DC143C;">🩸 GENESIS STAFF</h4><p>Thành viên sáng thế.</p>`;
         }
-    }
+    } 
     // C. USER -> TIER 1 - 4 (Theo 4 hệ: Navigator, Guardian, Diplomat, Voyager)
     else {
+        // C.1: Tính Level hiện tại (0 -> 7 tương ứng Lv 1 -> 8)
         let levelIndex = 0;
         for (let i = 0; i < RANK_SYSTEM.thresholds.length; i++) {
             if (energy >= RANK_SYSTEM.thresholds[i]) levelIndex = i;
         }
         const currentLevel = levelIndex + 1;
 
+        // C.2: Xác định Hệ (Archetype) dựa trên chỉ số cao nhất
         const s = data.stats || { focus: 0, upload: 0, interact: 0, online: 0 };
         let maxStat = 'focus';
         let maxVal = s.focus || 0;
-        let archetypeName = "NAVIGATOR";
+        let archetypeName = "NAVIGATOR"; // Mặc định
 
+        // So sánh tìm chỉ số max
         if ((s.upload || 0) > maxVal) { maxStat = 'upload'; maxVal = s.upload; archetypeName = "GUARDIAN"; }
         if ((s.interact || 0) > maxVal) { maxStat = 'interact'; maxVal = s.interact; archetypeName = "DIPLOMAT"; }
+        // Online là chỉ số phụ, nếu các cái kia = 0 hoặc online cực cao thì mới tính
         if (maxVal === 0 && (s.online || 0) > 0) { maxStat = 'online'; archetypeName = "VOYAGER"; }
 
+        // Lấy tên Rank từ bảng RANK_SYSTEM
         if (maxStat === 'upload') displayRank = RANK_SYSTEM.titles.guardian[levelIndex];
         else if (maxStat === 'interact') displayRank = RANK_SYSTEM.titles.diplomat[levelIndex];
         else if (maxStat === 'online') displayRank = RANK_SYSTEM.titles.voyager[levelIndex];
-        else displayRank = RANK_SYSTEM.titles.navigator[levelIndex];
+        else displayRank = RANK_SYSTEM.titles.navigator[levelIndex]; 
 
         displayRank = displayRank.toUpperCase();
 
+        // C.3: Xác định Visual Tier (Hiệu ứng)
         if (currentLevel <= 5) {
+            // Lv 1-5: Standard
             tierClass = "rank-standard";
             tagClass = "tag-standard";
             frameClass = "basic";
             tierName = `Tier 1 • Lv.${currentLevel}`;
         } else if (currentLevel === 6) {
+            // Lv 6: Neon Pulse
             tierClass = "rank-neon";
             tagClass = "tag-neon";
-            frameClass = "basic";
+            frameClass = "basic"; 
             tierName = "NEON PULSE (Tier 2)";
         } else if (currentLevel === 7) {
+            // Lv 7: Nebula Flow
             tierClass = "rank-nebula";
             tagClass = "tag-nebula";
-            frameClass = "supernova";
+            frameClass = "supernova"; // Bắt đầu dùng khung đẹp
             tierName = "NEBULA FLOW (Tier 3)";
-        } else {
+        } else { 
+            // Lv 8 (Max): Horizon
             tierClass = "rank-horizon";
             tagClass = "tag-horizon";
             frameClass = "supernova";
             tierName = "HORIZON (Tier 4)";
         }
 
+        // Thông tin XP cho level tiếp theo
         const nextXp = RANK_SYSTEM.thresholds[levelIndex + 1];
         const xpText = nextXp ? `Next: ${nextXp} XP` : 'MAX LEVEL';
-
+        
         quoteHtml = `<h4 style="color: #aaa;">${displayRank}</h4><p style="font-size:12px; color:#666;">${archetypeName} Class • ${xpText}</p>`;
     }
 
@@ -948,11 +876,14 @@ window.loadUserProfile = function(data) {
     // --- 4. THANH NĂNG LƯỢNG (ENERGY BAR) ---
     if (energyBar) {
         if (roles.includes('admin') || tierClass === "rank-genesis" || energy >= 10000) {
+            // Admin, Staff hoặc Max Level -> Full cây
             energyBar.style.width = "100%";
         } else {
+            // User đang cày -> Tính % trong cấp hiện tại
             let currentBase = 0;
             let nextTarget = 200;
 
+            // Tìm mốc hiện tại
             for (let i = 0; i < RANK_SYSTEM.thresholds.length; i++) {
                 if (energy >= RANK_SYSTEM.thresholds[i]) {
                     currentBase = RANK_SYSTEM.thresholds[i];
@@ -960,10 +891,11 @@ window.loadUserProfile = function(data) {
                 }
             }
 
+            // Tính toán
             let range = nextTarget - currentBase;
             let gained = energy - currentBase;
             let pct = (range > 0) ? (gained / range) * 100 : 100;
-            energyBar.style.width = Math.max(5, pct) + "%";
+            energyBar.style.width = Math.max(5, pct) + "%"; // Tối thiểu 5% để nhìn thấy vạch
         }
     }
 
@@ -979,36 +911,36 @@ window.loadUserProfile = function(data) {
     // Ops Center (Cho Admin & Op)
     if (roles.includes('admin') || roles.includes('op')) {
         const panelOp = document.getElementById('panel-op');
-        if(panelOp) panelOp.style.display = 'block';
-        window.setupOpsCenter();
+        if(panelOp) panelOp.style.display = 'block'; 
+        window.setupOpsCenter(); 
     }
 
     // Chat & Resource Hub
-    window.initVoidChat();
     window.initResourceHub();
     window.setupHighCommand();
     if (typeof window.loadActivityHistory === 'function') window.loadActivityHistory();
-    window.renderCoinDisplay(data.coins);
-    window.identifyUserForTracking(data);
+       window.renderCoinDisplay(data.coins);
+window.identifyUserForTracking(data);
 };
 
-window.enterApp = function() {
-    document.getElementById('login-screen').style.opacity = '0';
-    setTimeout(() => {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-container').style.display = 'flex';
-    }, 500);
-};
+        window.enterApp = function() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+            }, 500);
+        };
 window.showNotificationBanner = function(msg) {
     const banner = document.getElementById('notification-banner');
     const content = document.getElementById('banner-content');
     if (banner && content) {
         content.innerHTML = msg;
         banner.style.display = 'block';
+        // Auto hide after 10s
         setTimeout(() => { banner.style.display = 'none'; }, 10000);
     }
 };
-window.approveBroadcast = async function(id, msg) {
+  window.approveBroadcast = async function(id, msg) {
     if (!confirm("Approve và broadcast thông báo này?")) return;
     try {
         await updateDoc(doc(db, "broadcasts", id), { status: 'approved' });
@@ -1018,6 +950,7 @@ window.approveBroadcast = async function(id, msg) {
             text: broadcastMsg,
             createdAt: serverTimestamp()
         });
+        // Show in banner immediately
         window.showNotificationBanner(broadcastMsg);
         alert("✅ Approved và broadcasted!");
     } catch (e) {
@@ -1035,7 +968,8 @@ window.appendVoidMessage = function(identity, text, isMe) {
     row.appendChild(idDiv); row.appendChild(contentDiv);
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
-
+    
+    // If broadcast, show in banner
     if (identity === "📢 COSMIC SIGNAL") {
         window.showNotificationBanner(text);
     }
@@ -1049,7 +983,7 @@ window.rejectBroadcast = async function(id) {
     } catch (e) {
         alert("Lỗi: " + e.message);
     }
-};
+};// Hàm mark proposal as read
 window.markAsRead = async function(id, collectionName) {
     try {
         await updateDoc(doc(db, collectionName, id), { status: 'read' });
@@ -1058,114 +992,113 @@ window.markAsRead = async function(id, collectionName) {
         alert("Lỗi: " + e.message);
     }
 };
-window.switchTab = function(tabId, element) {
-    // Khoang cá nhân yêu cầu đăng nhập
-    if (tabId === 'cabin' && (!auth || !auth.currentUser)) {
-        window.promptLogin('🔒 Vui lòng đăng nhập để vào Khoang cá nhân.');
-        return;
-    }
+        window.switchTab = function(tabId, element) {
+            // CHECK ACCESS FOR BRIDGE
+            if (tabId === 'bridge') {
+                const hasAccess = window.currentUserRoles.some(r => ['admin','tester','op','mkt'].includes(r));
+                const bridgeLocked = document.getElementById('bridge-locked');
+                const bridgeContent = document.getElementById('bridge-content');
+                if (bridgeLocked) bridgeLocked.style.display = hasAccess ? 'none' : 'block';
+                if (bridgeContent) bridgeContent.style.display = hasAccess ? 'block' : 'none';
 
-    if (tabId === 'bridge') {
-        const hasAccess = window.currentUserRoles.some(r => ['admin','tester','op','mkt'].includes(r));
-        const bridgeLocked = document.getElementById('bridge-locked');
-        const bridgeContent = document.getElementById('bridge-content');
-        if (bridgeLocked) bridgeLocked.style.display = hasAccess ? 'none' : 'block';
-        if (bridgeContent) bridgeContent.style.display = hasAccess ? 'block' : 'none';
+                if (hasAccess) {
+                    // Show panels based on role
+                    const panelAdmin = document.getElementById('panel-admin');
+                    const panelTester = document.getElementById('panel-tester');
+                    const panelOp = document.getElementById('panel-op');
+                    const panelMkt = document.getElementById('panel-mkt');
+                    if (panelAdmin) panelAdmin.style.display = window.currentUserRoles.includes('admin') ? 'block' : 'none';
+                    if (panelTester) panelTester.style.display = window.currentUserRoles.includes('tester') ? 'block' : 'none';
+                    if (panelOp) panelOp.style.display = window.currentUserRoles.includes('op') ? 'block' : 'none';
+                    if (panelMkt) panelMkt.style.display = window.currentUserRoles.includes('mkt') ? 'block' : 'none';
+                }
+            }
 
-        if (hasAccess) {
-            const panelAdmin = document.getElementById('panel-admin');
-            const panelTester = document.getElementById('panel-tester');
-            const panelOp = document.getElementById('panel-op');
-            const panelMkt = document.getElementById('panel-mkt');
-            if (panelAdmin) panelAdmin.style.display = window.currentUserRoles.includes('admin') ? 'block' : 'none';
-            if (panelTester) panelTester.style.display = window.currentUserRoles.includes('tester') ? 'block' : 'none';
-            if (panelOp) panelOp.style.display = window.currentUserRoles.includes('op') ? 'block' : 'none';
-            if (panelMkt) panelMkt.style.display = window.currentUserRoles.includes('mkt') ? 'block' : 'none';
-        }
-    }
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const targetSection = document.getElementById(tabId);
+            if (targetSection) targetSection.classList.add('active');
+            else console.warn(`⚠️ [switchTab] Không tìm thấy tab #${tabId} trong HTML.`);
+            if (element) element.classList.add('active');
+        };
 
-    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    const targetSection = document.getElementById(tabId);
-    if (targetSection) targetSection.classList.add('active');
-    else console.warn(`⚠️ [switchTab] Không tìm thấy tab #${tabId} trong HTML.`);
-    if (element) element.classList.add('active');
-};
+        // --- ADMIN: CREW MANAGEMENT LOGIC ---
+        window.loadCrewList = function() {
+            // CHANGED: Increased limit to 100 and ordered by MSV
+            const q = query(collection(db, "users"), orderBy("msv", "asc"), limit(100)); 
+            onSnapshot(q, (snapshot) => {
+                const table = document.getElementById('crew-list');
+                let html = `<tr><th>MSV</th><th>Tên</th><th>Vai trò</th><th>Action</th></tr>`;
+                
+                // Add counter
+                const total = snapshot.size;
+                document.querySelector('#admin-panel h3').innerHTML = `🛡️ COMMAND CENTER (ADMIN) - <span style="font-size:12px; color:#888;">Total: ${total} members</span>`;
 
-// --- ADMIN: CREW MANAGEMENT LOGIC ---
-window.loadCrewList = function() {
-    const q = query(collection(db, "users"), orderBy("msv", "asc"), limit(100));
-    onSnapshot(q, (snapshot) => {
-        const table = document.getElementById('crew-list');
-        let html = `<tr><th>MSV</th><th>Tên</th><th>Vai trò</th><th>Action</th></tr>`;
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const roles = d.roles || ['user'];
+                    let roleBadges = '';
+                    if(roles.includes('admin')) roleBadges += `<span class="role-badge role-admin">ADMIN</span>`;
+                    if(roles.includes('tester')) roleBadges += `<span class="role-badge role-tester">TESTER</span>`;
+                    if(roles.includes('op')) roleBadges += `<span class="role-badge role-op">OP</span>`;
+                    if(roles.includes('mkt')) roleBadges += `<span class="role-badge role-mkt">MKT</span>`;
+                    
+                    // Highlight Admin Row
+                    const rowStyle = d.msv === '4043292' ? 'background:rgba(255,215,0,0.1);' : '';
 
-        const total = snapshot.size;
-        document.querySelector('#admin-panel h3').innerHTML = `🛡️ COMMAND CENTER (ADMIN) - <span style="font-size:12px; color:#888;">Total: ${total} members</span>`;
+                    html += `
+                        <tr style="${rowStyle}">
+                            <td>${d.msv}</td>
+                            <td>${d.displayName}</td>
+                            <td>${roleBadges}</td>
+                            <td><button onclick="openRoleModal('${doc.id}', '${d.displayName}', '${roles.join(',')}')" 
+                            style="background:#333; color:white; border:1px solid #555; cursor:pointer;">Edit</button></td>
+                        </tr>
+                    `;
+                });
+                table.innerHTML = html;
+            });
+        };
 
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            const roles = d.roles || ['user'];
-            let roleBadges = '';
-            if(roles.includes('admin')) roleBadges += `<span class="role-badge role-admin">ADMIN</span>`;
-            if(roles.includes('tester')) roleBadges += `<span class="role-badge role-tester">TESTER</span>`;
-            if(roles.includes('op')) roleBadges += `<span class="role-badge role-op">OP</span>`;
-            if(roles.includes('mkt')) roleBadges += `<span class="role-badge role-mkt">MKT</span>`;
+        window.openRoleModal = function(uid, name, rolesStr) {
+            window.targetEditUid = uid;
+            document.getElementById('role-target-name').innerText = "Target: " + name;
+            
+            const roles = rolesStr.split(',');
+            document.getElementById('role-admin').checked = roles.includes('admin');
+            document.getElementById('role-tester').checked = roles.includes('tester');
+            document.getElementById('role-op').checked = roles.includes('op');
+            document.getElementById('role-mkt').checked = roles.includes('mkt');
+            
+            document.getElementById('role-modal').style.display = 'flex';
+        };
 
-            const rowStyle = d.msv === '4043292' ? 'background:rgba(255,215,0,0.1);' : '';
+        window.submitRoleChange = async function() {
+            if (!window.targetEditUid) return;
+            
+            const newRoles = ['user']; // Always base user
+            if(document.getElementById('role-admin').checked) newRoles.push('admin');
+            if(document.getElementById('role-tester').checked) newRoles.push('tester');
+            if(document.getElementById('role-op').checked) newRoles.push('op');
+            if(document.getElementById('role-mkt').checked) newRoles.push('mkt');
 
-            html += `
-                <tr style="${rowStyle}">
-                    <td>${d.msv}</td>
-                    <td>${d.displayName}</td>
-                    <td>${roleBadges}</td>
-                    <td><button onclick="openRoleModal('${doc.id}', '${d.displayName}', '${roles.join(',')}')"
-                    style="background:#333; color:white; border:1px solid #555; cursor:pointer;">Edit</button></td>
-                </tr>
-            `;
-        });
-        table.innerHTML = html;
-    });
-};
+            try {
+                await updateDoc(doc(db, "users", window.targetEditUid), {
+                    roles: newRoles
+                });
+                document.getElementById('role-modal').style.display = 'none';
+                alert("Đã cập nhật quyền thành công!");
+            } catch(e) {
+                console.error(e);
+                alert("Lỗi khi cập nhật quyền: " + e.message);
+            }
+        };
 
-window.openRoleModal = function(uid, name, rolesStr) {
-    window.targetEditUid = uid;
-    document.getElementById('role-target-name').innerText = "Target: " + name;
-
-    const roles = rolesStr.split(',');
-    document.getElementById('role-admin').checked = roles.includes('admin');
-    document.getElementById('role-tester').checked = roles.includes('tester');
-    document.getElementById('role-op').checked = roles.includes('op');
-    document.getElementById('role-mkt').checked = roles.includes('mkt');
-
-    document.getElementById('role-modal').style.display = 'flex';
-};
-
-window.submitRoleChange = async function() {
-    if (!window.targetEditUid) return;
-
-    const newRoles = ['user'];
-    if(document.getElementById('role-admin').checked) newRoles.push('admin');
-    if(document.getElementById('role-tester').checked) newRoles.push('tester');
-    if(document.getElementById('role-op').checked) newRoles.push('op');
-    if(document.getElementById('role-mkt').checked) newRoles.push('mkt');
-
-    try {
-        await updateDoc(doc(db, "users", window.targetEditUid), {
-            roles: newRoles
-        });
-        document.getElementById('role-modal').style.display = 'none';
-        alert("Đã cập nhật quyền thành công!");
-    } catch(e) {
-        console.error(e);
-        alert("Lỗi khi cập nhật quyền: " + e.message);
-    }
-};
-
-// --- ROLE ACTIONS ---
-window.sendProposal = async function() {
+        // --- ROLE ACTIONS (Mockup Logic for Demo) ---
+      window.sendProposal = async function() {
     const txt = document.getElementById('proposal-text').value.trim();
     if (!txt) return alert("Vui lòng nhập nội dung đề xuất!");
-
+    
     try {
         await addDoc(collection(db, "proposals"), {
             content: txt,
@@ -1182,10 +1115,10 @@ window.sendProposal = async function() {
     }
 };
 
-window.requestBroadcast = async function() {
+      window.requestBroadcast = async function() {
     const txt = document.getElementById('broadcast-msg').value.trim();
     if (!txt) return alert("Vui lòng nhập nội dung thông báo!");
-
+    
     try {
         await addDoc(collection(db, "broadcasts"), {
             message: txt,
@@ -1201,80 +1134,89 @@ window.requestBroadcast = async function() {
         alert("Lỗi kết nối: " + e.message);
     }
 };
+        // Chuyển sang tab "Resource Hub" rồi mới mở tài liệu — dùng cho nút
+        // "Xem lại"/"Xem tài liệu" ở khung Lịch sử hoạt động (khoang cá nhân),
+        // vì openSplitView chỉ đổi hiển thị BÊN TRONG tab resources, không tự chuyển tab.
+        window.jumpToDocument = function(docName, fileUrl, docId, uploaderName) {
+            const resourcesNav = document.getElementById('resources-nav');
+            if (typeof window.switchTab === 'function') {
+                window.switchTab('resources', resourcesNav);
+            }
+            window.openSplitView(docName, fileUrl, docId, uploaderName);
+        };
 
-// Chuyển sang tab "Resource Hub" rồi mới mở tài liệu
-window.jumpToDocument = function(docName, fileUrl, docId, uploaderName) {
-    const resourcesNav = document.getElementById('resources-nav');
-    if (typeof window.switchTab === 'function') {
-        window.switchTab('resources', resourcesNav);
-    }
-    window.openSplitView(docName, fileUrl, docId, uploaderName);
-};
+        window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
+// Thêm vào đầu hàm:
+window.docStartTime = Date.now(); // Bắt đầu bấm giờ
+window.trackTelemetry('view_document', { 
+    doc_title: docName, 
+    doc_id: docId
+});
+window.logActivity('view', docName, { docId, fileUrl, uploaderName: uploaderName || '' });
+// Kích hoạt Smartlink khi user mở xem tài liệu (có cooldown, xem index.html)
+if (typeof window.triggerSmartlink === 'function') {
+    window.triggerSmartlink();
+}
+            document.getElementById('resource-hub-main').style.display = 'none';
+            document.getElementById('doc-review-container').style.display = 'flex';
+            document.getElementById('doc-title').innerText = docName;
+            window.currentDocId = docId;
 
-window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
-    window.docStartTime = Date.now();
-    window.trackTelemetry('view_document', {
-        doc_title: docName,
-        doc_id: docId
-    });
-    window.logActivity('view', docName, { docId, fileUrl, uploaderName: uploaderName || '' });
-    if (typeof window.triggerSmartlink === 'function') {
-        window.triggerSmartlink();
-    }
-    document.getElementById('resource-hub-main').style.display = 'none';
-    document.getElementById('doc-review-container').style.display = 'flex';
-    document.getElementById('doc-title').innerText = docName;
-    window.currentDocId = docId;
+            const userRoles = window.currentUserRoles || [];
+            const isStaff = userRoles.includes('admin') || userRoles.includes('op');
+            const currentUid = auth.currentUser ? auth.currentUser.uid : null;
 
-    const userRoles = window.currentUserRoles || [];
-    const isStaff = userRoles.includes('admin') || userRoles.includes('op');
-    const currentUid = auth.currentUser ? auth.currentUser.uid : null;
+            const statusBadge = document.getElementById('doc-status-badge');
+            const btnApprove = document.getElementById('btn-approve-doc');
+            const btnReject = document.getElementById('btn-reject-doc');
+            const reasonBanner = document.getElementById('rejection-reason-banner');
+            const reasonText = document.getElementById('rejection-reason-text');
+            const btnDelete = document.getElementById('btn-delete-current-doc');
 
-    const statusBadge = document.getElementById('doc-status-badge');
-    const btnApprove = document.getElementById('btn-approve-doc');
-    const btnReject = document.getElementById('btn-reject-doc');
-    const reasonBanner = document.getElementById('rejection-reason-banner');
-    const reasonText = document.getElementById('rejection-reason-text');
-    const btnDelete = document.getElementById('btn-delete-current-doc');
+            // Reset trạng thái hiển thị trước khi load data mới
+            statusBadge.style.display = 'none';
+            btnApprove.style.display = 'none';
+            btnReject.style.display = 'none';
+            reasonBanner.style.display = 'none';
+            btnDelete.style.display = 'none';
 
-    statusBadge.style.display = 'none';
-    btnApprove.style.display = 'none';
-    btnReject.style.display = 'none';
-    reasonBanner.style.display = 'none';
-    btnDelete.style.display = 'none';
+            // Lấy dữ liệu đầy đủ của tài liệu để biết status / rejectionReason / uploaderUid
+            getDoc(doc(db, "resources", docId)).then(snap => {
+                if (!snap.exists()) return;
+                const data = snap.data();
+                const status = data.status || 'pending';
+                const isOwner = data.uploaderUid === currentUid;
 
-    getDoc(doc(db, "resources", docId)).then(snap => {
-        if (!snap.exists()) return;
-        const data = snap.data();
-        const status = data.status || 'pending';
-        const isOwner = data.uploaderUid === currentUid;
+                // Badge trạng thái
+                statusBadge.style.display = 'inline-block';
+                statusBadge.className = 'doc-status-badge ' + status;
+                if (status === 'pending') statusBadge.innerText = 'Chờ duyệt';
+                else if (status === 'approved') statusBadge.innerText = 'Đã duyệt';
+                else if (status === 'rejected') statusBadge.innerText = 'Từ chối';
 
-        statusBadge.style.display = 'inline-block';
-        statusBadge.className = 'doc-status-badge ' + status;
-        if (status === 'pending') statusBadge.innerText = 'Chờ duyệt';
-        else if (status === 'approved') statusBadge.innerText = 'Đã duyệt';
-        else if (status === 'rejected') statusBadge.innerText = 'Từ chối';
+                // Nút Duyệt/Từ chối chỉ hiện khi tài liệu đang pending VÀ user là staff (admin/op)
+                if (status === 'pending' && isStaff) {
+                    btnApprove.style.display = 'inline-flex';
+                    btnReject.style.display = 'inline-flex';
+                }
 
-        if (status === 'pending' && isStaff) {
-            btnApprove.style.display = 'inline-flex';
-            btnReject.style.display = 'inline-flex';
-        }
+                // Banner lý do từ chối: hiện cho staff hoặc cho chính người upload
+                if (status === 'rejected' && (isStaff || isOwner)) {
+                    reasonBanner.style.display = 'flex';
+                    reasonText.innerText = data.rejectionReason
+                        ? data.rejectionReason
+                        : 'Tài liệu đã bị từ chối (không có lý do cụ thể).';
+                }
 
-        if (status === 'rejected' && (isStaff || isOwner)) {
-            reasonBanner.style.display = 'flex';
-            reasonText.innerText = data.rejectionReason
-                ? data.rejectionReason
-                : 'Tài liệu đã bị từ chối (không có lý do cụ thể).';
-        }
+                // Nút xóa: Admin luôn được xóa, hoặc chính chủ upload
+                if (userRoles.includes('admin')) {
+                    btnDelete.style.display = 'block';
+                } else if (isOwner) {
+                    btnDelete.style.display = 'block';
+                }
+            });
 
-        if (userRoles.includes('admin')) {
-            btnDelete.style.display = 'block';
-        } else if (isOwner) {
-            btnDelete.style.display = 'block';
-        }
-    });
-
-    const iframe = document.getElementById('doc-iframe');
+           const iframe = document.getElementById('doc-iframe');
     const placeholderMsg = document.getElementById('doc-placeholder-msg');
     const msgText = document.getElementById('doc-msg-text');
     const extLinkBtn = document.getElementById('external-link-btn');
@@ -1282,20 +1224,18 @@ window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
 
     if (btnDownload) {
         btnDownload.onclick = function() {
-            if (!auth.currentUser) {
-                window.promptLogin('🔒 Vui lòng đăng nhập để tải tài liệu.');
-                return;
-            }
             if (fileUrl) window.open(fileUrl, '_blank');
         };
     }
-
+    
     if (fileUrl && (fileUrl.includes('supabase.co') || fileUrl.toLowerCase().endsWith('.pdf'))) {
+        // Supabase or PDF: Use Google Viewer for reliable preview
         iframe.style.display = 'block';
         placeholderMsg.style.display = 'none';
         const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
         iframe.src = googleViewerUrl;
     } else if (fileUrl && fileUrl.startsWith('http')) {
+        // External link (e.g., Google Drive)
         iframe.style.display = 'none';
         placeholderMsg.style.display = 'block';
         msgText.innerText = "Tài liệu này là liên kết ngoài (Google Drive/Web).";
@@ -1303,6 +1243,7 @@ window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
         extLinkBtn.innerText = "Mở tài liệu tại tab mới ↗";
         extLinkBtn.style.display = 'inline-block';
     } else {
+        // No valid URL or deprecated blob
         iframe.style.display = 'none';
         placeholderMsg.style.display = 'block';
         msgText.innerText = "Không tìm thấy tài liệu hoặc preview không hỗ trợ.";
@@ -1310,175 +1251,106 @@ window.openSplitView = function(docName, fileUrl, docId, uploaderName) {
     }
 };
 
-window.closeSplitView = function() {
-    if (window.docStartTime > 0) {
-        const duration = (Date.now() - window.docStartTime) / 1000;
-        if (duration > 5) {
-            window.trackTelemetry('read_completed', {
-                duration_seconds: Math.round(duration)
-            });
-        }
-        window.docStartTime = 0;
-    }
-    document.getElementById('doc-review-container').style.display = 'none';
-    document.getElementById('resource-hub-main').style.display = 'block';
-    document.getElementById('doc-iframe').src = "";
-    window.currentDocId = null;
-};
-
-window.approveCurrentDocument = async function() {
-    if (!window.currentDocId) return;
-
-    let priorityInput = prompt("Nhập độ ưu tiên (Số càng lớn tài liệu xếp càng cao, mặc định là 0):", "0");
-    if (priorityInput === null) return;
-
-    let priorityScore = parseInt(priorityInput, 10);
-    if (isNaN(priorityScore)) priorityScore = 0;
-
-    if (!confirm(`Xác nhận DUYỆT tài liệu này với độ ưu tiên: ${priorityScore}?`)) return;
-
-    try {
-        await updateDoc(doc(db, "resources", window.currentDocId), {
-            status: 'approved',
-            approvedBy: window.currentUserName,
-            approvedAt: serverTimestamp(),
-            priority: priorityScore
+        window.closeSplitView = function() {
+// Reset drilldown state khi đóng doc viewer
+// (không reset nếu user mở doc từ drilldown — họ sẽ quay lại drilldown qua ← Quay lại)
+if (window.docStartTime > 0) {
+    const duration = (Date.now() - window.docStartTime) / 1000;
+    if (duration > 5) { // Đọc trên 5s mới tính
+        window.trackTelemetry('read_completed', { 
+            duration_seconds: Math.round(duration) 
         });
-        window.showNotificationBanner(`✅ Đã duyệt và gắn mức ưu tiên: ${priorityScore}`);
-        window.closeSplitView();
-    } catch (e) {
-        alert("Lỗi: " + e.message);
     }
-};
+    window.docStartTime = 0;
+}
+            document.getElementById('doc-review-container').style.display = 'none';
+            document.getElementById('resource-hub-main').style.display = 'block';
+            document.getElementById('doc-iframe').src = "";
+            window.currentDocId = null;
+        };
 
-window.openRejectModal = function() {
-    if (!window.currentDocId) return;
-    document.getElementById('reject-reason-input').value = '';
-    document.getElementById('reject-modal').style.display = 'flex';
-};
+        // Duyệt tài liệu đang mở trong review panel (giữ nguyên cơ chế priority cũ)
+        window.approveCurrentDocument = async function() {
+            if (!window.currentDocId) return;
 
-window.closeRejectModal = function() {
-    document.getElementById('reject-modal').style.display = 'none';
-};
+            let priorityInput = prompt("Nhập độ ưu tiên (Số càng lớn tài liệu xếp càng cao, mặc định là 0):", "0");
+            if (priorityInput === null) return;
 
-window.confirmRejectDocument = async function() {
-    if (!window.currentDocId) return;
-    const reason = document.getElementById('reject-reason-input').value.trim();
+            let priorityScore = parseInt(priorityInput, 10);
+            if (isNaN(priorityScore)) priorityScore = 0;
 
-    if (!reason) {
-        alert("Vui lòng nhập lý do từ chối để người upload biết cần sửa gì.");
-        return;
-    }
+            if (!confirm(`Xác nhận DUYỆT tài liệu này với độ ưu tiên: ${priorityScore}?`)) return;
 
-    try {
-        await updateDoc(doc(db, "resources", window.currentDocId), {
-            status: 'rejected',
-            rejectionReason: reason,
-            rejectedBy: window.currentUserName,
-            rejectedAt: serverTimestamp()
-        });
-        window.showNotificationBanner("🗑️ Đã từ chối tài liệu. Lý do đã được lưu lại cho người upload.");
-        window.closeRejectModal();
-        window.closeSplitView();
-    } catch (e) {
-        alert("Lỗi: " + e.message);
-    }
-};
+            try {
+                await updateDoc(doc(db, "resources", window.currentDocId), {
+                    status: 'approved',
+                    approvedBy: window.currentUserName,
+                    approvedAt: serverTimestamp(),
+                    priority: priorityScore
+                });
+                window.showNotificationBanner(`✅ Đã duyệt và gắn mức ưu tiên: ${priorityScore}`);
+                window.closeSplitView();
+            } catch (e) {
+                alert("Lỗi: " + e.message);
+            }
+        };
 
-window.deleteCurrentDocument = async function() {
-    if(!window.currentDocId) return;
-    if(!confirm("Bạn có chắc chắn muốn xóa tài liệu này không? Hành động này không thể hoàn tác.")) return;
+        // Mở modal nhập lý do từ chối
+        window.openRejectModal = function() {
+            if (!window.currentDocId) return;
+            document.getElementById('reject-reason-input').value = '';
+            document.getElementById('reject-modal').style.display = 'flex';
+        };
 
-    try {
-        await deleteDoc(doc(db, "resources", window.currentDocId));
-        alert("Đã xóa tài liệu.");
-        window.closeSplitView();
-    } catch(e) {
-        console.error(e);
-        alert("Lỗi khi xóa: " + e.message);
-    }
-};
+        window.closeRejectModal = function() {
+            document.getElementById('reject-modal').style.display = 'none';
+        };
 
-// 1. VOID CHAT LOGIC
-window.initVoidChat = function() {
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const userRank = window.currentUserRank || "Cadet";
-    window.voidIdentity = `${userRank}#${randomNum}`;
+        // Xác nhận từ chối: lưu trạng thái 'rejected' + lý do, KHÔNG xóa tài liệu
+        window.confirmRejectDocument = async function() {
+            if (!window.currentDocId) return;
+            const reason = document.getElementById('reject-reason-input').value.trim();
 
-    const identityDisplay = document.getElementById('void-user-identity');
-    if (identityDisplay) identityDisplay.innerText = "ID: " + window.voidIdentity;
+            if (!reason) {
+                alert("Vui lòng nhập lý do từ chối để người upload biết cần sửa gì.");
+                return;
+            }
 
-    const q = query(collection(db, "void_messages"), orderBy("createdAt", "asc"), limit(50));
+            try {
+                await updateDoc(doc(db, "resources", window.currentDocId), {
+                    status: 'rejected',
+                    rejectionReason: reason,
+                    rejectedBy: window.currentUserName,
+                    rejectedAt: serverTimestamp()
+                });
+                window.showNotificationBanner("🗑️ Đã từ chối tài liệu. Lý do đã được lưu lại cho người upload.");
+                window.closeRejectModal();
+                window.closeSplitView();
+            } catch (e) {
+                alert("Lỗi: " + e.message);
+            }
+        };
+        
+        window.deleteCurrentDocument = async function() {
+            if(!window.currentDocId) return;
+            if(!confirm("Bạn có chắc chắn muốn xóa tài liệu này không? Hành động này không thể hoàn tác.")) return;
+            
+            try {
+                await deleteDoc(doc(db, "resources", window.currentDocId));
+                alert("Đã xóa tài liệu.");
+                window.closeSplitView();
+            } catch(e) {
+                console.error(e);
+                alert("Lỗi khi xóa: " + e.message);
+            }
+        };
 
-    onSnapshot(q, (snapshot) => {
-        const chatBox = document.getElementById('void-messages');
-        chatBox.innerHTML = '<div style="text-align: center; color: #444; margin-bottom: 15px; font-style: italic; font-size: 0.8rem;">-- Kênh đã được mã hóa --</div>';
-
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const isMe = data.identity === window.voidIdentity;
-            window.appendVoidMessage(data.identity, data.text, isMe);
-        });
-    });
-};
-
-window.appendVoidMessage = function(identity, text, isMe) {
-    const chatBox = document.getElementById('void-messages');
-    const row = document.createElement('div');
-    row.className = `void-msg-row ${isMe ? 'me' : ''}`;
-    const idDiv = document.createElement('div'); idDiv.className = 'void-identity'; idDiv.innerText = identity;
-    const contentDiv = document.createElement('div'); contentDiv.className = 'void-content'; contentDiv.innerText = text;
-    row.appendChild(idDiv); row.appendChild(contentDiv);
-    chatBox.appendChild(row);
-    chatBox.scrollTop = chatBox.scrollHeight;
-};
-
-window.sendVoidMessage = async function() {
-    const input = document.getElementById('void-input-field');
-    const text = input.value.trim();
-
-    if (!text) return;
-
-    try {
-        await addDoc(collection(db, "void_messages"), {
-            identity: window.voidIdentity || "Unknown Pilot",
-            text: text,
-            createdAt: serverTimestamp(),
-            timestamp: serverTimestamp()
-        });
-
-        input.value = '';
-    } catch (e) {
-        console.error("Lỗi truyền tín hiệu:", e);
-    }
-};
-// ✅ SỬA THÀNH: Đảm bảo HTML đã load xong mới gán sự kiện
-document.addEventListener('DOMContentLoaded', () => {
-    const otpCodeEl = document.getElementById('otp-code-input');
-    if (otpCodeEl) {
-        otpCodeEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.verifyRegistrationOtp(); });
-    }
-
-    const authEmailEl = document.getElementById('auth-email');
-    if (authEmailEl) {
-        authEmailEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
-    }
-
-    const chatInputEl = document.getElementById('chat-input-field');
-    if (chatInputEl) {
-        chatInputEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendMessage(); });
-    }
-
-    const voidInputEl = document.getElementById('void-input-field');
-    if (voidInputEl) {
-        voidInputEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); });
-    }
-});
 // --- HÀM CỘNG NĂNG LƯỢNG (ENERGY) VÀ CHỈ SỐ (STAT) ---
 window.addEnergy = async function(amount, statType) {
     if (!auth.currentUser) return;
     try {
         const userRef = doc(db, "users", auth.currentUser.uid);
+        // Map statType tên friendly sang tên field trong Firestore
         const statMap = {
             'focus': 'stats.focus',
             'guardian': 'stats.upload',
@@ -1486,7 +1358,7 @@ window.addEnergy = async function(amount, statType) {
             'voyager': 'stats.online'
         };
         const statField = statMap[statType] || 'stats.focus';
-
+        
         await updateDoc(userRef, {
             energy: increment(amount),
             [statField]: increment(amount)
@@ -1497,33 +1369,45 @@ window.addEnergy = async function(amount, statType) {
     }
 };
 
-window.openUploadModal = function() {
-    document.getElementById('upload-modal').style.display = 'flex';
-};
+                window.openUploadModal = function() {
+                    document.getElementById('upload-modal').style.display = 'flex';
+                };
 
-window.closeUploadModal = function() {
-    document.getElementById('upload-modal').style.display = 'none';
-    document.getElementById('up-title').value = '';
-    document.getElementById('up-school').value = '';
-    document.getElementById('up-school').disabled = false;
-    document.getElementById('up-school-other-wrap').style.display = 'none';
-    document.getElementById('up-school-other').value = '';
-    document.getElementById('up-category').value = '';
-    document.getElementById('up-file').value = '';
-    document.getElementById('up-url').value = '';
-    document.getElementById('file-name-display').innerText = '';
-    document.querySelector('.progress-container').style.display = 'none';
-    document.getElementById('progress-text').style.display = 'none';
-    document.getElementById('up-progress').style.width = '0%';
-};
+        window.closeUploadModal = function() {
 
-window.handleFileSelect = function(input) {
-    if(input.files && input.files[0]) {
-        document.getElementById('file-name-display').innerText = "Selected: " + input.files[0].name;
-    }
-};
+            document.getElementById('upload-modal').style.display = 'none';
+
+            document.getElementById('up-title').value = '';
+
+            document.getElementById('up-school').value = '';
+            document.getElementById('up-school').disabled = false;
+            document.getElementById('up-school-other-wrap').style.display = 'none';
+            document.getElementById('up-school-other').value = '';
+
+            document.getElementById('up-category').value = '';
+
+            document.getElementById('up-file').value = '';
+
+            document.getElementById('up-url').value = '';
+
+            document.getElementById('file-name-display').innerText = '';
+
+            document.querySelector('.progress-container').style.display = 'none';
+
+            document.getElementById('progress-text').style.display = 'none';
+
+            document.getElementById('up-progress').style.width = '0%';
+
+        };
+
+        window.handleFileSelect = function(input) {
+            if(input.files && input.files[0]) {
+                document.getElementById('file-name-display').innerText = "Selected: " + input.files[0].name;
+            }
+        };
 
 window.submitUpload = async function() {
+    // Kiểm tra đăng nhập trước
     if (!auth.currentUser) {
         alert("Vui lòng đăng nhập trước khi upload tài liệu!");
         return;
@@ -1534,6 +1418,7 @@ window.submitUpload = async function() {
     const fileInput = document.getElementById('up-file');
     const urlInput = document.getElementById('up-url').value.trim();
 
+    // --- Đọc giá trị Trường (xử lý cả trường hợp chọn "Khác") ---
     const schoolInputEl = document.getElementById('up-school');
     const isSchoolOther = schoolInputEl.value === SCHOOL_OTHER_LABEL;
     let school = '';
@@ -1560,25 +1445,29 @@ window.submitUpload = async function() {
         let fileName = "";
 
         if (urlInput) {
+            // Use external URL directly (no upload)
             fileUrl = urlInput;
             fileName = "External Link";
             progressFill.style.width = '100%';
             progressText.innerText = "Processing external link... 100%";
         } else if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            if (file.size > 50 * 1024 * 1024) {
+            if (file.size > 50 * 1024 * 1024) {  // Limit 50MB
                 throw new Error("File quá lớn (>50MB). Vui lòng dùng Link Drive.");
             }
 
+            // Clean filename
             const cleanName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.-]/g, '_');
-            const path = `${Date.now()}_${cleanName}`;
+            const path = `${Date.now()}_${cleanName}`;  // Unique path
 
             progressText.innerText = "Uploading to Supabase...";
-            progressFill.style.width = '20%';
+            progressFill.style.width = '20%';  // Simulate start
 
+            // Upload to Supabase
             const { data, error } = await supabase.storage.from('COSMIC file').upload(path, file);
             if (error) throw error;
 
+            // Get public URL
             const { data: publicData } = supabase.storage.from('COSMIC file').getPublicUrl(path);
             fileUrl = publicData.publicUrl;
             fileName = file.name;
@@ -1587,9 +1476,12 @@ window.submitUpload = async function() {
             progressText.innerText = "Upload complete! 100%";
         }
 
+        // Khóa chuẩn hóa để gom nhóm/lọc, không phân biệt dấu/hoa-thường/khoảng trắng thừa.
+        // Giá trị "school"/"category" gốc vẫn lưu nguyên văn để hiển thị đúng những gì người dùng đã gõ.
         const schoolKey = window.normalizeKey(school);
         const categoryKey = window.normalizeKey(category);
 
+        // Save to Firestore
         const newResourceRef = await addDoc(collection(db, "resources"), {
             title,
             school,
@@ -1600,37 +1492,20 @@ window.submitUpload = async function() {
             fileUrl,
             uploader: window.currentUserName,
             uploaderUid: auth.currentUser.uid,
-            status: 'pending',
+            status: 'pending', 
             createdAt: serverTimestamp()
         });
 
-        window.trackTelemetry('upload_document', {
-            doc_title: title,
+        // --- [NEW] TRACKING & XP SECTION (Nằm trong TRY) ---
+        
+        // 1. Bắn Tracking (Guardian Activity)
+        window.trackTelemetry('upload_document', { 
+            doc_title: title, 
             doc_school: school,
             doc_category: category,
-            status: 'pending'
+            status: 'pending' 
         });
         window.logActivity('upload', title, { school, category, docId: newResourceRef.id, fileUrl, uploaderName: window.currentUserName });
-
-        window.addEnergy(10, 'guardian');
-
-        try {
-            if (auth.currentUser) {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    'coins.received': increment(2)
-                });
-                if (window.showCoinEffect) window.showCoinEffect(2);
-                window.logActivity('coin_receive', 'Upload tài liệu: ' + title, { amount: 2 });
-                console.log("🪙 +2 xu (UPLOAD_DOCUMENT)");
-            }
-        } catch (coinErr) {
-            console.warn("Không thể cộng xu:", coinErr);
-        }
-
-        setTimeout(() => {
-            alert("✅ Upload thành công! 🪙 Bạn được thưởng +2 xu!\nTài liệu đang chờ duyệt.");
-            window.closeUploadModal();
-        }, 1500);
 
     } catch (e) {
         console.error("Upload error:", e);
@@ -1639,18 +1514,23 @@ window.submitUpload = async function() {
         progressText.style.display = 'none';
     }
 };
-// --- BƯỚC 1: SỬA LOGIC HIỂN THỊ TẠI RESOURCE HUB ---
+    // --- BƯỚC 1: SỬA LOGIC HIỂN THỊ TẠI RESOURCE HUB ---
 
+// Lưu toàn bộ tài liệu vào bộ nhớ để lọc phía client
 window._allResources = [];
+// Tab đang chọn trong khu vực duyệt
 window._currentReviewTab = 'approved';
+// Grouped view state: null = xem nhóm, object = drilldown 1 nhóm
 window._activeGroup = null;
 
+// Helper: trích mã trường từ "Học viện Ngân hàng - BA" → "BA"
 window._extractSchoolCode = function(school) {
     if (!school) return '';
     const parts = school.split(' - ');
     return parts.length >= 2 ? parts[parts.length - 1].trim() : school.trim();
 };
 
+// Helper: trích mã + tên môn từ "IS53A - Thiết kế cơ sở dữ liệu"
 window._parseCategoryLabel = function(category) {
     if (!category) return { code: '', name: '' };
     const idx = category.indexOf(' - ');
@@ -1659,13 +1539,20 @@ window._parseCategoryLabel = function(category) {
 };
 
 window.initResourceHub = function() {
+    // LƯU Ý: KHÔNG dùng orderBy("priority") ở đây. Firestore compound orderBy
+    // yêu cầu MỌI document phải có field đó, nếu không sẽ bị loại khỏi kết quả
+    // hoàn toàn (không báo lỗi). Tài liệu "pending"/"rejected" chưa từng có
+    // field priority (chỉ được gắn lúc duyệt) nên sẽ biến mất khỏi danh sách
+    // nếu để orderBy("priority") ở query Firestore. Sort theo priority được
+    // chuyển xuống client-side bên dưới (renderResourceList) thay vì ở đây.
     const q = query(collection(db, "resources"), orderBy("createdAt", "desc"), limit(50));
-
+    
     onSnapshot(q, (snapshot) => {
         const currentUid = auth.currentUser ? auth.currentUser.uid : null;
         const userRoles = window.currentUserRoles || [];
         const isStaff = userRoles.includes('admin') || userRoles.includes('op');
 
+        // Lưu dữ liệu vào bộ nhớ
         window._allResources = [];
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
@@ -1676,6 +1563,8 @@ window.initResourceHub = function() {
             if (status === 'approved') {
                 isVisible = true;
             } else if (status === 'pending' || status === 'rejected') {
+                // Staff (admin/op) thấy hết để duyệt. User thường chỉ thấy tài liệu của chính mình
+                // (để theo dõi trạng thái chờ duyệt / lý do bị từ chối).
                 if (isStaff || isOwner) {
                     isVisible = true;
                 }
@@ -1686,12 +1575,16 @@ window.initResourceHub = function() {
             }
         });
 
+        // Cập nhật badge + chấm đỏ sidebar dựa trên số lượng pending (chỉ tính khi là staff)
         window.updatePendingIndicators();
+
+        // Render tabs (chỉ hiện cho staff) + render danh sách theo tab/filter hiện tại
         window.renderReviewTabs();
         window.applyFilters();
     });
 };
 
+// Hiện/ẩn khu vực 3-tab (Đã duyệt / Chưa duyệt / Từ chối) — chỉ dành cho admin/op
 window.renderReviewTabs = function() {
     const tabsEl = document.getElementById('review-tabs');
     if (!tabsEl) return;
@@ -1700,6 +1593,7 @@ window.renderReviewTabs = function() {
     tabsEl.style.display = isStaff ? 'flex' : 'none';
 };
 
+// Cập nhật badge số trên tab "Chưa duyệt" + chấm đỏ nhấp nháy trên icon sidebar Resource Hub
 window.updatePendingIndicators = function() {
     const userRoles = window.currentUserRoles || [];
     const isStaff = userRoles.includes('admin') || userRoles.includes('op');
@@ -1727,6 +1621,7 @@ window.updatePendingIndicators = function() {
     }
 };
 
+// Chuyển tab Đã duyệt / Chưa duyệt / Từ chối
 window.switchReviewTab = function(tabKey, element) {
     window._currentReviewTab = tabKey;
     document.querySelectorAll('.review-tab').forEach(el => el.classList.remove('active'));
@@ -1734,7 +1629,10 @@ window.switchReviewTab = function(tabKey, element) {
     window.applyFilters();
 };
 
+
+// Mở drilldown: lọc và hiển thị tất cả tài liệu của 1 nhóm [trường + môn]
 window.openGroupDrilldown = function(schoolKey, categoryKey) {
+    // Tìm group tương ứng để lấy label đẹp
     const sampleDoc = window._allResources.find(d =>
         (d.schoolKey || window.normalizeKey(d.school || '')) === schoolKey &&
         (d.categoryKey || window.normalizeKey(d.category || '')) === categoryKey
@@ -1743,14 +1641,17 @@ window.openGroupDrilldown = function(schoolKey, categoryKey) {
 
     window._activeGroup = { schoolKey, categoryKey, school: sampleDoc.school, category: sampleDoc.category };
 
+    // Re-render: applyFilters sẽ detect _activeGroup và hiển thị drilldown
     window.applyFilters();
 };
 
+// Đóng drilldown, về lại danh sách nhóm
 window.closeGroupDrilldown = function() {
     window._activeGroup = null;
     window.applyFilters();
 };
 
+// Hàm render danh sách tài liệu từ mảng đã lọc
 window.renderResourceList = function(docs) {
     const listContainer = document.getElementById('resource-list-container');
     const countEl = document.getElementById('filter-result-count');
@@ -1768,6 +1669,7 @@ window.renderResourceList = function(docs) {
         return;
     }
 
+    // ── CHẾ ĐỘ DRILLDOWN: hiển thị tài liệu của 1 nhóm cụ thể ──────────────
     if (window._activeGroup) {
         const g = window._activeGroup;
         const schoolCode = window._extractSchoolCode(g.school);
@@ -1776,6 +1678,7 @@ window.renderResourceList = function(docs) {
             ? `[${schoolCode}] ${catCode} - ${catName}`
             : `[${schoolCode}] ${catName || g.category}`;
 
+        // Lọc chỉ lấy docs của nhóm này
         const groupDocs = docs.filter(d => {
             const sk = d.schoolKey || window.normalizeKey(d.school || '');
             const ck = d.categoryKey || window.normalizeKey(d.category || '');
@@ -1837,7 +1740,105 @@ window.renderResourceList = function(docs) {
         listContainer.innerHTML = html;
         return;
     }
+// Khi đang lọc: hiển thị trực tiếp từng tài liệu
+const isFiltering =
+    (document.getElementById('search-input')?.value || '').trim() ||
+    (document.getElementById('filter-school')?.value || '').trim() ||
+    (document.getElementById('filter-subject')?.value || '').trim() ||
+    (document.getElementById('filter-time')?.value || 'all') !== 'all';
 
+if (isFiltering) {
+    if (countEl) countEl.innerText = `${docs.length} tài liệu`;
+
+    let html = '';
+
+    docs.forEach((data) => {
+        const status = data.status || 'pending';
+        const safeTitle = data.title.replace(/'/g, "\\'");
+        const safeUrl = (data.fileUrl || "").replace(/'/g, "\\'");
+        const uploader = data.uploader || "Unknown";
+
+        let statusBadge = "";
+
+        if (status === 'pending') {
+            statusBadge =
+                `<span class="res-tag" style="background:#FF8C00;color:#000;">
+                    ⏳ PENDING
+                </span>`;
+        } else if (status === 'rejected') {
+            statusBadge =
+                `<span class="res-tag" style="background:var(--neon-red);color:#fff;">
+                    ✘ TỪ CHỐI
+                </span>`;
+        }
+
+        const schoolCode = window._extractSchoolCode(data.school || '');
+
+        const schoolPrefix = schoolCode
+            ? `<span style="color:var(--neon-purple);font-weight:600;">
+                [${schoolCode}]
+               </span> `
+            : '';
+
+        let dateHTML = '';
+
+        if (data.createdAt && data.createdAt.toDate) {
+            const d = data.createdAt.toDate();
+            const now = new Date();
+            const diffDays = Math.floor((now - d) / 86400000);
+
+            let dateStr =
+                diffDays === 0
+                    ? 'Hôm nay'
+                    : diffDays === 1
+                        ? 'Hôm qua'
+                        : diffDays < 7
+                            ? `${diffDays} ngày trước`
+                            : d.toLocaleDateString('vi-VN');
+
+            dateHTML =
+                `<span style="font-size:11px;color:#666;margin-left:8px;">
+                    📅 ${dateStr}
+                </span>`;
+        }
+
+        html += `
+            <div class="resource-item"
+                 onclick="openSplitView('${safeTitle}', '${safeUrl}', '${data.id}', '${uploader}')">
+
+                <div style="display:flex; align-items:center;">
+                    <div class="res-icon">
+                        <i class="fa-solid fa-file"
+                           style="color:var(--neon-purple);"></i>
+                    </div>
+
+                    <div class="res-info">
+                        <h3>
+                            ${schoolPrefix}${data.title}
+                            ${statusBadge}
+                        </h3>
+
+                        <p>
+                            ${data.category || ''}
+                            • Upload bởi: <b>${uploader}</b>
+                            ${dateHTML}
+                        </p>
+                    </div>
+                </div>
+
+                <div style="font-size:12px; color:#888;">
+                    Click to view
+                </div>
+            </div>
+        `;
+    });
+
+    listContainer.innerHTML = html;
+    return;
+}
+    // ── CHẾ ĐỘ GROUPED: nhóm theo [trường + môn học] ─────────────────────────
+    // Nếu staff đang ở tab pending/rejected thì vẫn hiển thị flat list (từng file)
+    // vì cần thấy status badge + context duyệt rõ ràng.
     if (isStaff && window._currentReviewTab !== 'approved') {
         if (countEl) countEl.innerText = `${docs.length} tài liệu`;
         let html = '';
@@ -1882,6 +1883,8 @@ window.renderResourceList = function(docs) {
         return;
     }
 
+    // Grouped view cho user thường (hoặc staff ở tab "Đã duyệt")
+    // Gom nhóm theo schoolKey + categoryKey
     const groups = new Map();
     docs.forEach(data => {
         const sk = data.schoolKey || window.normalizeKey(data.school || '');
@@ -1898,10 +1901,11 @@ window.renderResourceList = function(docs) {
         }
     });
 
+    // Sort groups: nhóm nhiều tài liệu lên trước, tie-break bằng ngày mới nhất
     const sortedGroups = [...groups.values()].sort((a, b) => {
-        const maxPriorityA = Math.max(...a.docs.map(d => d.priority || 0));
+      const maxPriorityA = Math.max(...a.docs.map(d => d.priority || 0));
         const maxPriorityB = Math.max(...b.docs.map(d => d.priority || 0));
-        if (maxPriorityB !== maxPriorityA) return maxPriorityB - maxPriorityA;
+if (maxPriorityB !== maxPriorityA) return maxPriorityB - maxPriorityA;
         const ta = a.latestDate ? a.latestDate.getTime() : 0;
         const tb = b.latestDate ? b.latestDate.getTime() : 0;
         return tb - ta;
@@ -1914,10 +1918,12 @@ window.renderResourceList = function(docs) {
         const schoolCode = window._extractSchoolCode(g.school);
         const { code: catCode, name: catName } = window._parseCategoryLabel(g.category);
 
+        // Label hiển thị: "[BA] IS53A - Thiết kế cơ sở dữ liệu"
         const displayLabel = catCode
             ? `[${schoolCode}] ${catCode} — ${catName}`
             : `[${schoolCode}] ${catName || g.category}`;
 
+        // Ngày mới nhất trong nhóm
         let dateHTML = '';
         if (g.latestDate) {
             const now = new Date();
@@ -1933,7 +1939,8 @@ window.renderResourceList = function(docs) {
             <div class="resource-item"
                  onclick="window.openGroupDrilldown('${safeSchoolKey}', '${safeCategoryKey}')">
                 <div style="display:flex; align-items:center; gap:0;">
-<div class="res-icon" style="color:var(--neon-cyan);"><i class="fa-solid fa-folder"></i></div>                    <div class="res-info">
+                    <div class="res-icon" style="color:var(--neon-cyan);"><i class="fa-solid fa-folder"></i></div>                    
+                    <div class="res-info">
                         <h3>
                             <span style="color:var(--neon-purple);font-weight:700;">[${schoolCode}]</span>
                             ${catCode ? `<span style="color:var(--neon-cyan);"> ${catCode}</span> — ` : ' '}${catName || g.category}
@@ -1948,17 +1955,20 @@ window.renderResourceList = function(docs) {
     listContainer.innerHTML = html;
 };
 
+// Hàm áp dụng toàn bộ bộ lọc
 window.applyFilters = function() {
     const keyword = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
     const schoolFilterRaw = (document.getElementById('filter-school')?.value || '').trim();
     const subject = (document.getElementById('filter-subject')?.value || '').toLowerCase().trim();
     const timeVal = document.getElementById('filter-time')?.value || 'all';
 
+    // Nếu user đang gõ filter/search mới thì thoát drilldown về grouped list
     const hasNewFilter = keyword || schoolFilterRaw || subject || timeVal !== 'all';
     if (hasNewFilter && window._activeGroup) {
         window._activeGroup = null;
     }
 
+    // So khớp trường bằng khóa chuẩn hóa (không phân biệt dấu/hoa-thường/khoảng trắng)
     const schoolFilterKey = window.normalizeKey(schoolFilterRaw);
 
     const userRoles = window.currentUserRoles || [];
@@ -1975,19 +1985,26 @@ window.applyFilters = function() {
     const filtered = window._allResources.filter(data => {
         const status = data.status || 'pending';
 
+        // Staff: lọc theo tab đang chọn (Đã duyệt / Chưa duyệt / Từ chối)
+        // User thường: chỉ lọc theo môn/thời gian/từ khóa như cũ, mọi status họ thấy được (approved + của riêng họ)
         if (isStaff) {
             if (status !== window._currentReviewTab) return false;
         }
 
+        // Lọc từ khóa (title)
         if (keyword && !data.title.toLowerCase().includes(keyword)) return false;
 
+        // Lọc trường (so khớp theo schoolKey đã chuẩn hóa, fallback về so khớp thô
+        // nếu tài liệu cũ chưa có field schoolKey)
         if (schoolFilterKey) {
             const docSchoolKey = data.schoolKey || window.normalizeKey(data.school || '');
             if (!docSchoolKey.includes(schoolFilterKey)) return false;
         }
 
+        // Lọc môn học (category)
         if (subject && !((data.category || '').toLowerCase().includes(subject))) return false;
 
+        // Lọc thời gian
         if (timeVal !== 'all' && data.createdAt && data.createdAt.toDate) {
             const days = timeMap[timeVal];
             const docDate = data.createdAt.toDate();
@@ -1998,6 +2015,10 @@ window.applyFilters = function() {
         return true;
     });
 
+    // Sắp xếp ở client (thay cho orderBy("priority") đã bỏ khỏi Firestore query):
+    // - Tab "Đã duyệt": ưu tiên priority cao lên trước (priority chỉ có ý nghĩa sau khi duyệt),
+    //   tài liệu chưa có field priority coi như 0.
+    // - createdAt mới nhất luôn là tiêu chí phụ / áp dụng cho pending & rejected.
     filtered.sort((a, b) => {
         const pa = typeof a.priority === 'number' ? a.priority : 0;
         const pb = typeof b.priority === 'number' ? b.priority : 0;
@@ -2008,6 +2029,7 @@ window.applyFilters = function() {
         return db_ - da;
     });
 
+    // Hiện/ẩn nút reset
     const resetBtn = document.getElementById('filter-reset-btn');
     const hasFilter = keyword || subject || timeVal !== 'all';
     if (resetBtn) resetBtn.style.display = hasFilter ? 'inline-block' : 'none';
@@ -2015,6 +2037,7 @@ window.applyFilters = function() {
     window.renderResourceList(filtered);
 };
 
+// Reset tất cả bộ lọc
 window.resetFilters = function() {
     const searchInput = document.getElementById('search-input');
     const filterSchool = document.getElementById('filter-school');
@@ -2029,6 +2052,7 @@ window.resetFilters = function() {
     window.applyFilters();
 };
 
+// Autocomplete trường cho ô filter
 window.handleFilterSchoolInput = function(input) {
     const val = input.value.toLowerCase();
     const box = document.getElementById('filter-school-box');
@@ -2059,6 +2083,7 @@ window.selectFilterSchool = function(value) {
     window.applyFilters();
 };
 
+// Autocomplete môn học cho ô filter
 window.handleFilterSubjectInput = function(input) {
     const val = input.value.toLowerCase();
     const box = document.getElementById('filter-subject-box');
@@ -2089,10 +2114,12 @@ window.selectFilterSubject = function(value) {
     window.applyFilters();
 };
 
+// Alias để tương thích (search box cũ gọi hàm này)
 window.handleSearchInput = function() {
     window.applyFilters();
 };
 
+// Đóng dropdown filter khi click ra ngoài (cả Trường lẫn Môn học)
 document.addEventListener('click', function(e) {
     const subjectWrapper = document.querySelector('#filter-subject')?.closest('.autocomplete-wrapper');
     if (subjectWrapper && !subjectWrapper.contains(e.target)) {
@@ -2106,30 +2133,41 @@ document.addEventListener('click', function(e) {
         if (box) box.style.display = 'none';
     }
 });
-window.sendMessage = function() {
+   window.sendMessage = function() {
     const input = document.getElementById('chat-input-field');
     const chatBox = document.getElementById('chat-box');
     const text = input.value.trim();
 
+    // Chỉ chạy khi có nội dung tin nhắn thực sự
     if(text) {
+        // 1. Xử lý UI
         chatBox.innerHTML += `<div class="chat-msg msg-me">${text}</div>`;
-        input.value = '';
+        input.value = ''; 
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        if(text.toLowerCase().includes('sos')) {
-            setTimeout(() => {
-                if (!window.isSOSActive) {
-                    window.triggerSOS();
-                } else {
-                    chatBox.innerHTML += `<div class="chat-msg msg-system">SOS signal is already active! Rescue team alerted.</div>`;
-                }
-            }, 500);
+        // 2. Xử lý logic SOS
+        if(text.toLowerCase().includes('sos')) { 
+            setTimeout(() => { 
+                if (!window.isSOSActive) { 
+                    window.triggerSOS(); 
+                } else { 
+                    chatBox.innerHTML += `<div class="chat-msg msg-system">SOS signal is already active! Rescue team alerted.</div>`; 
+                } 
+            }, 500); 
         }
 
+        // --- [NEW] TRACKING & XP SECTION (Đặt trong IF mới đúng) ---
+        
+        // 3. Bắn Tracking
         window.trackTelemetry('send_message', { channel: 'sos_chat' });
-    }
+
+        // 4. Cộng điểm DIPLOMAT
+        // Chat kênh SOS được
+}
 };
 // --- BƯỚC 2: OPS CENTER ---
+// Việc duyệt tài liệu đã chuyển hoàn toàn sang Resource Hub (tab "Chưa duyệt").
+// Ops Center giờ chỉ hiển thị thông báo chuyển hướng, không còn hàng chờ duyệt riêng.
 window.setupOpsCenter = function() {
     const opsPanel = document.getElementById('panel-op');
     if (!opsPanel) return;
@@ -2142,36 +2180,42 @@ window.setupOpsCenter = function() {
         </div>
     `;
 
+    // 2. Lắng nghe realtime các file có status = 'pending'
     const q = query(collection(db, "resources"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
-
+    
     onSnapshot(q, (snapshot) => {
         const container = document.getElementById('ops-pending-list');
-        const bridgeNav = document.getElementById('bridge-nav');
-
+        const bridgeNav = document.getElementById('bridge-nav'); // Icon Radar ở Sidebar
+        
         if (snapshot.empty) {
             container.innerHTML = '<div style="text-align:center; color:#666; font-size:12px; padding-top:20px;">Không có tài liệu chờ duyệt.</div>';
+            // Tắt đèn báo hiệu
             if(bridgeNav) {
                 bridgeNav.style.border = "none";
                 bridgeNav.style.boxShadow = "none";
             }
         } else {
+            // CÓ FILE MỚI: 
+            // a. Bật đèn báo hiệu (viền đỏ) ở Sidebar
             if(bridgeNav) {
                 bridgeNav.style.border = "1px solid #FF4500";
                 bridgeNav.style.boxShadow = "0 0 10px #FF4500";
             }
+            // b. Hiện Banner thông báo
             window.showNotificationBanner(`⚠️ OPS ALERT: Có ${snapshot.size} tài liệu cần duyệt!`);
 
+             // c. Render danh sách
             let html = "";
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const safeTitle = data.title.replace(/'/g, "\\'");
                 const safeUrl = (data.fileUrl || "").replace(/'/g, "\\'");
-
+                
                 html += `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #333;">
                         <div style="width: 55%;">
                             <div style="color:white; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.title}</div>
-                        </div>
+                        </div>        
                         <div style="font-size:10px; color:#888;">Up bởi: ${data.uploader}</div>
                         <div style="display:flex; gap:5px;">
                             <button onclick="openSplitView('${safeTitle}', '${safeUrl}', '${doc.id}', '${data.uploader}')" style="font-size:10px; padding:4px 8px; cursor:pointer; border:1px solid #444; background:transparent; color:#ccc;">Xem</button>
@@ -2186,51 +2230,55 @@ window.setupOpsCenter = function() {
     });
 };
 
+// Hàm Duyệt (Chuyển status -> approved)
+// Hàm Duyệt có thêm Priority
 window.approveDocument = async function(docId) {
+    // 1. Dùng prompt để lấy chỉ số từ Operator
     let priorityInput = prompt("Nhập độ ưu tiên (Số càng lớn tài liệu xếp càng cao, mặc định là 0):", "0");
-
-    if (priorityInput === null) return;
-
+    
+    // NẾU BẤM CANCEL THÌ HỦY DUYỆT
+    if (priorityInput === null) return; 
+    
+    // 2. Ép kiểu về số, nếu nhập bậy bạ (chữ cái) thì tự động cho về 0
     let priorityScore = parseInt(priorityInput, 10);
     if (isNaN(priorityScore)) priorityScore = 0;
 
     if (!confirm(`Xác nhận DUYỆT tài liệu này với độ ưu tiên: ${priorityScore}?`)) return;
-
+    
     try {
         await updateDoc(doc(db, "resources", docId), {
             status: 'approved',
             approvedBy: window.currentUserName,
             approvedAt: serverTimestamp(),
-            priority: priorityScore
+            priority: priorityScore // LƯU VÀO DATABASE
         });
         window.showNotificationBanner(`✅ Đã duyệt và gắn mức ưu tiên: ${priorityScore}`);
-
+    
+        // Duyệt tài liệu
         const docSnap = await getDoc(doc(db, "resources", docId));
+
         if (docSnap.exists()) {
             const docData = docSnap.data();
-            if (docData.uploaderUid) {
-                try {
-                    const targetUid = docData.uploaderUid;
-                    const targetUserRef = doc(db, "users", targetUid);
-                    const targetUserSnap = await getDoc(targetUserRef);
-                    if (targetUserSnap.exists()) {
-                        await updateDoc(targetUserRef, {
-                            'coins.received': increment(8)
-                        });
-                        if (window.showCoinEffect) window.showCoinEffect(8);
-                        alert("✅ Đã duyệt tài liệu! 🪙 Người upload được thưởng +8 xu!");
-                        console.log(`🪙 +8 xu (DOCUMENT_APPROVED) cho user ${targetUid}`);
-                    }
-                } catch (err) {
-                    console.error("Lỗi cộng xu cho người upload:", err);
-                }
+
+            try {
+                await updateDoc(doc(db, "resources", docId), {
+                    status: "approved",
+                    approvedBy: window.currentUserName,
+                    approvedAt: serverTimestamp(),
+                    priority: priorityScore
+                });
+
+                // Không cộng xu cho người upload tài liệu
+
+            } catch (e) {
+                alert("Lỗi: " + e.message);
             }
         }
     } catch (e) {
         alert("Lỗi: " + e.message);
     }
 };
-
+// Hàm Từ chối (Xóa tài liệu)
 window.rejectDocument = async function(docId) {
     if (!confirm("Từ chối và XÓA VĨNH VIỄN tài liệu này?")) return;
     try {
@@ -2240,12 +2288,7 @@ window.rejectDocument = async function(docId) {
         alert("Lỗi: " + e.message);
     }
 };
-const otpCodeEl = document.getElementById('otp-code-input');
-if (otpCodeEl) {
-    otpCodeEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.verifyRegistrationOtp(); });
-}
-
-const authEmailEl = document.getElementById('auth-email');
+       const authEmailEl = document.getElementById('auth-email');
 if (authEmailEl) {
     authEmailEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.handleAuth(); });
 }
@@ -2259,42 +2302,6 @@ const voidInputEl = document.getElementById('void-input-field');
 if (voidInputEl) {
     voidInputEl.addEventListener('keypress', function (e) { if (e.key === 'Enter') window.sendVoidMessage(); });
 }
-// --- HỆ THỐNG XU (COIN) FIRESTORE-BACKED ---
-
-window.COIN_POLICY = Object.freeze({
-    REGISTER_ACCOUNT: {
-        code: "REGISTER_ACCOUNT",
-        label: "Đăng ký tài khoản",
-        condition: "Hoàn tất đăng ký tài khoản",
-        amount: 100,
-        once: true,
-        note: "Chỉ một lần",
-    },
-    UPLOAD_DOCUMENT: {
-        code: "UPLOAD_DOCUMENT",
-        label: "Upload tài liệu",
-        condition: "Gửi tài liệu thành công",
-        amount: 2,
-        once: false,
-        note: "Khuyến khích đóng góp",
-    },
-    DOCUMENT_APPROVED: {
-        code: "DOCUMENT_APPROVED",
-        label: "Tài liệu được duyệt",
-        condition: "Admin phê duyệt",
-        amount: 8,
-        once: false,
-        note: "Chỉ áp dụng với tài liệu hợp lệ",
-    },
-    UNLOCK_PREMIUM_DOC: {
-        code: "UNLOCK_PREMIUM_DOC",
-        label: "Mở khóa tài liệu chất lượng cao",
-        condition: "Mở khóa tài liệu chất lượng cao",
-        amount: -50,
-        oncePerTarget: true,
-        note: "Chỉ trừ ở lần mở khóa đầu tiên",
-    },
-});
 
 // --- MODAL: CHỈNH SỬA HỒ SƠ (EDIT PROFILE) ---
 window.openEditProfileModal = async function() {
@@ -2336,9 +2343,6 @@ window.openEditProfileModal = async function() {
         if (emailEl) emailEl.value = d.email || auth.currentUser.email || "";
         if (charCountEl) charCountEl.innerText = (d.bio || "").length;
 
-        const coins = d.coins || { received: 0, used: 0 };
-        if (coinTextEl) coinTextEl.innerText = window.formatCoin((coins.received || 0) - (coins.used || 0)) + " Xu";
-
         if (avatarPreview) {
             const span = avatarPreview.querySelector('span');
             if (span) span.innerText = (displayName.trim()[0] || "?").toUpperCase();
@@ -2375,6 +2379,10 @@ window.saveProfileChanges = async function() {
 
         await updateDoc(doc(db, "users", auth.currentUser.uid), updates);
 
+        // Cập nhật trực tiếp các phần tử hiển thị trên khoang cá nhân —
+        // KHÔNG gọi lại toàn bộ loadUserProfile() để tránh tạo trùng lặp
+        // các listener real-time (chat, tài liệu) mỗi lần lưu hồ sơ,
+        // và KHÔNG reload cả trang (tránh flash màn hình đăng nhập).
         window.currentUserName = updates.displayName || window.currentUserName;
 
         const nameEl = document.getElementById('user-display-name');
@@ -2399,6 +2407,7 @@ window.saveProfileChanges = async function() {
     }
 };
 
+// Đếm ký tự cho ô giới thiệu bản thân
 const cabinEditIntroEl = document.getElementById('cabin-edit-intro');
 const cabinIntroCharCountEl = document.getElementById('cabin-intro-char-count');
 if (cabinEditIntroEl && cabinIntroCharCountEl) {
@@ -2407,6 +2416,7 @@ if (cabinEditIntroEl && cabinIntroCharCountEl) {
     });
 }
 
+// Gán sự kiện cho nút mở / đóng / hủy / lưu modal Edit Profile
 const btnOpenEditProfile = document.getElementById('btn-open-edit-profile');
 if (btnOpenEditProfile) btnOpenEditProfile.addEventListener('click', window.openEditProfileModal);
 else console.warn("⚠️ Không tìm thấy #btn-open-edit-profile trong HTML.");
@@ -2420,6 +2430,7 @@ if (btnEditCancel) btnEditCancel.addEventListener('click', window.closeEditProfi
 const btnEditSave = document.getElementById('cabin-edit-save');
 if (btnEditSave) btnEditSave.addEventListener('click', window.saveProfileChanges);
 
+// Click ra ngoài overlay để đóng modal
 const cabinEditModalEl = document.getElementById('cabin-edit-modal');
 if (cabinEditModalEl) {
     cabinEditModalEl.addEventListener('click', (e) => {
@@ -2428,8 +2439,11 @@ if (cabinEditModalEl) {
 }
 
 // --- LỊCH SỬ HOẠT ĐỘNG (ACTIVITY LOG) ---
+// Ghi 1 dòng hoạt động vào Firestore collection "activity_logs".
+// Chống trùng lặp: nếu cùng loại hoạt động + cùng tài liệu (docId) đã có sẵn,
+// chỉ cập nhật lại thời gian (createdAt) thay vì tạo thêm 1 dòng mới.
 window.logActivity = async function(type, title, meta = {}) {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser) return; // Chế độ khách: không lưu lịch sử
     try {
         const dedupeKey = (meta && meta.docId) ? `${type}_${meta.docId}` : null;
 
@@ -2442,6 +2456,7 @@ window.logActivity = async function(type, title, meta = {}) {
             );
             const dupSnap = await getDocs(dupQ);
             if (!dupSnap.empty) {
+                // Đã có log này rồi -> chỉ "đẩy" lên đầu danh sách bằng cách cập nhật thời gian
                 const existingRef = dupSnap.docs[0].ref;
                 await updateDoc(existingRef, { title, meta, createdAt: serverTimestamp() });
                 return;
@@ -2450,10 +2465,10 @@ window.logActivity = async function(type, title, meta = {}) {
 
         await addDoc(collection(db, "activity_logs"), {
             uid: auth.currentUser.uid,
-            type,
+            type,   // 'view' | 'upload' | 'coin_receive' | 'coin_spend'
             title,
             meta,
-            dedupeKey,
+            dedupeKey, // null nếu không áp dụng chống trùng (vd: giao dịch xu)
             createdAt: serverTimestamp()
         });
     } catch (e) {
@@ -2484,14 +2499,10 @@ function renderActivityItem(item) {
     const cfg = ACTIVITY_ICON_MAP[item.type] || { cls: 'doc', icon: 'fa-circle-info' };
     const dateObj = item.createdAt && item.createdAt.toDate ? item.createdAt.toDate() : new Date();
     const timeText = formatActivityTimeAgo(dateObj);
-
-    let subText = timeText;
-    if (item.type === 'coin_receive') subText = `+${(item.meta && item.meta.amount) || ''} xu • ${timeText}`;
-    if (item.type === 'coin_spend') subText = `-${(item.meta && item.meta.amount) || ''} xu • ${timeText}`;
-
     const safeTitle = (item.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const iconStyle = cfg.color ? ` style="color:${cfg.color};"` : '';
 
+    // Nút "Xem lại" / "Xem tài liệu": chỉ hiện cho hoạt động view/upload có kèm docId + fileUrl
     let continueBtnHtml = '';
     const meta = item.meta || {};
     if ((item.type === 'view' || item.type === 'upload') && meta.docId && meta.fileUrl) {
@@ -2516,12 +2527,13 @@ function renderActivityItem(item) {
         </div>`;
 }
 
+// Tải & render lịch sử hoạt động (real-time) lên khoang cá nhân
 window.loadActivityHistory = function() {
     const listEl = document.getElementById('cabinHistoryList');
     const extraEl = document.getElementById('cabinHistoryExtra');
     const toggleBtn = document.getElementById('cabinToggleAllBtn');
 
-    if (!listEl) return;
+    if (!listEl) return; // Không có khung lịch sử trong HTML
 
     if (!auth.currentUser) {
         listEl.innerHTML = `<div style="text-align:center; padding:16px; color:#666; font-size:13px;">Đăng nhập để xem lịch sử hoạt động.</div>`;
@@ -2530,6 +2542,8 @@ window.loadActivityHistory = function() {
         return;
     }
 
+    // Chỉ lọc theo uid (không orderBy trên server) để tránh cần composite index;
+    // sắp xếp mới nhất trước ngay trên client.
     const q = query(collection(db, "activity_logs"), where("uid", "==", auth.currentUser.uid), limit(50));
     onSnapshot(q, (snapshot) => {
         let items = [];
@@ -2560,6 +2574,7 @@ window.loadActivityHistory = function() {
     });
 };
 
+// Nút "Xem tất cả lịch sử" / "Ẩn bớt"
 const cabinToggleAllBtnEl = document.getElementById('cabinToggleAllBtn');
 if (cabinToggleAllBtnEl) {
     cabinToggleAllBtnEl.addEventListener('click', () => {
@@ -2572,252 +2587,100 @@ if (cabinToggleAllBtnEl) {
     });
 }
 
-/** Định dạng số xu: 1250 -> "1.250" */
-window.formatCoin = function(value) {
-    const n = Math.max(0, Math.round(Number(value) || 0));
-    return n.toLocaleString("vi-VN");
-};
-
-/** Hiệu ứng cộng/trừ xu nổi giữa màn hình */
-window.showCoinEffect = function(amount) {
-    const effect = document.createElement("div");
-    effect.className = "coin-effect";
-    const sign = amount > 0 ? "+" : "";
-    effect.innerHTML = `
-        <span style="font-size:50px;">🪙</span>
-        <span>${sign}${amount}</span>
-    `;
-    document.body.appendChild(effect);
-    requestAnimationFrame(() => { effect.classList.add("show"); });
-    setTimeout(() => { effect.classList.remove("show"); }, 1200);
-    setTimeout(() => { effect.remove(); }, 1600);
-};
-
-/**
- * Cộng xu cho user hiện tại dựa trên actionCode.
- */
-window.rewardCoins = async function(actionCode) {
-    if (!auth.currentUser) return { success: false, reason: "NOT_AUTHED" };
-    const policy = window.COIN_POLICY[actionCode];
-    if (!policy || policy.amount <= 0) return { success: false, reason: "INVALID_POLICY" };
-
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) return { success: false, reason: "USER_NOT_FOUND" };
-
-    const data = userSnap.data();
-    const coins = data.coins || { received: 0, used: 0 };
-    const claimedOnce = data.claimedOnce || [];
-
-    if (policy.once && claimedOnce.includes(actionCode)) {
-        return { success: false, reason: "ALREADY_CLAIMED" };
-    }
-
-    const amount = Math.abs(policy.amount);
-    const updateData = {
-        'coins.received': increment(amount)
-    };
-
-    if (policy.once) {
-        updateData.claimedOnce = claimedOnce.concat([actionCode]);
-    }
-
-    await updateDoc(userRef, updateData);
-
-    window.showCoinEffect(amount);
-    window.logActivity('coin_receive', policy.label, { amount });
-    console.log(`🪙 +${amount} xu (${policy.label})`);
-
-    return { success: true, amount };
-};
-
-/**
- * Trừ xu cho user hiện tại dựa trên actionCode.
- */
-window.spendCoins = async function(actionCode, targetId) {
-    if (!auth.currentUser) return { success: false, reason: "NOT_AUTHED" };
-    const policy = window.COIN_POLICY[actionCode];
-    if (!policy || policy.amount >= 0) return { success: false, reason: "INVALID_POLICY" };
-
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) return { success: false, reason: "USER_NOT_FOUND" };
-
-    const data = userSnap.data();
-    const coins = data.coins || { received: 0, used: 0 };
-    const balance = (coins.received || 0) - (coins.used || 0);
-    const unlockedTargets = data.unlockedTargets || [];
-
-    const amount = Math.abs(policy.amount);
-    const targetKey = targetId ? `${actionCode}:${targetId}` : null;
-
-    if (policy.oncePerTarget) {
-        if (!targetId) return { success: false, reason: "MISSING_TARGET_ID" };
-        if (unlockedTargets.includes(targetKey)) {
-            return { success: true, amount: 0, alreadyUnlocked: true };
-        }
-    }
-
-    if (balance < amount) {
-        return { success: false, reason: "INSUFFICIENT_BALANCE" };
-    }
-
-    const updateData = {
-        'coins.used': increment(amount)
-    };
-
-    if (policy.oncePerTarget) {
-        updateData.unlockedTargets = unlockedTargets.concat([targetKey]);
-    }
-
-    await updateDoc(userRef, updateData);
-
-    window.showCoinEffect(-amount);
-    window.logActivity('coin_spend', policy.label, { amount });
-    console.log(`🪙 -${amount} xu (${policy.label})`);
-
-    return { success: true, amount };
-};
-
-
-// Render coin display (vùng UI - chỉ nhận data, không gọi Firestore)
-window.renderCoinDisplay = function(coins) {
-    const c = coins || { received: 0, used: 0 };
-    const received = c.received || 0;
-    const used = c.used || 0;
-    const balance = received - used;
-
-    const balEl = document.getElementById('coin-balance-text');
-    const recEl = document.getElementById('coin-received-text');
-    const usedEl = document.getElementById('coin-used-text');
-
-    if (balEl) balEl.innerText = window.formatCoin(balance);
-    if (recEl) recEl.innerText = window.formatCoin(received);
-    if (usedEl) usedEl.innerText = window.formatCoin(used);
-};
-
-// --- OTP REGISTRATION HELPERS (Supabase Auth OTP qua email) ---
-
-// Hiện lỗi trên màn hình nhập OTP
-function showOtpError(msg) {
-    const errEl = document.getElementById('otp-error');
-    if (!errEl) return;
-    errEl.innerText = msg;
-    errEl.style.display = 'block';
-}
-
-// Bước 2: Người dùng nhập mã 6 số -> đối chiếu với Supabase -> nếu đúng thì mới tạo tài khoản Firebase
-window.verifyRegistrationOtp = async function() {
-    const pending = window.__pendingRegistration;
-    const otpInput = document.getElementById('otp-code-input');
-    const code = (otpInput ? otpInput.value : '').trim();
-    const errEl = document.getElementById('otp-error');
-    if (errEl) errEl.style.display = 'none';
-
-    if (!pending) {
-        showOtpError("Phiên đăng ký đã hết hạn. Vui lòng đăng ký lại.");
-        return;
-    }
-    if (!/^\d{6}$/.test(code)) {
-        showOtpError("Vui lòng nhập đủ 6 chữ số.");
-        return;
-    }
-
-    const btn = document.getElementById('btn-otp-confirm');
-    if (btn) { btn.disabled = true; btn.innerText = 'ĐANG XÁC NHẬN...'; }
-
+// --- HÀM VÀO VỚI TƯ CÁCH KHÁCH (GUEST MODE) ---
+// --- HÀM VÀO VỚI TƯ CÁCH KHÁCH (GUEST MODE) ---
+window.enterAsGuest = function() {
     try {
-        // Đối chiếu mã OTP với Supabase
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-            email: pending.email,
-            token: code,
-            type: 'email'
-        });
-        if (verifyError) throw verifyError;
-
-        // Mã đúng -> thoát phiên Supabase (chỉ dùng Supabase để xác thực mã, không cần giữ session)
-        await supabase.auth.signOut().catch(() => {});
-
-        // Tạo tài khoản chính thức trên Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, pending.email, pending.password);
-        const user = userCredential.user;
-        const msv = pending.email.split('@')[0];
-
-        // Lưu thông tin bổ sung vào Firestore
-        await setDoc(doc(db, "users", user.uid), {
-            fullName: pending.name,
-            displayName: pending.name,
-            msv: msv,
-            age: pending.age || "N/A",
-            gender: pending.gender || "N/A",
-            email: pending.email,
-            createdAt: serverTimestamp(),
-            coins: { received: 0, used: 0 },
-            roles: ['user']
-        });
-
-        // Dọn dữ liệu tạm
-        localStorage.removeItem('otp_last_sent_' + pending.email);
-        window.__pendingRegistration = null;
-
-        // onAuthStateChanged sẽ tự động đưa người dùng vào app vì user đã đăng nhập
-        console.log("✅ Xác minh OTP thành công, tài khoản đã được tạo:", pending.email);
-    } catch (error) {
-        console.error("Verify OTP Error:", error);
-        let msg = "Mã xác nhận không đúng hoặc đã hết hạn. Vui lòng thử lại.";
-        if (error.code === 'auth/email-already-in-use') {
-            msg = "Email này đã được đăng ký. Vui lòng đăng nhập.";
-        } else if (error.message) {
-            msg = error.message;
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        
+        if (!loginScreen || !appContainer) {
+            console.error("Không tìm thấy login-screen hoặc app-container!");
+            return;
         }
-        showOtpError(msg);
-    } finally {
-        if (btn) { btn.disabled = false; btn.innerText = 'XÁC NHẬN MÃ'; }
-    }
-};
-
-// Gửi lại mã OTP (giới hạn 60s/lần để chặn spam)
-window.resendRegistrationOtp = async function() {
-    const pending = window.__pendingRegistration;
-    if (!pending) {
-        showOtpError("Phiên đăng ký đã hết hạn. Vui lòng đăng ký lại.");
-        return;
-    }
-
-    const key = 'otp_last_sent_' + pending.email;
-    const last = parseInt(localStorage.getItem(key) || '0');
-    const cooldownMs = 60 * 1000;
-
-    if (Date.now() - last < cooldownMs) {
-        const remain = Math.ceil((cooldownMs - (Date.now() - last)) / 1000);
-        showOtpError(`Vui lòng đợi ${remain}s trước khi gửi lại mã.`);
-        return;
-    }
-
-    const btn = document.getElementById('btn-otp-resend');
-    if (btn) { btn.disabled = true; btn.innerText = 'ĐANG GỬI...'; }
-    try {
-        const { error } = await supabase.auth.signInWithOtp({
-            email: pending.email,
-            options: { shouldCreateUser: true }
-        });
-        if (error) throw error;
-        localStorage.setItem(key, Date.now().toString());
-        showOtpError("📧 Đã gửi lại mã mới. Vui lòng kiểm tra email (kể cả Spam).");
+        
+        // Đánh dấu đang ở chế độ khách để onAuthStateChanged không ghi đè
+        window.__guestActive = true;
+        
+        // Ẩn login, hiện app
+        loginScreen.style.display = 'none';
+        appContainer.style.display = 'flex';
+        appContainer.style.opacity = '1';
+        appContainer.style.visibility = 'visible';
+        
+        // Set các biến toàn cục
+        window.currentUserRank = "GUEST";
+        window.currentUserName = "Galactic Explorer";
+        window.currentUserRoles = [];
+        window.currentMsv = "GUEST";
+        
+        // Cập nhật UI cơ bản ngay lập tức
+        const nameEl = document.getElementById('user-display-name');
+        const welcomeEl = document.getElementById('welcome-name');
+        const rankTitle = document.getElementById('user-rank-title');
+        const tierTag = document.getElementById('user-tier-tag');
+        const quoteBox = document.getElementById('quote-box');
+        const energyBar = document.getElementById('energy-bar');
+        
+        if (nameEl) nameEl.innerText = "Galactic Explorer (Guest)";
+        if (welcomeEl) welcomeEl.innerText = "Galactic Explorer";
+        if (rankTitle) {
+            rankTitle.className = "rank-title rank-standard";
+            rankTitle.innerText = "GUEST";
+        }
+        if (tierTag) {
+            tierTag.className = "tier-tag tag-standard";
+            tierTag.innerText = "Tier 0 • Guest";
+        }
+        if (quoteBox) {
+            quoteBox.innerHTML = `<h4 style="color: #aaa;">GUEST</h4><p style="font-size:12px; color:#666;">Explorer Class • Read-only mode</p>`;
+        }
+        if (energyBar) energyBar.style.width = "0%";
+        
+        const energyText = document.getElementById('energy-text');
+        if (energyText) energyText.innerText = "0";
+        
+      
+        // Gọi loadUserProfile an toàn (dùng try-catch riêng black)
+        try {
+            window.loadUserProfile({
+                displayName: "Galactic Explorer",
+                rank: "GUEST",
+                energy: 0,
+                roles: [],
+                msv: "GUEST",
+                stats: { focus: 0, upload: 0, interact: 0, online: 0 },
+                coins: { received: 0, used: 0 }
+            });
+        } catch (e) { console.warn("Guest loadUserProfile error:", e); }
+        
+        console.log("🌌 Khách đã vào Cosmic Base!");
     } catch (e) {
-        showOtpError("Lỗi: " + e.message);
-    } finally {
-        if (btn) { btn.disabled = false; btn.innerText = 'Gửi lại mã'; }
+        console.error("enterAsGuest error:", e);
     }
 };
-
-// Hủy quá trình xác minh OTP, quay lại màn hình đăng nhập
-window.cancelOtpVerification = function() {
-    window.__pendingRegistration = null;
-    const otpScreen = document.getElementById('verify-otp-screen');
-    const loginScreen = document.getElementById('login-screen');
-    if (otpScreen) otpScreen.style.display = 'none';
-    if (loginScreen) loginScreen.style.display = 'flex';
-    window.isRegisterMode = false;
-    if (window.isLoginMode === false) window.toggleAuthMode();
+/* ======================================================================
+   THEME SÁNG / TỐI — điều khiển từ nút "Chế độ giao diện" trong Khoang cá nhân
+   Lưu lựa chọn vào localStorage để giữ nguyên qua các lần tải trang.
+   ====================================================================== */
+window.applyThemeUI = function(isLight) {
+    const label = document.getElementById('cabin-pref-label');
+    const toggle = document.getElementById('cabin-theme-toggle');
+    if (label) label.textContent = isLight ? 'Chế độ giao diện (Sáng)' : 'Chế độ giao diện (Tối)';
+    // "on" biểu thị chế độ Tối đang bật (theo trạng thái mặc định có sẵn trong HTML)
+    if (toggle) toggle.classList.toggle('on', !isLight);
 };
+
+window.toggleTheme = function() {
+    const isLight = document.body.classList.toggle('light');
+    try { localStorage.setItem('cosmicTheme', isLight ? 'light' : 'dark'); } catch (e) {}
+    window.applyThemeUI(isLight);
+};
+
+(function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem('cosmicTheme'); } catch (e) {}
+    const isLight = saved === 'light';
+    document.body.classList.toggle('light', isLight);
+    window.applyThemeUI(isLight);
+})();
